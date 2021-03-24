@@ -173,7 +173,7 @@ coarse_std = coarse_dic["img_std"]
 
 """Mouth area index (manually selected in blender)"""
 # 382 indices
-# mouth_index = _load(osp.join(d, '35709_mouth_index.pkl'))
+mouth_whole_index = _load(osp.join(d, '35709_mouth_index.pkl'))
 mouth_index = _load(osp.join(d, '35709_mouth_inner.pkl'))
 eye_index = _load(osp.join(d, '35709_eyes.pkl'))
 

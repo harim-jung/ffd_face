@@ -79,7 +79,8 @@ class DeformVDCLoss(nn.Module):
         super(DeformVDCLoss, self).__init__()
 
     def forward(self, input, target, z_shift=True):
-        loss = nn.MSELoss()
+        # loss = nn.MSELoss()
+        loss = nn.L1Loss()
 
         deform_loss = loss(input, target)
 
@@ -132,64 +133,63 @@ class MouthLoss(nn.Module):
 
         # self.param_mean = _to_tensor(param_mean)
         # self.param_std = _to_tensor(param_std)
-        self.u_c = _to_tensor(u_c)# .double()
-        self.u_lp = _to_tensor(u_)
+        # self.u_c = _to_tensor(u_c)# .double()
+        # self.u_lp = _to_tensor(u_)
 
-        self.w_shp_c = _to_tensor(w_shp_c)# .double()
-        self.w_exp_c = _to_tensor(w_exp_c)# .double()
-        self.w_shp_lp = _to_tensor(w_shp_lp)
-        self.w_exp_lp = _to_tensor(w_exp_lp)
+        # self.w_shp_c = _to_tensor(w_shp_c)# .double()
+        # self.w_exp_c = _to_tensor(w_exp_c)# .double()
+        # self.w_shp_lp = _to_tensor(w_shp_lp)
+        # self.w_exp_lp = _to_tensor(w_exp_lp)
 
-        self.deform_matrix = _to_tensor(deform_matrix_)
-        self.control_points = _to_tensor(control_points_)
+        # self.deform_matrix = _to_tensor(deform_matrix_)
+        # self.control_points = _to_tensor(control_points_)
     
-    def reconstruct_mesh(self, param, batch, z_shift=True):
-        # param = param * self.param_std + self.param_mean
-        # parse param
-        p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
+    # def reconstruct_mesh(self, param, batch, z_shift=True):
+    #     # param = param * self.param_std + self.param_mean
+    #     # parse param
+    #     p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
 
-        # parse param
-        # p, offset, alpha_shp, alpha_exp = _parse_full_param_batch(param)
-        if param.shape[1] == 62:
-            target_vert = p @ (self.u_lp + self.w_shp_lp @ alpha_shp + self.w_exp_lp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
-        else:
-            target_vert = p @ (self.u_c + self.w_shp_c @ alpha_shp + self.w_exp_c @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
+    #     # parse param
+    #     # p, offset, alpha_shp, alpha_exp = _parse_full_param_batch(param)
+    #     if param.shape[1] == 62:
+    #         target_vert = p @ (self.u_lp + self.w_shp_lp @ alpha_shp + self.w_exp_lp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
+    #     else:
+    #         target_vert = p @ (self.u_c + self.w_shp_c @ alpha_shp + self.w_exp_c @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
         
-        target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
+    #     target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
 
-        if z_shift:
-            for i in range(target_vert.shape[0]):
-                target_vert[i,:,2] -= target_vert[i,:,2].min()
+    #     if z_shift:
+    #         for i in range(target_vert.shape[0]):
+    #             target_vert[i,:,2] -= target_vert[i,:,2].min()
 
-        # mouth index
-        lms = target_vert[:, mouth_index, :]
+    #     # mouth index
+    #     lms = target_vert[:, mouth_index, :]
 
+    #     return lms
+
+
+    # def deform_mesh(self, param, batch):
+    #     deform = param.view(batch, cp_num_//3, -1) # reshape to 3d
+    #     deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
+
+    #     lms = deformed_vert[:, mouth_index, :]
+
+    #     return lms
+
+    def mouth_region(self, vert):
+        lms = vert[:, mouth_whole_index, :]
         return lms
-
-
-    def deform_mesh(self, param, batch):
-        deform = param.view(batch, cp_num_//3, -1) # reshape to 3d
-        deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
-
-        lms = deformed_vert[:, mouth_index, :]
-
-        return lms
-
-
+    
     def forward(self, input, target, z_shift=True):
-        # input: deformation of control points
-        # target: GT vertex
-        loss = nn.MSELoss()
+        loss = nn.L1Loss()
 
-        N = target.shape[0]
+        mouth_input = self.mouth_region(input)
+        mouth_target = self.mouth_region(target)
 
-        target_vert = self.reconstruct_mesh(target, N, z_shift=z_shift)
-        deformed_vert = self.deform_mesh(input, N)
+        mouth_loss = loss(mouth_input, mouth_target)
 
-        lms_loss = loss(deformed_vert,target_vert)
-        # deform_loss = torch.sqrt(deform_loss) # add sqrt v (RMSE)
+        return mouth_loss
 
-        return lms_loss
 
 # class ChamferLoss(nn.Module):
 #     def __init__(self):
