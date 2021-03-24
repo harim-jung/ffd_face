@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1 python train.py --network mobilenet0.25 --save_folder ./weights/mnet/
