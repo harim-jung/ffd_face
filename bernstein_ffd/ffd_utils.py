@@ -17,8 +17,9 @@ def _calculate_ffd(vertices, faces, n=3, n_samples=None):
         points = vertices
     else:
         points = sample_faces(vertices, faces, n_samples)
-    dims = (n,) * 3
-    # dims = (19, 100, 5)
+    dims = n
+    # dims = (n,) * 3
+    # dims = (6, 9, 6)
     return ffd.get_ffd(points, dims)
 
 
@@ -199,23 +200,6 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
     return dist
 
 
-# def get_rotation_matrix(rot_param):
-#     pitch, yaw, roll = rot_param[0], rot_param[1], rot_param[2]
-#     # from matlab code
-#     Rx = np.array([[1,0,0],[0,cos(pitch),sin(pitch)],[0,-1*sin(pitch),cos(pitch)]], dtype=np.float32)
-#     Ry = np.array([[cos(yaw),0,-1*sin(yaw)],[0,1,0],[sin(yaw),0,cos(yaw)]], dtype=np.float32)
-#     Rz = np.array([[cos(roll),sin(roll),0],[-1*sin(roll),cos(roll),0],[0,0,1]], dtype=np.float32)
-#     R = Rx @ Ry @ Rz
-
-#     return R
-
-# def get_pyr(R):
-#     yaw = atan2(R[1, 0], R[0, 0])
-#     pitch = atan2(-R[2, 0], sqrt(R[2, 1]**2 + R[2, 2]**2))
-#     roll = atan2(R[2, 1], R[2, 2])
-
-#     return pitch, yaw, roll
-
 
 R = np.array([[1,0,0],[0,1,0],[0,0,1]])
 # 0.001236969662055349 # mean of 300w-lp
@@ -232,19 +216,30 @@ vertices[1] -= vertices[1].min()
 vertices[1] += (std_size - vertices[1].max()) / 2
 # shift z to start from 0
 vertices[2] -= vertices[2].min()
-# vertices = u_.reshape(3, -1, order='F')
+
 faces = tri_ # (76073, 3)
 
-
-# plydata = PlyData.read('samples/outputs/source_mesh_open.ply')
-# v = plydata['vertex']
-
-# vertices = np.zeros((3, 35709))
-# for i, vert in enumerate(v):
-#     vertices[:, i] = np.array(list(vert))
+dic__ = test_face_ffd(vertices.T, faces, n=(6, 6, 6)) 
+deform_matrix__ = dic__["b"] #(38365, 216)
+control_points__ = dic__["p"] #(216, 3)
+cp_num__ = control_points__.reshape(-1).shape[0]
 
 
-dic = test_face_ffd(vertices.T, faces, n=6) 
+# new reference mesh (aflw/image00044.ply)
+plydata = PlyData.read('train.configs/new_reference_mesh.ply')
+v = plydata['vertex']
+
+vert = np.zeros((3, 35709))
+for i, vt in enumerate(v):
+    vert[:, i] = np.array(list(vt))
+
+vert_ = vert * 0.3
+vert_[1] -= vert_[1].min()
+vert_[1] += (std_size - vert_[1].max()) / 2
+vertices = vert_
+
+
+dic = test_face_ffd(vertices.T, faces, n=(6, 6, 6)) 
 # dic = test_face_ffd(vertices.T, faces, n=7) 
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
@@ -252,7 +247,7 @@ cp_num = control_points.reshape(-1).shape[0]
 
 
 # dic_ = test_face_ffd(vertices.T, faces, n=19) 
-dic_ = test_face_ffd(vertices.T, faces, n=6) 
+dic_ = test_face_ffd(vertices.T, faces, n=(6, 9, 6)) 
 deform_matrix_ = dic_["b"] #(38365, 216)
 control_points_ = dic_["p"] #(216, 3)
 cp_num_ = control_points_.reshape(-1).shape[0]

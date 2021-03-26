@@ -106,7 +106,7 @@ if __name__ == '__main__':
     # parser.add_argument('-f', '--files', nargs='+',
     #                     help='image files paths fed into network, single or multiple images')
     parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
-    parser.add_argument('--show_flag', default='true', type=str2bool, help='whether show the visualization result')
+    parser.add_argument('--show_flag', default='false', type=str2bool, help='whether show the visualization result')
     parser.add_argument('--bbox_init', default='one', type=str,
                         help='one|two: one-step bbox initialization or two-step')
 
@@ -117,14 +117,14 @@ if __name__ == '__main__':
     parser.add_argument('--keep_top_k', default=750, type=int, help='keep_top_k')
     parser.add_argument('--vis_thres', default=0.6, type=float, help='visualization_threshold')
 
-    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_mb_lm_19/ffd_mb_lm_19_checkpoint_epoch_15.pth.tar', type=str, metavar='PATH')
+    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_11.pth.tar', type=str, metavar='PATH')
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_checkpoint_epoch_31.pth.tar', type=str, metavar='PATH')
     # parser.add_argument('--recon-checkpoint', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar'', type=str, metavar='PATH')
-    parser.add_argument('--recon-model', default='mobilenet_1', type=str)
-    parser.add_argument('--param-classes', default=24000, type=int)
+    parser.add_argument('--recon-model', default='resnet', type=str)
+    parser.add_argument('--param-classes', default=1029, type=int)
     parser.add_argument('--dump_lm_img', default='false', type=str2bool, help='whether write out the visualization image')
-    parser.add_argument('--dump_ply', default='true', type=str2bool)
+    parser.add_argument('--dump_ply', default='false', type=str2bool)
     parser.add_argument('--dump_vert_img', default='true', type=str2bool)
 
 
@@ -162,11 +162,11 @@ if __name__ == '__main__':
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
     # for img_fp in args.files:
     d = '../Datasets/CelebA/Img/img_align_celeba_png.7z/img_align_celeba_png/'
-    save = '../Datasets/CelebA/results/ffd_1000/'
+    save = '../Datasets/CelebA/results/ffd_resnet_lm_adamw/'
     # d = '../Datasets/300W_LP/Data/'
     # save = '../Datasets/300W_LP/results_ffd/'
     for (dirpath, dirnames, filenames) in walk(d):
-        for img_fp in filenames[:100]:
+        for img_fp in filenames[:1000]:
             if img_fp.endswith(".jpg") or img_fp.endswith(".png"):
                 # for img_fp in args.files:
                 img_ori = cv2.imread(d + img_fp)
@@ -227,5 +227,5 @@ if __name__ == '__main__':
                     draw_landmarks(img_ori, pts_res, wfp=wfp, show_flag=args.show_flag, tranform=True)
                 if args.dump_vert_img:
                     wfp = None
-                    # wfp = save + img_fp
+                    wfp = save + img_fp
                     render(img_ori, vertices_lst, tri_, alpha=0.8, show_flag=args.show_flag, wfp=wfp, with_bg_flag=True, transform=True)

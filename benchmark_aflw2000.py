@@ -116,6 +116,7 @@ def calc_nme(pts, dense=False, all=True, dim=2):
 
 def calc_nme_lm(pts68_fit_all, all=True, dim=2):
     nme_list = []
+    l1_list = []
     for i in range(len(roi_boxs)):
         pts68_fit = pts68_fit_all[i]
         pts68_gt = pts68_all[i]
@@ -150,9 +151,8 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
 
 
         # mse loss
-        # print(dis.mean())
-        # nme = np.power(dis, 2).mean()
-        # nme = np.mean(dis)
+        l1_list.append(np.mean(np.abs(dis)))
+        # l1_list.append(np.mean(np.snp.sumum(np.abs(dis), 0)))
 
         dis = np.sqrt(np.sum(np.power(dis, 2), 0))
         dis = np.mean(dis)
@@ -161,6 +161,7 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
         nme_list.append(nme)
 
     nme_list = np.array(nme_list, dtype=np.float32)
+    print("L1 Loss ", np.array(l1_list, dtype=np.float32).mean())
     return nme_list
 
 
