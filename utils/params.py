@@ -163,13 +163,14 @@ param_std = params.get('param_std')
 cropped 120 augmented ver
 235 parameters (pitch, yaw, roll, scale, shape params, expression params)
 """
-img_dic = _load(osp.join(d, 'cropped_120/lp_cropped_img_mean_std_120.pkl'))
-lp_mean = img_dic["img_mean"] # BGR order (cv2)
-lp_std = img_dic["img_std"] # BGR order (cv2)
+# img_dic = _load(osp.join(d, 'cropped_120/lp_cropped_img_mean_std_120.pkl'))
+# lp_mean = img_dic["img_mean"] # BGR order (cv2)
+# lp_std = img_dic["img_std"] # BGR order (cv2)
 
-coarse_dic = _load(osp.join(d, 'coarse_data/coarse_data_img_mean_std.pkl'))
-coarse_mean = coarse_dic["img_mean"]
-coarse_std = coarse_dic["img_std"]
+# coarse_dic = _load(osp.join(d, 'coarse_data/coarse_data_img_mean_std.pkl'))
+# coarse_mean = coarse_dic["img_mean"]
+# coarse_std = coarse_dic["img_std"]
+
 
 """Mouth area index (manually selected in blender)"""
 # 382 indices
@@ -177,15 +178,36 @@ mouth_whole_index = _load(osp.join(d, '35709_mouth_index.pkl'))
 mouth_index = _load(osp.join(d, '35709_mouth_inner.pkl'))
 eye_index = _load(osp.join(d, '35709_eyes.pkl'))
 
+"""landmark indices by region"""
+upper_mouth = [5522, 5909, 10537, 10795, 8215, 8935, 10395, 6025, 7495, 9064, 8223, 7384]
+lower_mouth = [5522, 5909, 10537, 10795, 6915, 7629, 7636, 8229, 8236, 8829, 8836, 9555]
+upper_nose = [8161, 8177, 8187, 8192]
+lower_nose = [6515, 7243, 8204, 9163, 9883]
+left_brow = [28111, 28787, 29177, 29382, 29549]
+right_brow = [30288, 30454, 30662, 31056, 31716]
+left_eye = [2215, 3640, 3886, 4801, 4920, 5828]
+right_eye = [10455, 11353, 11492, 12383, 12653, 14066]
+contour_boundary = [16264, 16467, 16644, 16888, 27208, 27440, 27608, 27816, 32244, 32939, 33375, 33654, 33838, 34022, 34312, 34766, 35472]
 
-# with open("train.configs/35709_eyes.txt", "r") as f:
-#     indices = np.array(f.read().split(",")).astype(int)
-#     with open("train.configs/35709_eyes.pkl", "wb") as p:
-#         pickle.dump(indices, p)
+upper_index = _load(osp.join(d, '35709_upper_index.pkl'))
+lower_index = _load(osp.join(d, '35709_lower_index.pkl'))
 
 
 # image resize
 std_size = 120
+
+
+
+# with open("train.configs/35709_upper_index.txt", "r") as f:
+#     indices = np.array(f.read().split(",")).astype(int)
+#     with open("train.configs/35709_upper_index.pkl", "wb") as p:
+#         pickle.dump(indices, p)
+
+# with open("train.configs/35709_lower_index.txt", "r") as f:
+#     indices = np.array(f.read().split(",")).astype(int)
+#     with open("train.configs/35709_lower_index.pkl", "wb") as p:
+#         pickle.dump(indices, p)
+
 
 
 

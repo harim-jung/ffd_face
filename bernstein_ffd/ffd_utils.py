@@ -12,7 +12,7 @@ from plyfile import PlyData, PlyElement
 def _calculate_ffd(vertices, faces, n=3, n_samples=None):
     import bernstein_ffd.ffd.deform as ffd
     # import util3d.mesh.sample as sample
-    stu_origin, stu_axes = ffd.get_stu_params(vertices)
+    # stu_origin, stu_axes = ffd.get_stu_params(vertices)
     if n_samples is None:
         points = vertices
     else:
@@ -20,7 +20,7 @@ def _calculate_ffd(vertices, faces, n=3, n_samples=None):
     dims = n
     # dims = (n,) * 3
     # dims = (6, 9, 6)
-    return ffd.get_ffd(points, dims)
+    return ffd.get_reference_ffd_param(points, dims)
 
 
 def sample_triangle(v, n=None):
@@ -200,57 +200,102 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
     return dist
 
 
+"""reference meshes"""
 
-R = np.array([[1,0,0],[0,1,0],[0,0,1]])
-# 0.001236969662055349 # mean of 300w-lp
-s = 0.0004  # 35709
-# s = 0.0006 # 38365
-p = s * R
+# scaled mean shape
+# R = np.array([[1,0,0],[0,1,0],[0,0,1]])
+# # 0.001236969662055349 # mean of 300w-lp
+# s = 0.0004  # 35709
+# # s = 0.0006 # 38365
+# p = s * R
 
-vertices = p @ u_.reshape(3, -1, order='F') # (3, 37509)
+# # just u_
+# vertices = p @ u_.reshape(3, -1, order='F') # (3, 37509)
 
-# scale x, y within 120x120 and shift to middle
-vertices[0] -= vertices[0].min()
-vertices[0] += (std_size - vertices[0].max()) / 2
-vertices[1] -= vertices[1].min()
-vertices[1] += (std_size - vertices[1].max()) / 2
-# shift z to start from 0
-vertices[2] -= vertices[2].min()
+# # scale x, y within 120x120 and shift to middle
+# vertices[0] -= vertices[0].min()
+# vertices[0] += (std_size - vertices[0].max()) / 2
+# vertices[1] -= vertices[1].min()
+# vertices[1] += (std_size - vertices[1].max()) / 2
+# # shift z to start from 0
+# vertices[2] -= vertices[2].min()
 
-faces = tri_ # (76073, 3)
-
-dic__ = test_face_ffd(vertices.T, faces, n=(6, 6, 6)) 
-deform_matrix__ = dic__["b"] #(38365, 216)
-control_points__ = dic__["p"] #(216, 3)
-cp_num__ = control_points__.reshape(-1).shape[0]
-
+# original bfm mean shape
+# reference_mesh = u_.reshape(3, -1, order='F')
 
 # new reference mesh (aflw/image00044.ply)
-plydata = PlyData.read('train.configs/new_reference_mesh.ply')
+# plydata = PlyData.read('train.configs/new_reference_mesh.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# vert_ = vert * 0.3
+# vert_[1] -= vert_[1].min()
+# vert_[1] += (std_size - vert_[1].max()) / 2
+# vertices = vert_
+
+
+# LP reference mesh (HELEN_3036412907_2_0.jpg)
+plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
 v = plydata['vertex']
 
 vert = np.zeros((3, 35709))
 for i, vt in enumerate(v):
     vert[:, i] = np.array(list(vt))
 
-vert_ = vert * 0.3
-vert_[1] -= vert_[1].min()
-vert_[1] += (std_size - vert_[1].max()) / 2
-vertices = vert_
+# vert[0] -= vert[0].min()
+# vert[1] -= vert[1].min()
+# vert[2] -= vert[2].min()
+reference_mesh = vert
 
 
-dic = test_face_ffd(vertices.T, faces, n=(6, 6, 6)) 
-# dic = test_face_ffd(vertices.T, faces, n=7) 
+# LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)
+# plydata = PlyData.read('train.configs/reference_mesh_lp_120.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# # vert[0] -= vert[0].min()
+# # vert[1] -= vert[1].min()
+# # vert[2] -= vert[2].min()
+# reference_mesh = vert
+
+
+# HELEN_3083968872_1_0.jpg
+# plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# reference_mesh = vert
+
+
+faces = tri_ # (76073, 3)
+
+"""find B and P"""
+dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(12, 12, 12)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=7) 
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]
 
 
-# dic_ = test_face_ffd(vertices.T, faces, n=19) 
-dic_ = test_face_ffd(vertices.T, faces, n=(6, 9, 6)) 
+# dic_ = test_face_ffd(reference_mesh.T, faces, n=19) 
+# dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
+dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
 deform_matrix_ = dic_["b"] #(38365, 216)
 control_points_ = dic_["p"] #(216, 3)
 cp_num_ = control_points_.reshape(-1).shape[0]
+
+# cp_num_[:, :6, :]
+# cp_num_[:, 6:, :]
 
 
 # coord_range = vertices[:, mouth_index]

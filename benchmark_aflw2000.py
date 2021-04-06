@@ -17,8 +17,9 @@ from utils.io import _load
 from utils.params import std_size
 from utils.ddfa import LpDataset, reconstruct_vertex
 from utils.inference import dump_to_ply
-from utils.params import keypoints_, keypoints, std_size, tri_, mouth_index, eye_index
+from utils.params import *
 from utils.render_simdr import render
+import matplotlib.pyplot as plt
 
 d = 'test_configs'
 
@@ -34,6 +35,9 @@ pts68_all = _load(osp.join(d, 'AFLW2000-3D.pts68.npy'))
 roi_boxs = _load(osp.join(d, 'AFLW2000-3D_crop.roi_box.npy'))
 
 aflw_meshes = _load(osp.join(d, 'aflw_gt_mesh_35709_z.pkl'))
+
+root = '../Datasets/AFLW2000/Data/'
+filelist = open('../Datasets/AFLW2000/test.data/AFLW2000-3D_crop.list', "r").read().split("\n")
 
 
 def aflw_mesh():
@@ -131,6 +135,11 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
         # z_diff = pts68_fit[2, 0] - pts68_gt[2, 0]
         # pts68_fit[2, :] -= z_diff
 
+
+        # wfp = f'samples/outputs/aflw_lms_region_lm_0.46/{filelist[i]}'
+        # draw_landmarks(root + filelist[i], pts68_fit[:2, :],  pts68_gt[:2, :], style='simple', wfp=wfp, show_flag=False)
+
+
         # build bbox
         minx, maxx = np.min(pts68_gt[0, :]), np.max(pts68_gt[0, :])
         miny, maxy = np.min(pts68_gt[1, :]), np.max(pts68_gt[1, :])
@@ -149,10 +158,9 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
             else:
                 dis = pts68_fit[:, 17:] - pts68_gt[:, 17:]
 
-
-        # mse loss
+        # l1 loss
         l1_list.append(np.mean(np.abs(dis)))
-        # l1_list.append(np.mean(np.snp.sumum(np.abs(dis), 0)))
+        # l1_list.append(np.mean(np.sum(np.abs(dis), 0)))
 
         dis = np.sqrt(np.sum(np.power(dis, 2), 0))
         dis = np.mean(dis)
@@ -185,12 +193,18 @@ def calc_nme_mesh(vert, dim=3):
         dis = vert_fit - vert_gt
 
         # temp
-        mouth = dis[:, mouth_index]
-        eye = dis[:, eye_index]
+        print(i, filelist[i])
+        # mouth loss
+        print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
+        # eye loss
+        print("eyes: ", np.mean(np.abs(dis[:, [*left_eye, *right_eye]])))
+        # nose loss
+        print("nose: ", np.mean(np.abs(dis[:, [*lower_nose, *upper_nose]])))
+        # brow loss
+        print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
+        # contour loss
+        print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
 
-        print("mouth:", np.abs(mouth).mean())
-        print("eye:", np.abs(eye).mean())
-        print("all:", np.abs(dis).mean())
 
         dis = np.sqrt(np.sum(np.power(dis, 2), 0))
         dis = np.mean(dis)
@@ -248,6 +262,56 @@ def calc_nme_rescaled(pts68_fit_all, option='ori'):
 
     nme_list = np.array(nme_list, dtype=np.float32)
     return nme_list
+
+
+def draw_landmarks(img_fp, pts, gt_pts, style='simple', wfp=None, show_flag=False, transform=False, **kwargs):
+    """Draw landmarks using matplotlib"""
+    img = cv2.imread(img_fp)
+    height, width = img.shape[:2]
+    plt.figure(figsize=(4, height / width * 4))
+    plt.imshow(img[:, :, ::-1])
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.axis('off')
+
+    if not type(pts) in [tuple, list]:
+        pts = [pts]
+        gt_pts = [gt_pts]
+    for i in range(len(pts)):
+        if style == 'simple':
+            plt.plot(pts[i][0, :], pts[i][1, :], 'o', markersize=1, color='g')
+            plt.plot(gt_pts[i][0, :], gt_pts[i][1, :], 'o', markersize=1, color='r')
+
+        elif style == 'fancy':
+            alpha = 0.8
+            markersize = 4
+            lw = 1.5
+            color = kwargs.get('color', 'w')
+            markeredgecolor = kwargs.get('markeredgecolor', 'black')
+
+            nums = [0, 17, 22, 27, 31, 36, 42, 48, 60, 68]
+
+            # close eyes and mouths
+            plot_close = lambda i1, i2: plt.plot([pts[i][0, i1], pts[i][0, i2]], [pts[i][1, i1], pts[i][1, i2]],
+                                                 color=color, lw=lw, alpha=alpha - 0.1)
+            plot_close(41, 36)
+            plot_close(47, 42)
+            plot_close(59, 48)
+            plot_close(67, 60)
+
+            for ind in range(len(nums) - 1):
+                l, r = nums[ind], nums[ind + 1]
+                plt.plot(pts[i][0, l:r], pts[i][1, l:r], color=color, lw=lw, alpha=alpha - 0.1)
+
+                plt.plot(pts[i][0, l:r], pts[i][1, l:r], marker='o', linestyle='None', markersize=markersize,
+                         color=color,
+                         markeredgecolor=markeredgecolor, alpha=alpha)
+
+    if wfp is not None:
+        plt.savefig(wfp, dpi=200)
+        print('Save visualization result to {}'.format(wfp))
+        plt.close()
+    if show_flag:
+        plt.show()
 
 
 def main():

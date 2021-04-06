@@ -32,6 +32,12 @@ def _parse_param(params):
         alpha_shp = params[7:206].reshape((-1, 1))
         alpha_exp = params[206:].reshape((-1, 1))
         p = R * scale
+    elif params.shape[0] == 240:
+        p_ = params[:12].reshape(3, -1)
+        p = p_[:, :3]
+        offset = p_[:, -1].reshape(3, 1)
+        alpha_shp = params[12:211].reshape(-1, 1)
+        alpha_exp = params[211:].reshape(-1, 1)
     else:
         # coarse data
         alpha_shp = params[:100].reshape((-1, 1))

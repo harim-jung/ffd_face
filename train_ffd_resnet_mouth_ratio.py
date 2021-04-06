@@ -47,8 +47,8 @@ def parse_args():
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_mouth_test', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_mouth_test_210325.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_mouth_20', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_mouth_20_210326.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--param-classes', default=1470, type=int)
     parser.add_argument('--arch', default='resnet', type=str)
@@ -138,7 +138,7 @@ def train(train_loader, model, criterion, vertex_criterion, mouth_criterion, opt
         # lm_loss = lm_criterion(deformed_vert, target_vert)
         # vertex_loss = 0.4 * rest_loss + 0.3 * mouth_loss + 0.3 * eye_loss
 
-        loss = vertex_loss + 100 * mouth_loss
+        loss = vertex_loss + 20 * mouth_loss
 
         losses.update(loss.item(), input.size(0))
         rest_losses.update(vertex_loss.item(), input.size(0))
@@ -203,7 +203,7 @@ def validate(val_loader, model, criterion, vertex_criterion, mouth_criterion, ep
             # lm_loss = lm_criterion(deformed_vert, target_vert)
             # vertex_loss = 0.4 * rest_loss + 0.3 * mouth_loss + 0.3 * eye_loss
 
-            loss = vertex_loss + 100 * mouth_loss
+            loss = vertex_loss + 20 * mouth_loss
 
             losses.append(loss.item())
             rest_losses.append(vertex_loss.item())
@@ -253,7 +253,7 @@ def main():
     
     # step1: define the model structure
     # model = getattr(mobilenet_v1_ffd, args.arch)(param_classes=args.param_classes)
-    model = torchvision.models.resnet50(pretrained=True, num_classes=args.param_classes)
+    model = torchvision.models.resnet50(pretrained=False, num_classes=args.param_classes)
 
     torch.cuda.set_device(args.devices_id[0])  # fix bug for `ERROR: all tensors must be on devices[0]`
 
@@ -328,6 +328,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_mouth_test')
+    writer = SummaryWriter('training/runs/ffd_resnet_mouth_20')
     main()
     writer.close()

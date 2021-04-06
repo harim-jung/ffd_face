@@ -78,9 +78,11 @@ class DeformVDCLoss(nn.Module):
     def __init__(self):
         super(DeformVDCLoss, self).__init__()
 
-    def forward(self, input, target, z_shift=True):
-        # loss = nn.MSELoss()
-        loss = nn.L1Loss()
+    def forward(self, input, target, loss_type="l1"):
+        if loss_type == "l1":
+            loss = nn.L1Loss()
+        elif loss_type == "mse":
+            loss = nn.MSELoss()
 
         deform_loss = loss(input, target)
 
@@ -126,70 +128,66 @@ class RegionVDCLoss(nn.Module):
         return mouth_loss, eye_loss, rest_loss
 
 
+class RegionLMLoss(nn.Module):
+    def __init__(self):
+        super(RegionLMLoss, self).__init__()
+
+    def forward(self, input, target, loss_type="l1"):
+        if loss_type == "l1":
+            loss = nn.L1Loss()
+        elif loss_type == "mse":
+            loss = nn.MSELoss()
+        
+        up_mouth = loss(input[:, upper_mouth, :], target[:, upper_mouth, :]) 
+        low_mouth = loss(input[:, lower_mouth, :], target[:, lower_mouth, :]) 
+        up_nose = loss(input[:, upper_nose, :], target[:, upper_nose, :]) 
+        low_nose = loss(input[:, lower_nose, :], target[:, lower_nose, :]) 
+        l_brow = loss(input[:, left_brow, :], target[:, left_brow, :]) 
+        r_brow = loss(input[:, right_brow, :], target[:, right_brow, :]) 
+        l_eye = loss(input[:, left_eye, :], target[:, left_eye, :]) 
+        r_eye = loss(input[:, right_eye, :], target[:, right_eye, :]) 
+        contour = loss(input[:, contour_boundary, :], target[:, contour_boundary, :]) 
+
+        return up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour
+
 
 class MouthLoss(nn.Module):
     def __init__(self):
         super(MouthLoss, self).__init__()
 
-        # self.param_mean = _to_tensor(param_mean)
-        # self.param_std = _to_tensor(param_std)
-        # self.u_c = _to_tensor(u_c)# .double()
-        # self.u_lp = _to_tensor(u_)
-
-        # self.w_shp_c = _to_tensor(w_shp_c)# .double()
-        # self.w_exp_c = _to_tensor(w_exp_c)# .double()
-        # self.w_shp_lp = _to_tensor(w_shp_lp)
-        # self.w_exp_lp = _to_tensor(w_exp_lp)
-
-        # self.deform_matrix = _to_tensor(deform_matrix_)
-        # self.control_points = _to_tensor(control_points_)
-    
-    # def reconstruct_mesh(self, param, batch, z_shift=True):
-    #     # param = param * self.param_std + self.param_mean
-    #     # parse param
-    #     p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
-
-    #     # parse param
-    #     # p, offset, alpha_shp, alpha_exp = _parse_full_param_batch(param)
-    #     if param.shape[1] == 62:
-    #         target_vert = p @ (self.u_lp + self.w_shp_lp @ alpha_shp + self.w_exp_lp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
-    #     else:
-    #         target_vert = p @ (self.u_c + self.w_shp_c @ alpha_shp + self.w_exp_c @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
-        
-    #     target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
-
-    #     if z_shift:
-    #         for i in range(target_vert.shape[0]):
-    #             target_vert[i,:,2] -= target_vert[i,:,2].min()
-
-    #     # mouth index
-    #     lms = target_vert[:, mouth_index, :]
-
-    #     return lms
-
-
-    # def deform_mesh(self, param, batch):
-    #     deform = param.view(batch, cp_num_//3, -1) # reshape to 3d
-    #     deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
-
-    #     lms = deformed_vert[:, mouth_index, :]
-
-    #     return lms
-
     def mouth_region(self, vert):
         lms = vert[:, mouth_whole_index, :]
         return lms
+
+    def mouth_inner(self, vert):
+        lms = vert[:, mouth_index, :]
+        return lms
     
-    def forward(self, input, target, z_shift=True):
+    def forward(self, input, target, whole=True):
         loss = nn.L1Loss()
 
-        mouth_input = self.mouth_region(input)
-        mouth_target = self.mouth_region(target)
+        if whole:
+            mouth_input = self.mouth_region(input)
+            mouth_target = self.mouth_region(target)
+        else:
+            mouth_input = self.mouth_inner(input)
+            mouth_target = self.mouth_inner(target)
 
         mouth_loss = loss(mouth_input, mouth_target)
 
         return mouth_loss
 
+
+class PDCLoss(nn.Module):
+    def __init__(self):
+        super(PDCLoss, self).__init__()
+
+    def forward(self, input, target):
+        loss = nn.L1Loss()
+
+        pdc_loss = loss(input, target)
+
+        return pdc_loss 
 
 # class ChamferLoss(nn.Module):
 #     def __init__(self):

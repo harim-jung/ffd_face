@@ -3,25 +3,25 @@ import bernstein_ffd.ffd.util as util
 from bernstein_ffd.ffd.bernstein import bernstein_poly, trivariate_bernstein
 
 
-def xyz_to_stu(xyz, origin, stu_axes):
-    if stu_axes.shape == (3,):
-        stu_axes = np.diag(stu_axes)
+def xyz_to_stu(xyz, origin, STU_axes):
+    if STU_axes.shape == (3,):
+        STU_axes = np.diag(STU_axes)
         # raise ValueError(
         #     'stu_axes should have shape (3,), got %s' % str(stu_axes.shape))
     # s, t, u = np.diag(stu_axes)
-    assert(stu_axes.shape == (3, 3))
-    s, t, u = stu_axes
-    tu = np.cross(t, u)
-    su = np.cross(s, u)
-    st = np.cross(s, t)
+    assert(STU_axes.shape == (3, 3))
+    S, T, U = STU_axes
+    TU = np.cross(T, U)
+    SU = np.cross(S, U)
+    ST = np.cross(S, T)
 
     diff = xyz - origin
 
     # TODO: vectorize? np.dot(diff, [tu, su, st]) / ...
     stu = np.stack([
-        np.dot(diff, tu) / np.dot(s, tu),
-        np.dot(diff, su) / np.dot(t, su),
-        np.dot(diff, st) / np.dot(u, st)
+        np.dot(diff, TU) / np.dot(S, TU),
+        np.dot(diff, SU) / np.dot(T, SU),
+        np.dot(diff, ST) / np.dot(U, ST)
     ], axis=-1)
     return stu
 
@@ -39,9 +39,9 @@ def get_stu_control_points(dims):
     return stu_points
 
 
-def get_control_points(dims, stu_origin, stu_axes):
+def get_control_points(dims, STU_origin, STU_axes):
     stu_points = get_stu_control_points(dims)
-    xyz_points = stu_to_xyz(stu_points, stu_origin, stu_axes)
+    xyz_points = stu_to_xyz(stu_points, STU_origin, STU_axes)
     return xyz_points
 
 
@@ -65,13 +65,13 @@ def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):
     return get_stu_deformation_matrix(stu, dims)
 
 
-def get_ffd(xyz, dims, stu_origin=None, stu_axes=None):
+def get_reference_ffd_param(vertices, dims, stu_origin=None, stu_axes=None):
     if stu_origin is None or stu_axes is None:
         if not (stu_origin is None and stu_axes is None):
             raise ValueError(
                 'Either both or neither of stu_origin/stu_axes must be None')
-        stu_origin, stu_axes = get_stu_params(xyz)
-    b = get_deformation_matrix(xyz, dims, stu_origin, stu_axes)
+        stu_origin, stu_axes = get_stu_params(vertices)
+    b = get_deformation_matrix(vertices, dims, stu_origin, stu_axes)
     p = get_control_points(dims, stu_origin, stu_axes)
     return b, p
 
@@ -80,8 +80,8 @@ def deform_mesh(xyz, lattice):
     return trivariate_bernstein(lattice, xyz)
 
 
-def get_stu_params(xyz):
-    minimum, maximum = util.extent(xyz, axis=0)
+def get_stu_params(vertices):
+    minimum, maximum = util.extent(vertices, axis=0)
     stu_origin = minimum
     # stu_axes = np.diag(maximum - minimum)
     stu_axes = maximum - minimum

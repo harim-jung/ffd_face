@@ -19,11 +19,11 @@ import cv2
 
 from benchmark_aflw2000 import calc_nme
 from benchmark_aflw2000 import ana as ana_alfw2000
-from benchmark_aflw2000 import calc_nme_rescaled, calc_nmse
+from benchmark_aflw2000 import calc_nme_rescaled, calc_nmse, aflw_meshes, draw_landmarks
 from utils.inference import _predict_vertices, dump_rendered_img, dump_to_ply, rescale_w_roi, get_landmarks
 from utils.io import _load
 from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, reconstruct_vertex
-from utils.params import keypoints_, keypoints, std_size, tri_
+from utils.params import *
 from utils.render_simdr import render
 from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_
 import mobilenet_v1_ffd
@@ -191,6 +191,7 @@ def benchmark_aflw2000_params(params):
 def benchmark_aflw2000_ffd(deforms, dense=False, dim=2):
     outputs = []
     for i in range(deforms.shape[0]):
+        img_fp = filelist[i]
         deform = deforms[i]
         vert = deformed_vert(deform, transform=True) # 3 x N
         if dense:
@@ -221,18 +222,30 @@ def benchmark_aflw2000_ffd_full(deforms):
 def reconstruct_face_mesh(params):
     outputs = []
     for i in range(params.shape[0]):
+        gt_vert = aflw_meshes[i]
         deform = params[i]
         vert = deformed_vert(deform, transform=True, face=True) # 3 x 38365
         vertex = rescale_w_roi(vert, roi_boxs[i])
         # vertex = _predict_vertices(params[i], roi_boxs[i], dense=True, transform=True) # image coordinate space
-        # wfp = f"samples/outputs/aflw/{filelist[i]}"
-        wfp = None  
-        # dump_rendered_img(vertex, root + filelist[i], wfp=wfp, show_flag=True, face=True)
+        wfp = None
+        # wfp = f"samples/outputs/aflw_region_lm_0.46/{filelist[i]}"
         img_ori = cv2.imread(root + filelist[i])
-        # render(img_ori, [vertex], tri_, alpha=0.8, show_flag=True, wfp=wfp, with_bg_flag=True, transform=False)
+
+        dis = vertex[:2,:] - gt_vert[:2,:]
+        print(i, filelist[i])
+        # mouth loss
+        print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
+        # eye loss
+        print("eyes: ", np.mean(np.abs(dis[:, [*left_eye, *right_eye]])))
+        # nose loss
+        print("nose: ", np.mean(np.abs(dis[:, [*lower_nose, *upper_nose]])))
+        # brow loss
+        print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
+        # contour loss
+        print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
 
         vertex[1, :] = img_ori.shape[0] + 1 - vertex[1, :]
-        render(img_ori, [vertex], tri_, alpha=0.8, show_flag=True, wfp=wfp, with_bg_flag=True, transform=True)
+        render(img_ori, [vertex], tri_.astype(np.int32), alpha=0.8, show_flag=True, wfp=wfp, with_bg_flag=True, transform=True)
         # wfp = f"samples/outputs/aflw/{filelist[i].replace('.jpg', '.ply')}"
         # dump_to_ply(vertex, tri_.T, wfp, transform=False)
         outputs.append(vertex)
@@ -279,6 +292,7 @@ def reconstruct_full_mesh(params):
         outputs.append(vertex)
 
     return outputs
+
 
 
 def benchmark_pipeline(arch, checkpoint_fp):
@@ -357,9 +371,10 @@ def render_face_mesh(verts):
 
 def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
-    parser.add_argument('--arch', default='resnet', type=str)
+    parser.add_argument('--arch', default='mobilenet_1', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_lm_open_checkpoint_epoch_13.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_learn/ffd_resnet_region_lm_learn_checkpoint_epoch_30.pth.tar', type=str)
+    # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.37_mse/ffd_resnet_region_lm_0.37_mse_checkpoint_epoch_23.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
 
@@ -399,7 +414,7 @@ def main():
     min_3_index = 0
     for i in range(1, 51):
         # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-        checkpoint = f"snapshot/ffd_resnet_lm_open/ffd_resnet_lm_open_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_mb_delta_p/ffd_mb_delta_p_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_ratio/ffd_resnet_region_ratio_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_lm/ffd_resnet_lm_checkpoint_epoch_{i}.pth.tar"
         print(i, checkpoint)

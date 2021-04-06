@@ -10,6 +10,7 @@ from os import walk
 import cv2
 import random
 import pickle, torch
+from plyfile import PlyData, PlyElement
 
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
@@ -323,26 +324,73 @@ def rewhiten_lp_data():
 
 
 if __name__== "__main__":
+    # filelists_train ='train.configs/train_aug_120x120.list.train'
+    # filelists_val = 'train.configs/train_aug_120x120.list.val'
+    # root ='../Datasets/train_aug_120x120'
+    # param_fp_train = 'train.configs/param_all_norm.pkl'
+    # param_fp_val ='train.configs/param_all_norm_val.pkl'
+
+    # normalize = NormalizeGjz(mean=127.5, std=128)  # may need optimization
+
+    # train_dataset = DDFADataset(
+    #     root=root,
+    #     filelists=filelists_train,
+    #     param_fp=param_fp_train,
+    #     transform=transforms.Compose([ToTensorGjz(), normalize])
+    # )
+    # val_dataset = DDFADataset(
+    #     root=root,
+    #     filelists=filelists_val,
+    #     param_fp=param_fp_val,
+    #     transform=transforms.Compose([ToTensorGjz(), normalize])
+    # )
+
+    # z_coord = []
+    # for i in range(100):
+    #     gt_param = train_dataset[i][1].numpy()
+    #     gt_vert = reconstruct_vertex(gt_param, dense=True, transform=False)
+    #     z_coord.append(gt_vert[2].min())
+    #     print(gt_vert[2].min(), gt_vert[2].max())
+
+    plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
+    v = plydata['vertex']
+
+    vert = np.zeros((3, 53215))
+    for i, vt in enumerate(v):
+        vert[:, i] = np.array(list(vt))
+
+    vert = vert[:, sampling_indices]
+
+    vert_ = vert * 0.4 #0.27
+    vert_[0] -= vert_[0].min()
+    vert_[0] += (std_size - vert_[0].max()) / 2
+    vert_[1] -= vert_[1].min()
+    vert_[1] += (std_size - vert_[1].max()) / 2
+    vert_[2] -= vert_[2].min()
+    
+    dump_to_ply(vert_, tri_.T, f"train.configs/reference_mesh_lp_new_.ply", transform=False)
+
+
     # rewhiten_lp_data()
 
     # create_train_val()
 
     # save_params()
 
-    train_files = "train.configs/train_aug_120x120.list.train"
-    train_param = "train.configs/param_all.pkl"
-    root = '../Datasets/train_aug_120x120/'
+    # train_files = "train.configs/train_aug_120x120.list.train"
+    # train_param = "train.configs/param_all.pkl"
+    # root = '../Datasets/train_aug_120x120/'
 
-    train_dataset = DDFADataset(
-        root=root,
-        filelists=train_files,
-        param_fp=train_param,
-        transform=transforms.Compose([ToTensorGjz()])#, normalize])
-    )
+    # train_dataset = DDFADataset(
+    #     root=root,
+    #     filelists=train_files,
+    #     param_fp=train_param,
+    #     transform=transforms.Compose([ToTensorGjz()])#, normalize])
+    # )
 
-    loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
+    # loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
 
-    calc_img_mean_std(loader)
+    # calc_img_mean_std(loader)
     # # calc_param_mean_std(loader)
 
 

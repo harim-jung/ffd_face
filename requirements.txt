@@ -1,9 +1,9 @@
-python==3.8.5
-pytorch==1.7.0
-torchvision==0.8.1
-imageio==2.9.0
-opencv==4.0.1
-opencv-python==4.4.0.44
-cython==0.29.21
-matplotlib==3.3.1
-numpy==1.19.1
+# python==3.8.5
+conda install pytorch==1.7.0
+conda install torchvision==0.8.1
+pip install imageio==2.9.0
+conda install opencv==4.0.1
+conda install opencv-python==4.4.0.44
+conda install cython==0.29.21
+conda install matplotlib==3.3.1
+# numpy==1.19.1
