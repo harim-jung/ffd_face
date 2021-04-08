@@ -1,0 +1,27 @@
+[2021-04-06 14:07:21,646] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] workers: 8
+[2021-04-06 14:07:21,646] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] epochs: 50
+[2021-04-06 14:07:21,647] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] start_epoch: 1
+[2021-04-06 14:07:21,647] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] batch_size: 64
+[2021-04-06 14:07:21,647] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] val_batch_size: 64
+[2021-04-06 14:07:21,648] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] base_lr: 0.001
+[2021-04-06 14:07:21,648] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] print_freq: 1000
+[2021-04-06 14:07:21,649] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] resume: snapshot/ffd_mb_delta_p_norm/ffd_mb_delta_p_norm_checkpoint_epoch_50.pth.tar
+[2021-04-06 14:07:21,649] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] devices_id: [0]
+[2021-04-06 14:07:21,649] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] filelists_train: train.configs/train_aug_120x120.list.train
+[2021-04-06 14:07:21,649] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] filelists_val: train.configs/train_aug_120x120.list.val
+[2021-04-06 14:07:21,650] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] root: ../Datasets/train_aug_120x120
+[2021-04-06 14:07:21,650] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] snapshot: snapshot/ffd_mb_delta_p_norm_2
+[2021-04-06 14:07:21,651] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] log_file: training/logs/ffd_mb_delta_p_norm_2_210406.log
+[2021-04-06 14:07:21,651] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] log_mode: w
+[2021-04-06 14:07:21,651] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] dimensions: 6, 6, 6
+[2021-04-06 14:07:21,651] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] param_classes: 1029
+[2021-04-06 14:07:21,652] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] arch: mobilenet_1
+[2021-04-06 14:07:21,652] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] optimizer: adam
+[2021-04-06 14:07:21,652] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] milestones: [30, 40]
+[2021-04-06 14:07:21,653] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] test_initial: False
+[2021-04-06 14:07:21,653] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] warmup: 5
+[2021-04-06 14:07:21,653] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] param_fp_train: train.configs/delta_p_full_train_norm.pkl
+[2021-04-06 14:07:21,653] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] param_fp_val: train.configs/delta_p_full_val_norm.pkl
+[2021-04-06 14:07:21,654] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] source_mesh: train.configs/reference_mesh_lp.ply
+[2021-04-06 14:07:21,654] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:88] [INFO] loss: delta_p_l1
+[2021-04-06 14:07:22,734] [p9080] [d:\ai\3d face reconstruction\ffd_face\train_ffd_delta_p_norm_phase2.py:231] [INFO] => loading checkpoint snapshot/ffd_mb_delta_p_norm/ffd_mb_delta_p_norm_checkpoint_epoch_50.pth.tar

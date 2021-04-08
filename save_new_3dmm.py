@@ -67,6 +67,7 @@ new_gts = np.zeros((636252, 240))
 # for i in range(100):
 for i in range(len(train_dataset)):
     start = time.time()
+    i=57000
     clipped_param = train_dataset[i][1].numpy()
     img_fp = train_dataset.lines[i]
     img_full = dic[img_fp.split("_")[0]] + "/" + "_".join(img_fp.split("_")[1:-1]) + ".jpg"
@@ -81,6 +82,12 @@ for i in range(len(train_dataset)):
 
     p, offset, alpha_shp, alpha_exp = _parse_param(clipped_param)
     p_f, offset_f, alpha_shp_f, alpha_exp_f = _parse_param(full_param.numpy())
+
+    gt_vert = p @ (u_ + w_shp_lp @ alpha_shp + w_exp_lp @ alpha_exp).reshape(3, -1, order='F') + offset
+    
+    gt_vert_ = p @ (u_ + w_shp_ @ alpha_shp_f + w_exp_ @ alpha_exp_f).reshape(3, -1, order='F') + offset
+    img = cv2.imread(root + train_dataset.lines[i])
+    render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.1, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
     new_gt = np.concatenate((clipped_param[:12].reshape(-1,1), alpha_shp_f, alpha_exp_f)).reshape(1, -1)
     new_gts[i] = new_gt

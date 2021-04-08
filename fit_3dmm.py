@@ -264,7 +264,7 @@ def calc_param_mean_std(loader):
     dic = {}
     dic["param_mean"] = np.array(mean).reshape(-1)
     dic["param_std"] = np.array(std).reshape(-1)
-    f = open("train.configs/coarse_data/coarse_data_param_mean_std.pkl", "wb")
+    f = open("train.configs/param_all_full_mean_std.pkl", "wb")
     pickle.dump(dic, f)
     print("saved coarse_data_img_mean_std")
 
@@ -322,6 +322,18 @@ def rewhiten_lp_data():
     f.close()
 
 
+def save_normalized_params():
+    f = _load('train.configs/param_all_full.pkl')
+    mean_std = _load('train.configs/param_all_full_mean_std.pkl')
+    normalized = (f - mean_std['param_mean']) / mean_std['param_std']
+    with open("train.configs/param_all_full_norm.pkl", "wb") as new:
+        pickle.dump(normalized, new)
+    
+    f = _load('train.configs/param_all_val_full.pkl')
+    normalized = (f - mean_std['param_mean']) / mean_std['param_std']
+    with open("train.configs/param_all_val_full_norm.pkl", "wb") as new:
+        pickle.dump(normalized, new)
+
 
 if __name__== "__main__":
     # filelists_train ='train.configs/train_aug_120x120.list.train'
@@ -352,23 +364,24 @@ if __name__== "__main__":
     #     z_coord.append(gt_vert[2].min())
     #     print(gt_vert[2].min(), gt_vert[2].max())
 
-    plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
-    v = plydata['vertex']
 
-    vert = np.zeros((3, 53215))
-    for i, vt in enumerate(v):
-        vert[:, i] = np.array(list(vt))
+    # plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
+    # v = plydata['vertex']
 
-    vert = vert[:, sampling_indices]
+    # vert = np.zeros((3, 53215))
+    # for i, vt in enumerate(v):
+    #     vert[:, i] = np.array(list(vt))
 
-    vert_ = vert * 0.4 #0.27
-    vert_[0] -= vert_[0].min()
-    vert_[0] += (std_size - vert_[0].max()) / 2
-    vert_[1] -= vert_[1].min()
-    vert_[1] += (std_size - vert_[1].max()) / 2
-    vert_[2] -= vert_[2].min()
+    # vert = vert[:, sampling_indices]
+
+    # vert_ = vert * 0.4 #0.27
+    # vert_[0] -= vert_[0].min()
+    # vert_[0] += (std_size - vert_[0].max()) / 2
+    # vert_[1] -= vert_[1].min()
+    # vert_[1] += (std_size - vert_[1].max()) / 2
+    # vert_[2] -= vert_[2].min()
     
-    dump_to_ply(vert_, tri_.T, f"train.configs/reference_mesh_lp_new_.ply", transform=False)
+    # dump_to_ply(vert_, tri_.T, f"train.configs/reference_mesh_lp_new_.ply", transform=False)
 
 
     # rewhiten_lp_data()
@@ -378,7 +391,7 @@ if __name__== "__main__":
     # save_params()
 
     # train_files = "train.configs/train_aug_120x120.list.train"
-    # train_param = "train.configs/param_all.pkl"
+    # train_param = "train.configs/param_all_full.pkl"
     # root = '../Datasets/train_aug_120x120/'
 
     # train_dataset = DDFADataset(
@@ -390,9 +403,11 @@ if __name__== "__main__":
 
     # loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
 
-    # calc_img_mean_std(loader)
-    # # calc_param_mean_std(loader)
+    # # calc_img_mean_std(loader)
+    # calc_param_mean_std(loader)
 
+
+    save_normalized_params()
 
 
     # jpg = 'afw_1295311477_1/afw_1295311477_1_aug_25.jpg'

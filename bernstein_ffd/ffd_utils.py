@@ -75,13 +75,13 @@ def test_face_ffd(vertices, faces, n=3):
 
 def deformed_vert(deform, transform=False, face=True):
     if face:
-        dm = deform_matrix_
-        cp = control_points_
+        dm = deform_matrix
+        cp = control_points
     else:
         dm = deform_matrix_f
         cp = control_points_f
     
-    deform = deform.reshape(cp_num_//3, -1)
+    deform = deform.reshape(cp_num//3, -1)
     deformed_vert = (dm @ (cp + deform)).T.astype(np.float32)
     if transform:
         deformed_vert[1, :] = std_size + 1 - deformed_vert[1, :]
@@ -202,6 +202,7 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 
 """reference meshes"""
 
+"""scaled bfm mean shape"""
 # scaled mean shape
 # R = np.array([[1,0,0],[0,1,0],[0,0,1]])
 # # 0.001236969662055349 # mean of 300w-lp
@@ -220,10 +221,11 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 # # shift z to start from 0
 # vertices[2] -= vertices[2].min()
 
-# original bfm mean shape
-# reference_mesh = u_.reshape(3, -1, order='F')
 
-# new reference mesh (aflw/image00044.ply)
+"""original bfm mean shape"""
+reference_mesh = u_.reshape(3, -1, order='F')
+
+"""new reference mesh (aflw/image00044.ply)"""
 # plydata = PlyData.read('train.configs/new_reference_mesh.ply')
 # v = plydata['vertex']
 
@@ -236,22 +238,20 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 # vert_[1] += (std_size - vert_[1].max()) / 2
 # vertices = vert_
 
+"""LP reference mesh (HELEN_3036412907_2_0.jpg)"""
+# plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
+# v = plydata['vertex']
 
-# LP reference mesh (HELEN_3036412907_2_0.jpg)
-plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
-v = plydata['vertex']
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
 
-vert = np.zeros((3, 35709))
-for i, vt in enumerate(v):
-    vert[:, i] = np.array(list(vt))
+# # vert[0] -= vert[0].min()
+# # vert[1] -= vert[1].min()
+# # vert[2] -= vert[2].min()
+# reference_mesh = vert
 
-# vert[0] -= vert[0].min()
-# vert[1] -= vert[1].min()
-# vert[2] -= vert[2].min()
-reference_mesh = vert
-
-
-# LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)
+"""LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)"""
 # plydata = PlyData.read('train.configs/reference_mesh_lp_120.ply')
 # v = plydata['vertex']
 
@@ -265,7 +265,7 @@ reference_mesh = vert
 # reference_mesh = vert
 
 
-# HELEN_3083968872_1_0.jpg
+"""LP reference mesh (HELEN_3083968872_1_0.jpg)"""
 # plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
 # v = plydata['vertex']
 
@@ -276,12 +276,11 @@ reference_mesh = vert
 # reference_mesh = vert
 
 
+
 faces = tri_ # (76073, 3)
 
 """find B and P"""
-dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
-# dic = test_face_ffd(reference_mesh.T, faces, n=(12, 12, 12)) 
-# dic = test_face_ffd(reference_mesh.T, faces, n=7) 
+dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]

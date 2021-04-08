@@ -153,6 +153,15 @@ params = _load(osp.join(d, 'param_whitening.pkl'))
 param_mean = params.get('param_mean')
 param_std = params.get('param_std')
 
+params = _load(osp.join(d, 'param_all_full_mean_std.pkl'))
+param_full_mean = params.get('param_mean')
+param_full_std = params.get('param_std')
+
+
+delta_p_params = _load('train.configs/delta_p_full_mean_std.pkl')
+delta_p_mean = delta_p_params["delta_p_mean"]
+delta_p_std = delta_p_params["delta_p_std"]
+
 """300w-lp V2"""
 # params = _load(osp.join(d, 'param_mean_std_62d_120x120.pkl'))
 # param_mean = params.get('mean')

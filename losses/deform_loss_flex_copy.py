@@ -27,28 +27,18 @@ class VertexOutput(nn.Module):
         self.w_shp_lp = _to_tensor(w_shp_lp)
         self.w_exp_lp = _to_tensor(w_exp_lp)
 
-        # 300w-lp full params
-        self.param_mean = _to_tensor(param_full_mean)
-        self.param_std = _to_tensor(param_full_std)
-
-        self.u = _to_tensor(u_).double()
-        self.w_shp = _to_tensor(w_shp_).double()
-        self.w_exp = _to_tensor(w_exp_).double()
-
-        self.deform_matrix = _to_tensor(deform_matrix).double()
-        self.control_points = _to_tensor(control_points).double()
-    
+        self.deform_matrix = _to_tensor(deform_matrix)
+        self.control_points = _to_tensor(control_points)
     
     def reconstruct_mesh(self, param, batch, z_shift=False):
+        # param = param * self.param_std + self.param_mean
         # parse param
-        param = param * self.param_std + self.param_mean
         p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
 
+        # parse param
+        # p, offset, alpha_shp, alpha_exp = _parse_full_param_batch(param)
         if param.shape[1] == 62:
             target_vert = p @ (self.u_lp + self.w_shp_lp @ alpha_shp + self.w_exp_lp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
-        elif param.shape[1] == 240:
-            # rewhiten needed
-            target_vert = p @ (self.u + self.w_shp @ alpha_shp + self.w_exp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
         else:
             target_vert = p @ (self.u_c + self.w_shp_c @ alpha_shp + self.w_exp_c @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1) + offset
         
@@ -61,61 +51,6 @@ class VertexOutput(nn.Module):
         return target_vert
 
 
-    def deform_mesh(self, param, gt_param, batch):
-        pose_param = gt_param[:, :12]
-        pose_param = self.param_std[:12] * pose_param + self.param_mean[:12]
-
-        p_ = pose_param.view(batch, 3, -1)
-        pg = p_[:, :, :3]
-        offsetg = p_[:, :, -1].view(batch, 3, 1)
-
-        deform = param.view(batch, cp_num//3, -1).double() # reshape to 3d
-        deformed_vert = pg @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + offsetg
-
-        return deformed_vert.permute(0, 2, 1).type(torch.float32)
-
-
-    def forward(self, input, target, z_shift=False):
-        N = target.shape[0]
-
-        target_vert = self.reconstruct_mesh(target, N, z_shift=z_shift)
-        deformed_vert = self.deform_mesh(input, target, N)
-        # deformed_vert = self.deform_mesh(input, N)
-
-        return target_vert, deformed_vert
-
-
-class VertexNonRigidOutput(nn.Module):
-    def __init__(self):
-        super(VertexNonRigidOutput, self).__init__()
-        # 300w-lp full params
-        self.param_mean = _to_tensor(param_full_mean)
-        self.param_std = _to_tensor(param_full_std)
-
-        self.u = _to_tensor(u_)
-        self.w_shp = _to_tensor(w_shp_)
-        self.w_exp = _to_tensor(w_exp_)
-
-        self.deform_matrix = _to_tensor(deform_matrix)
-        self.control_points = _to_tensor(control_points)
-    
-    def reconstruct_mesh(self, param, batch, z_shift=False):
-        param = param * self.param_std + self.param_mean
-        # parse param
-        p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
-
-        # without rigid transformation (rotation and translation)
-        target_vert = (self.u + self.w_shp @ alpha_shp + self.w_exp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1)
-        
-        target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
-
-        # if z_shift:
-        #     for i in range(target_vert.shape[0]):
-        #         target_vert[i,:,2] -= target_vert[i,:,2].min()
-
-        return target_vert
-
-
     def deform_mesh(self, param, batch):
         deform = param.view(batch, cp_num//3, -1) # reshape to 3d
         deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
@@ -124,10 +59,17 @@ class VertexNonRigidOutput(nn.Module):
 
 
     def forward(self, input, target, z_shift=True):
+        # input: deformation of control points
+        # target: GT vertex
+        # loss = nn.MSELoss()
+
         N = target.shape[0]
 
         target_vert = self.reconstruct_mesh(target, N, z_shift=z_shift)
         deformed_vert = self.deform_mesh(input, N)
+
+        # deform_loss = loss(deformed_vert,target_vert)
+        # deform_loss = torch.sqrt(deform_loss) # add sqrt v (RMSE)
 
         return target_vert, deformed_vert
 

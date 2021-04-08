@@ -13,6 +13,18 @@ from .params import *
 from math import cos, sin, sqrt
 
 
+def _parse_ffd_param(params):
+    """Work for both numpy and tensor"""
+    # 204 params
+    p_ = params[:12].reshape(3, -1)
+    p = p_[:, :3]
+    offset = p_[:, -1].reshape(3, 1)
+    delta_p = params[12:].reshape(-1, 1)
+
+    return p, offset, delta_p
+
+
+
 def _parse_param(params):
     """Work for both numpy and tensor"""
     if params.shape[0]==62:
@@ -53,7 +65,6 @@ def _parse_param(params):
 
 
 def _parse_param_batch(param):
-    """Work for both numpy and tensor"""
     N = param.shape[0]
     if param.shape[1]==62:
         p_ = param[:, :12].view(N, 3, -1)
@@ -61,6 +72,12 @@ def _parse_param_batch(param):
         offset = p_[:, :, -1].view(N, 3, 1)
         alpha_shp = param[:, 12:52].view(N, -1, 1)
         alpha_exp = param[:, 52:].view(N, -1, 1)
+    elif param.shape[1] == 240:
+        p_ = param[:, :12].view(N, 3, -1)
+        p = p_[:, :, :3]
+        offset = p_[:, :, -1].view(N, 3, 1)
+        alpha_shp = param[:, 12:211].view(N, -1, 1)
+        alpha_exp = param[:, 211:].view(N, -1, 1)
     else:
         alpha_shp = param[:, :100].view(N, -1, 1)
         alpha_exp = param[:, 100:179].view(N, -1, 1)

@@ -3,18 +3,19 @@ from bernstein_ffd.ffd_utils import *
 
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from utils.ddfa import DDFADataset, ToTensorGjz, NormalizeGjz, reconstruct_vertex, LpDataset, _parse_param
+from utils.ddfa import DDFADataset, ToTensorGjz, NormalizeGjz, reconstruct_vertex, LpDataset, _parse_param, _parse_ffd_param
 import cv2
 from utils.render_simdr import render
 from utils.io import _load, _numpy_to_cuda
 from utils.params import *
 import time
 
+
 filelists_train ='train.configs/train_aug_120x120.list.train'
 filelists_val = 'train.configs/train_aug_120x120.list.val'
 root ='../Datasets/train_aug_120x120/'
-param_fp_train = 'train.configs/delta_p_full_train_norm.pkl'
-param_fp_val ='train.configs/delta_p_full_val_norm.pkl'
+param_fp_train = 'train.configs/delta_p_pose_train.pkl'
+param_fp_val ='train.configs/delta_p_pose_val.pkl'
 
 normalize = NormalizeGjz(mean=127.5, std=128)  # may need optimization
 
@@ -66,22 +67,22 @@ def calc_mean_std(loader):
 
 # loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
 # calc_mean_std(loader)
-dic = _load('train.configs/delta_p_mean_std.pkl')
-delta_mean = dic["delta_p_mean"]
-delta_std = dic["delta_p_std"]
+
 # delta_ps = np.zeros((636252, 1029)) #1470
-for i in range(len(train_dataset)):
+for i in range(0,len(train_dataset),1000):
     gt_param = train_dataset[i][1].numpy()
-    gt_param = gt_param * delta_std + delta_mean
+    # gt_param = gt_param * delta_p_std + delta_p_mean
     # p, offset, alpha_shp, alpha_exp = _parse_param(gt_param)
     # gt_vert = p @ (u_ + w_shp_lp @ alpha_shp + w_exp_lp @ alpha_exp).reshape(3, -1, order='F') + offset
     # gt_vert = p @ (u_ + w_shp_ @ alpha_shp + w_exp_ @ alpha_exp).reshape(3, -1, order='F') + offset
     # gt_vert[2, :] -= gt_vert[2, :].min()
 
-    gt_vert = deformed_vert(gt_param, transform=False)
+    p, offset, delta_p = _parse_ffd_param(gt_param)
+    gt_vert = p @ deformed_vert(delta_p, transform=False) + offset
 
+    print(train_dataset.lines[i])
     img = cv2.imread(root + train_dataset.lines[i])
-    render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
+    render(img, [gt_vert.astype(np.float32)], tri_, alpha=1, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
     # Ax = b
     # cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]

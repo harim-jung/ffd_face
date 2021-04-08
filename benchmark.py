@@ -188,11 +188,13 @@ def benchmark_aflw2000_params(params):
     return _benchmark_aflw2000(outputs)
 
 
-def benchmark_aflw2000_ffd(deforms, dense=False, dim=2):
+def benchmark_aflw2000_ffd(deforms, dense=False, dim=2, rewhiten=False):
     outputs = []
     for i in range(deforms.shape[0]):
         img_fp = filelist[i]
         deform = deforms[i]
+        if rewhiten:
+            deform = deform * delta_p_std - delta_p_mean
         vert = deformed_vert(deform, transform=True) # 3 x N
         if dense:
             outputs.append(vert)
@@ -219,11 +221,13 @@ def benchmark_aflw2000_ffd_full(deforms):
     return _benchmark_aflw2000(outputs)
 
 
-def reconstruct_face_mesh(params):
+def reconstruct_face_mesh(params, rewhiten=False):
     outputs = []
     for i in range(params.shape[0]):
         gt_vert = aflw_meshes[i]
         deform = params[i]
+        if rewhiten:
+            deform = deform * delta_p_std - delta_p_mean
         vert = deformed_vert(deform, transform=True, face=True) # 3 x 38365
         vertex = rescale_w_roi(vert, roi_boxs[i])
         # vertex = _predict_vertices(params[i], roi_boxs[i], dense=True, transform=True) # image coordinate space
@@ -312,7 +316,7 @@ def benchmark_pipeline(arch, checkpoint_fp):
     return aflw2000()
 
 
-def benchmark_pipeline_ffd(arch, checkpoint_fp, dense=False, dim=2):
+def benchmark_pipeline_ffd(arch, checkpoint_fp, dense=False, dim=2, rewhiten=False):
     device_ids = [0]
     params = extract_param(
         checkpoint_fp=checkpoint_fp,
@@ -323,10 +327,10 @@ def benchmark_pipeline_ffd(arch, checkpoint_fp, dense=False, dim=2):
         batch_size=128,
         cpu=False)
 
-    return benchmark_aflw2000_ffd(params, dense=dense, dim=dim)
+    return benchmark_aflw2000_ffd(params, dense=dense, dim=dim, rewhiten=rewhiten)
 
 
-def aflw2000_mesh(arch, checkpoint_fp):
+def aflw2000_mesh(arch, checkpoint_fp, rewhiten=False):
     device_ids = [0]
     params = extract_param(
         checkpoint_fp=checkpoint_fp,
@@ -338,7 +342,7 @@ def aflw2000_mesh(arch, checkpoint_fp):
 
     # params = np.zeros((64, 648))
     # return reconstruct_full_mesh(params)
-    return reconstruct_face_mesh(params)
+    return reconstruct_face_mesh(params, rewhiten=rewhiten)
 
 
 def lp_mesh(arch, checkpoint_fp):
@@ -373,7 +377,7 @@ def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
     parser.add_argument('--arch', default='mobilenet_1', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_learn/ffd_resnet_region_lm_learn_checkpoint_epoch_30.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_delta_p_norm/ffd_mb_delta_p_norm_checkpoint_epoch_50.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.37_mse/ffd_resnet_region_lm_0.37_mse_checkpoint_epoch_23.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
@@ -402,7 +406,7 @@ def main():
     # benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, dim=2)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
-    # aflw2000_mesh(args.arch, args.checkpoint_fp)
+    # aflw2000_mesh(args.arch, args.checkpoint_fp, rewhiten=True)
 
     min_nme = 100
     min_index = 0
@@ -414,11 +418,11 @@ def main():
     min_3_index = 0
     for i in range(1, 51):
         # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-        checkpoint = f"snapshot/ffd_mb_delta_p/ffd_mb_delta_p_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_mb_lr_delta_p/ffd_mb_lr_delta_p_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_ratio/ffd_resnet_region_ratio_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_lm/ffd_resnet_lm_checkpoint_epoch_{i}.pth.tar"
         print(i, checkpoint)
-        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, dim=2)
+        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, dim=2, rewhiten=False)
         if mean < min_nme:
             min_nme = mean
             min_index = i
@@ -426,7 +430,7 @@ def main():
             min_1 = mean_nme_1
             min_1_index = i
         if mean_nme_2 < min_2:
-            min_2 = mean_nme_2
+            min_2 = mean_nme_2 
             min_2_index = i
         if mean_nme_3 < min_3:
             min_3 = mean_nme_3

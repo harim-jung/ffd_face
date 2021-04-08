@@ -13,8 +13,8 @@ import time
 filelists_train ='train.configs/train_aug_120x120.list.train'
 filelists_val = 'train.configs/train_aug_120x120.list.val'
 root ='../Datasets/train_aug_120x120/'
-param_fp_train = 'train.configs/delta_p_full_train.pkl'
-param_fp_val ='train.configs/delta_p_full_val.pkl'
+param_fp_train = 'train.configs/delta_p_pose_train.pkl'
+param_fp_val ='train.configs/delta_p_pose_val.pkl'
 
 normalize = NormalizeGjz(mean=127.5, std=128)  # may need optimization
 
@@ -59,7 +59,7 @@ def calc_mean_std(loader):
     dic = {}
     dic["delta_p_mean"] = np.array(mean).reshape(-1)
     dic["delta_p_std"] = np.array(std).reshape(-1)
-    f = open("train.configs/delta_p_mean_std.pkl", "wb")
+    f = open("train.configs/delta_p_pose_mean_std.pkl", "wb")
     pickle.dump(dic, f)
     print("saved delta_p_mean_std")
 
@@ -90,8 +90,8 @@ def calc_mean_std(loader):
     # pickle.dump(mean, f)
     # print("saved mean mesh")
 
-# loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
-# calc_mean_std(loader)
+loader = DataLoader(train_dataset, batch_size=1, num_workers=0, shuffle=False)
+calc_mean_std(loader)
 
 def save_normalized_delta_p():
     f = _load('train.configs/delta_p_full_train.pkl')

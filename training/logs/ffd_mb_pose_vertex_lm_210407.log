@@ -1,0 +1,29 @@
+[2021-04-08 02:30:59,519] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] workers: 8
+[2021-04-08 02:30:59,520] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] epochs: 50
+[2021-04-08 02:30:59,520] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] start_epoch: 1
+[2021-04-08 02:30:59,520] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] batch_size: 128
+[2021-04-08 02:30:59,520] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] val_batch_size: 128
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] base_lr: 0.01
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] print_freq: 1000
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] resume: 
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] devices_id: [0]
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] filelists_train: train.configs/train_aug_120x120.list.train
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] filelists_val: train.configs/train_aug_120x120.list.val
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] root: ../Datasets/train_aug_120x120
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] snapshot: snapshot/ffd_mb_pose_vertex_lm
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] log_file: training/logs/ffd_mb_pose_vertex_lm_210407.log
+[2021-04-08 02:30:59,521] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] log_mode: w
+[2021-04-08 02:30:59,522] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] dimensions: 3, 6, 3
+[2021-04-08 02:30:59,522] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] param_classes: 348
+[2021-04-08 02:30:59,522] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] arch: mobilenet_1
+[2021-04-08 02:30:59,522] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] optimizer: adam
+[2021-04-08 02:30:59,522] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] milestones: [30, 40]
+[2021-04-08 02:30:59,523] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] test_initial: True
+[2021-04-08 02:30:59,523] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] warmup: 5
+[2021-04-08 02:30:59,523] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] param_fp_train: train.configs/param_all_full_norm.pkl
+[2021-04-08 02:30:59,523] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] param_fp_val: train.configs/param_all_val_full_norm.pkl
+[2021-04-08 02:30:59,523] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] source_mesh: 300w-lp mean shape
+[2021-04-08 02:30:59,524] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] loss: pose_vdc_lm_mse
+[2021-04-08 02:30:59,524] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:87] [INFO] weights: [0.2, 0.5, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06]
+[2021-04-08 02:31:01,284] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:397] [INFO] Testing from initial
+[2021-04-08 02:36:11,241] [p21532] [d:\ai\3d face reconstruction\ffd_face\train_ffd_pose_vertex_lm.py:293] [INFO] Val: [1][404]	Up Mouth Loss 195.2376	Low Mouth Loss 211.2597	Up Nose Loss 249.7581	Low Nose Loss 171.8089	Left Brow Loss 388.9574	Right Brow Loss 391.2841	Left Eye Loss 242.4849	Right Eye Loss 242.3444	Contour Loss 435.1907	Landmark Loss 280.9251	Vertex Loss 347.9474	Param Loss 0.7431	Loss 325.8218	Time 309.956

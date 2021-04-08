@@ -23,7 +23,7 @@ from collections import OrderedDict
 from utils.ddfa import DDFADataset, ToTensorGjz, NormalizeGjz
 from utils.ddfa import str2bool, AverageMeter
 from utils.io import mkdir
-from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutput, MouthLoss, RegionLMLoss, PDCLoss
+from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutput, MouthLoss, RegionLMLoss, PDCLoss, PDCMSELoss
 from losses.lm_loss import LMFittedLoss, LML1Loss
 
 # global args (configuration)
@@ -37,18 +37,18 @@ def parse_args():
     parser.add_argument('--start-epoch', default=1, type=int)
     parser.add_argument('--batch-size', default=64, type=int) # 128 for v2
     parser.add_argument('--val-batch-size', default=64, type=int)
-    parser.add_argument('--base-lr', '--learning-rate', default=0.01, type=float)
+    parser.add_argument('--base-lr', '--learning-rate', default=0.0001, type=float)
     # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
     # parser.add_argument('--weight-decay', '--wd', default=0.0005, type=float)
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
-    parser.add_argument('--resume', default='', type=str, metavar='PATH')
-    # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--resume', default='', type=str, metavar='PATH')
+    parser.add_argument('--resume', default='snapshot/ffd_mb_delta_p_norm/ffd_mb_delta_p_norm_checkpoint_epoch_50.pth.tar', type=str, metavar='PATH')
     parser.add_argument('--devices-id', default='0', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_mb_delta_p', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_mb_lr_delta_p_210405.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_mb_delta_p_norm_2_lr', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_mb_delta_p_norm_2_lr_210406.log', type=str)
     # parser.add_argument('--snapshot', default='snapshot/ffd_resnet_delta_p', type=str)
     # parser.add_argument('--log-file', default='training/logs/ffd_resnet_delta_p_210405.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
@@ -60,8 +60,8 @@ def parse_args():
     parser.add_argument('--milestones', default='30, 40', type=str)
     parser.add_argument('--test_initial', default='false', type=str2bool)
     parser.add_argument('--warmup', default=5, type=int)
-    parser.add_argument('--param-fp-train',default='train.configs/delta_p_full_train.pkl', type=str)
-    parser.add_argument('--param-fp-val', default='train.configs/delta_p_full_val.pkl', type=str)
+    parser.add_argument('--param-fp-train',default='train.configs/delta_p_full_train_norm.pkl', type=str)
+    parser.add_argument('--param-fp-val', default='train.configs/delta_p_full_val_norm.pkl', type=str)
     parser.add_argument('--source_mesh', default='train.configs/reference_mesh_lp.ply', type=str)
     parser.add_argument('--loss', default='delta_p_l1', type=str)
     # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
@@ -126,7 +126,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     for i, (input, target) in enumerate(train_loader):
         target.requires_grad = False
-        target = target.cuda(non_blocking=True)
+        target = target.float().cuda(non_blocking=True)
         output = model(input)
 
         data_time.update(time.time() - end)
@@ -171,7 +171,7 @@ def validate(val_loader, model, criterion, epoch, log=True):
         for i, (input, target) in enumerate(val_loader):
             # compute output
             target.requires_grad = False
-            target = target.cuda(non_blocking=True)
+            target = target.float().cuda(non_blocking=True)
             output = model(input)
             
             param_loss = criterion(output, target)
@@ -216,6 +216,7 @@ def main():
 
     model = nn.DataParallel(model, device_ids=args.devices_id).cuda()  # -> GPU
 
+    # criterion = PDCMSELoss().cuda()
     criterion = PDCLoss().cuda()
     # criterion = DeformVDCLoss().cuda()
     # vertex_criterion = VertexOutput().cuda()
@@ -286,7 +287,7 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_mb_lr_delta_p')
+    writer = SummaryWriter('training/runs/ffd_mb_delta_p_norm_2_lr')
     # writer = SummaryWriter('training/runs/ffd_mb_delta_p')
     main()
     writer.close()
