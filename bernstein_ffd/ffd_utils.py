@@ -88,6 +88,21 @@ def deformed_vert(deform, transform=False, face=True):
     return deformed_vert
 
 
+def deformed_vert_w_pose(params, transform=False, rewhiten=True):
+    if rewhiten:
+        params[:12] = params[:12] * param_full_std[:12] + param_full_mean[:12]
+    
+    p_ = params[:12].reshape(3, -1)
+    p = p_[:, :3]
+    offset = p_[:, -1].reshape(3, 1)
+    deform = params[12:].reshape(cp_num//3, -1)
+
+    deformed_vert = p @ (deform_matrix @ (control_points + deform)).T + offset
+    if transform:
+        deformed_vert[1, :] = std_size + 1 - deformed_vert[1, :]
+    return deformed_vert.astype(np.float32)
+
+
 def chamfer_distance_without_batch(p1, p2, debug=False):
 
     '''
@@ -280,7 +295,9 @@ reference_mesh = u_.reshape(3, -1, order='F')
 faces = tri_ # (76073, 3)
 
 """find B and P"""
-dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
+dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]

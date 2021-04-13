@@ -41,21 +41,21 @@ def parse_args():
     parser.add_argument('--val-batch-size', default=64, type=int)
     parser.add_argument('--base-lr', '--learning-rate', default=0.001, type=float)
     # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
-    parser.add_argument('--weight-decay', '--wd', default=0.0001, type=float)
+    parser.add_argument('--weight-decay', '--wd', default=0.001, type=float)
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='3', type=str)
+    parser.add_argument('--devices-id', default='2', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_gtpose_vertex_lm_ratio', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_gtpose_vertex_lm_ratio_210408.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_pred_pose_vertex_lm', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_pred_pose_vertex_lm_210411.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--dimensions', default='3, 6, 3', type=str)
     parser.add_argument('--param-classes', default=348, type=int) # 336 + 12
     parser.add_argument('--arch', default='resnet', type=str)
-    parser.add_argument('--optimizer', default='adam', type=str)
+    parser.add_argument('--optimizer', default='adamw', type=str)
     parser.add_argument('--milestones', default='30, 40', type=str)
     parser.add_argument('--test_initial', default='false', type=str2bool)
     parser.add_argument('--warmup', default=5, type=int)
@@ -63,7 +63,8 @@ def parse_args():
     parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
     parser.add_argument('--source_mesh', default='300w-lp mean shape', type=str)
     parser.add_argument('--loss', default='pose_vdc_lm_mse', type=str)
-    parser.add_argument('--weights', default='0.2, 0.5, 0.12, 0.12, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.09', type=str)
+    parser.add_argument('--weights', default='0.15, 0.4, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05', type=str)
+    # parser.add_argument('--weights', default='0.15, 0.4, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.00001', type=str)
 
 
     global args
@@ -135,25 +136,30 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
     end = time.time()
     step = len(train_loader) // args.print_freq * (epoch - 1)
 
+    loss_weights = args.weights.copy()
     for i, (input, target) in enumerate(train_loader):
         target.requires_grad = False
         target = target.cuda(non_blocking=True)
         output = model(input)
 
-        param_target = target #[:, :62]
+        # param_target = target# [:, :12]
         param_output = output[:, :12]
         deform_output = output[:, 12:]
 
-        param_loss = param_criterion(param_output, param_target)
+        param_loss = param_criterion(param_output, target)
 
-        target_vert, deformed_vert = vertex_criterion(deform_output, param_target)
+        target_vert, deformed_vert = vertex_criterion(output, target)
 
         vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
         up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
-        
-        # loss_group = torch.tensor([vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour])
+
         loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
-        loss = torch.tensor(args.weights).double().cuda() @ loss_group
+        # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2))
+        # loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
+
+        # delta_p_norm = (delta_p_l2 / (3 * epoch)).item()
+        # loss_weights[-1] = delta_p_norm
+        loss = torch.tensor(loss_weights).double().cuda() @ loss_group
         # update loss
         # loss = 0.46 * vertex_loss + 0.06 * up_mouth + 0.06 * low_mouth + 0.06 * up_nose + 0.06 * low_nose + 0.06 * l_brow + \
         # 0.06 * r_brow + 0.06 * l_eye + 0.06 * r_eye + 0.06 * contour
@@ -198,6 +204,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
                          f'Landmark Loss {lm_losses.val:.4f} ({lm_losses.avg:.4f})\t'
                          f'Vertex Loss {vertex_losses.val:.4f} ({vertex_losses.avg:.4f})\t'
                          f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
+                        #  f'Delta P Norm {delta_p_norm} \t'
                          f'Loss {losses.val:.4f} ({losses.avg:.4f})\t'
                          f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
             )
@@ -240,26 +247,31 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
         r_eye_losses = []
         contour_losses = []
 
+        loss_weights = args.weights.copy()
         for i, (input, target) in enumerate(val_loader):
             # compute output
             target.requires_grad = False
             target = target.cuda(non_blocking=True)
             output = model(input)
 
-            param_target = target #[:, :62]
+            # param_target = target #[:, :12]
             param_output = output[:, :12]
             deform_output = output[:, 12:]
 
-            param_loss = param_criterion(param_output, param_target)
+            param_loss = param_criterion(param_output, target)
 
-            target_vert, deformed_vert = vertex_criterion(deform_output, param_target)
+            target_vert, deformed_vert = vertex_criterion(output, target)
 
             vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
             up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
             
-            # loss_group = torch.tensor([vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour])
+            # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2))
+            # loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
             loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
-            loss = torch.tensor(args.weights).double().cuda() @ loss_group
+
+            # delta_p_norm = (delta_p_l2 / (3 * epoch)).item()
+            # loss_weights[-1] = delta_p_norm
+            loss = torch.tensor(loss_weights).double().cuda() @ loss_group
 
             losses.append(loss.item())
             lm_losses.append(loss_group[2:].mean().item())
@@ -422,6 +434,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_gtpose_vertex_lm_ratio')
+    writer = SummaryWriter('training/runs/ffd_resnet_pred_pose_vertex_lm')
     main()
     writer.close()

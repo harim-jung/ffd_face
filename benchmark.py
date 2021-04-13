@@ -22,13 +22,17 @@ from benchmark_aflw2000 import ana as ana_alfw2000
 from benchmark_aflw2000 import calc_nme_rescaled, calc_nmse, aflw_meshes, draw_landmarks
 from utils.inference import _predict_vertices, dump_rendered_img, dump_to_ply, rescale_w_roi, get_landmarks
 from utils.io import _load
-from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, reconstruct_vertex
+from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, reconstruct_vertex, get_rot_mat_from_axis_angle, get_rot_mat_from_axis_angle_batch
 from utils.params import *
 from utils.render_simdr import render
-from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_
+from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_, deformed_vert_w_pose
 import mobilenet_v1_ffd
 import mobilenet_v1
 import mobilenet_v1_ffd_lm
+
+# r = torch.tensor([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]]).float()
+# R1 = get_rot_mat_from_axis_angle_batch(r)
+# R2 = get_rot_mat_from_axis_angle_(r)
 
 
 root = '../Datasets/AFLW2000/Data/'
@@ -46,7 +50,7 @@ def remove_prefix(state_dict, prefix):
     return {f(key): value for key, value in state_dict.items()}
 
 
-def extract_param(checkpoint_fp, root='', filelists=None, param_fp=None, arch='mobilenet_1', param_classes=cp_num_, lm_classes=136, device_ids=[0],
+def extract_param(checkpoint_fp, root='', filelists=None, param_fp=None, arch='mobilenet_1', param_classes=cp_num+12, lm_classes=136, device_ids=[0],
                   batch_size=128, num_workers=4, cpu=False):
     map_location = {f'cuda:{i}': 'cuda:0' for i in range(8)}
     checkpoint = torch.load(checkpoint_fp, map_location=map_location)['state_dict']
@@ -101,7 +105,7 @@ def extract_param(checkpoint_fp, root='', filelists=None, param_fp=None, arch='m
     return outputs
 
 
-def extract_param_(checkpoint_fp, root='', filelists=None, param_fp=None, arch='mobilenet_1', param_classes=cp_num_, lm_classes=136, device_ids=[0],
+def extract_param_(checkpoint_fp, root='', filelists=None, param_fp=None, arch='mobilenet_1', param_classes=cp_num, lm_classes=136, device_ids=[0],
                   batch_size=128, num_workers=4, cpu=False):
     map_location = {f'cuda:{i}': 'cuda:0' for i in range(8)}
     checkpoint = torch.load(checkpoint_fp, map_location=map_location)['state_dict']
@@ -188,18 +192,38 @@ def benchmark_aflw2000_params(params):
     return _benchmark_aflw2000(outputs)
 
 
-def benchmark_aflw2000_ffd(deforms, dense=False, dim=2, rewhiten=False):
+def benchmark_aflw2000_ffd_(deforms, dense=False, dim=2, rewhiten=False):
     outputs = []
     for i in range(deforms.shape[0]):
         img_fp = filelist[i]
         deform = deforms[i]
         if rewhiten:
-            deform = deform * delta_p_std - delta_p_mean
+            deform = deform * delta_p_std + delta_p_mean
         vert = deformed_vert(deform, transform=True) # 3 x N
         if dense:
             outputs.append(vert)
         else:
             lm = get_landmarks(vert)
+            if dim == 2:
+                outputs.append(lm[:2, :])
+            else:
+                outputs.append(lm)
+
+    return _benchmark_aflw2000(outputs, dense=dense, dim=dim)
+
+
+def benchmark_aflw2000_ffd(params, dense=False, dim=2, rewhiten=False):
+    outputs = []
+    for i in range(params.shape[0]):
+        img_fp = filelist[i]
+        pred_param = params[i]
+        # pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=True) # 3 x 38365
+        pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
+
+        if dense:
+            outputs.append(pred_vert)
+        else:
+            lm = get_landmarks(pred_vert)
             if dim == 2:
                 outputs.append(lm[:2, :])
             else:
@@ -221,21 +245,22 @@ def benchmark_aflw2000_ffd_full(deforms):
     return _benchmark_aflw2000(outputs)
 
 
-def reconstruct_face_mesh(params, rewhiten=False):
+def reconstruct_face_mesh(params):
     outputs = []
     for i in range(params.shape[0]):
-        gt_vert = aflw_meshes[i]
-        deform = params[i]
-        if rewhiten:
-            deform = deform * delta_p_std - delta_p_mean
-        vert = deformed_vert(deform, transform=True, face=True) # 3 x 38365
-        vertex = rescale_w_roi(vert, roi_boxs[i])
-        # vertex = _predict_vertices(params[i], roi_boxs[i], dense=True, transform=True) # image coordinate space
-        wfp = None
-        # wfp = f"samples/outputs/aflw_region_lm_0.46/{filelist[i]}"
         img_ori = cv2.imread(root + filelist[i])
 
-        dis = vertex[:2,:] - gt_vert[:2,:]
+        gt_vert = aflw_meshes[i]
+        # transform y axis (original gt mesh is on the mesh coordinate system, not image coordinate)
+        gt_vert[1] = img_ori.shape[0] + 1 - gt_vert[1]
+        pred_param = params[i]
+
+        pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=True) # 3 x 38365
+        # pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
+        
+        pred_vert = rescale_w_roi(pred_vert, roi_boxs[i])
+
+        dis = pred_vert[:2,:] - gt_vert[:2,:]
         print(i, filelist[i])
         # mouth loss
         print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
@@ -248,11 +273,13 @@ def reconstruct_face_mesh(params, rewhiten=False):
         # contour loss
         print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
 
-        vertex[1, :] = img_ori.shape[0] + 1 - vertex[1, :]
-        render(img_ori, [vertex], tri_.astype(np.int32), alpha=0.8, show_flag=True, wfp=wfp, with_bg_flag=True, transform=True)
+        # reflip y axis
+        pred_vert[1, :] = img_ori.shape[0] + 1 - pred_vert[1, :]
+        wfp = None
+        render(img_ori, [pred_vert], tri_.astype(np.int32), alpha=0.8, show_flag=True, wfp=wfp, with_bg_flag=True, transform=True)
         # wfp = f"samples/outputs/aflw/{filelist[i].replace('.jpg', '.ply')}"
         # dump_to_ply(vertex, tri_.T, wfp, transform=False)
-        outputs.append(vertex)
+        outputs.append(pred_vert)
 
     return outputs
 
@@ -316,7 +343,7 @@ def benchmark_pipeline(arch, checkpoint_fp):
     return aflw2000()
 
 
-def benchmark_pipeline_ffd(arch, checkpoint_fp, dense=False, dim=2, rewhiten=False):
+def benchmark_pipeline_ffd(arch, checkpoint_fp, param_classes=1470, dense=False, dim=2, rewhiten=False):
     device_ids = [0]
     params = extract_param(
         checkpoint_fp=checkpoint_fp,
@@ -325,12 +352,14 @@ def benchmark_pipeline_ffd(arch, checkpoint_fp, dense=False, dim=2, rewhiten=Fal
         arch=arch,
         device_ids=device_ids,
         batch_size=128,
+        param_classes=param_classes,
         cpu=False)
 
+    # return benchmark_aflw2000_ffd_(params, dense=dense, dim=dim, rewhiten=rewhiten)
     return benchmark_aflw2000_ffd(params, dense=dense, dim=dim, rewhiten=rewhiten)
 
 
-def aflw2000_mesh(arch, checkpoint_fp, rewhiten=False):
+def aflw2000_mesh(arch, checkpoint_fp, param_classes=1470):
     device_ids = [0]
     params = extract_param(
         checkpoint_fp=checkpoint_fp,
@@ -338,11 +367,12 @@ def aflw2000_mesh(arch, checkpoint_fp, rewhiten=False):
         filelists='../Datasets/AFLW2000/test.data/AFLW2000-3D_crop.list',
         arch=arch,
         device_ids=device_ids,
+        param_classes=param_classes,
         batch_size=128)
 
     # params = np.zeros((64, 648))
     # return reconstruct_full_mesh(params)
-    return reconstruct_face_mesh(params, rewhiten=rewhiten)
+    return reconstruct_face_mesh(params)
 
 
 def lp_mesh(arch, checkpoint_fp):
@@ -375,9 +405,9 @@ def render_face_mesh(verts):
 
 def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
-    parser.add_argument('--arch', default='mobilenet_1', type=str)
+    parser.add_argument('--arch', default='resnet', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_delta_p_norm/ffd_mb_delta_p_norm_checkpoint_epoch_50.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_vertex_lm_no_pose_norm_checkpoint_epoch_8.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.37_mse/ffd_resnet_region_lm_0.37_mse_checkpoint_epoch_23.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
@@ -406,7 +436,7 @@ def main():
     # benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, dim=2)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
-    # aflw2000_mesh(args.arch, args.checkpoint_fp, rewhiten=True)
+    # aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=348)
 
     min_nme = 100
     min_index = 0
@@ -418,11 +448,11 @@ def main():
     min_3_index = 0
     for i in range(1, 51):
         # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-        checkpoint = f"snapshot/ffd_mb_lr_delta_p/ffd_mb_lr_delta_p_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_resnet_vertex_lm_region_lr_0.0001/ffd_resnet_vertex_lm_region_lr_0.0001_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_ratio/ffd_resnet_region_ratio_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_lm/ffd_resnet_lm_checkpoint_epoch_{i}.pth.tar"
         print(i, checkpoint)
-        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, dim=2, rewhiten=False)
+        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True)
         if mean < min_nme:
             min_nme = mean
             min_index = i

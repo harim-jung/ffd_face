@@ -114,8 +114,8 @@ for i in range(0, len(train_dataset), 100):
     delta_ps[i] = new_gt
     
     """temp"""
-    p, offset, delta_p = _parse_ffd_param(new_gt.T)
-    gt_vert = p @ deformed_vert(delta_p, transform=False) + offset
+    pg, offsetg, delta_p = _parse_ffd_param(new_gt.T)
+    gt_vert = pg @ deformed_vert(delta_p, transform=False) + offsetg
 
     print(train_dataset.lines[i])
     img = cv2.imread(root + train_dataset.lines[i])
@@ -128,8 +128,8 @@ for i in range(0, len(train_dataset), 100):
 
     print(i, "/636252 ", time.time() - start)
 
-with open(f"train.configs/delta_p_non_rigid_train.pkl", "wb") as f:
-    pickle.dump(delta_ps, f, protocol=4)
+# with open(f"train.configs/delta_p_non_rigid_train.pkl", "wb") as f:
+#     pickle.dump(delta_ps, f, protocol=4)
 
 
 delta_ps_val = np.zeros((len(val_dataset), (12+cp_num))) 
@@ -158,8 +158,8 @@ for i in range(len(val_dataset)):
 
     print(i, "/", len(val_dataset), time.time() - start)
 
-with open(f"train.configs/delta_p_non_rigid_val.pkl", "wb") as f:
-    pickle.dump(delta_ps_val, f, protocol=4)
+# with open(f"train.configs/delta_p_non_rigid_val.pkl", "wb") as f:
+#     pickle.dump(delta_ps_val, f, protocol=4)
 
 
     # reconstructed = p @ (deform_matrix @ (control_points + delta_p)).T + offset

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-from .ddfa import reconstruct_vertex
+# from .ddfa import reconstruct_vertex
 from .params import tri_, std_size, tri, keypoints_, keypoints
 from .render import cfg, _to_ctype
 from utils.lighting import RenderPipeline

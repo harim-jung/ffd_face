@@ -34,7 +34,7 @@ pts68_all = _load(osp.join(d, 'AFLW2000-3D.pts68.npy'))
 
 roi_boxs = _load(osp.join(d, 'AFLW2000-3D_crop.roi_box.npy'))
 
-aflw_meshes = _load(osp.join(d, 'aflw_gt_mesh_35709_z.pkl'))
+aflw_meshes = _load(osp.join(d, 'aflw_original_gt_mesh_35709.pkl'))
 
 root = '../Datasets/AFLW2000/Data/'
 filelist = open('../Datasets/AFLW2000/test.data/AFLW2000-3D_crop.list', "r").read().split("\n")
@@ -46,15 +46,15 @@ def aflw_mesh():
     verts = []
     for i in range(len(aflw_gt)):
         param = aflw_gt.coeffs[i].numpy()
-        vert = reconstruct_vertex(param, dense=True, face=True, transform=True, std_size=450)
+        vert = reconstruct_vertex(param, dense=True, face=True, transform=False, std_size=450)
         vert = np.array(vert).astype(np.float32)
-        vert[2, :] -= np.min(vert[2, :]) 
+        # vert[2, :] -= np.min(vert[2, :]) 
         verts.append(vert)
 
-        img_ori = cv2.imread(aflw_gt.imgs_path[i])
-        render(img_ori, [vert], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
-        wfp = f"samples/outputs/{aflw_gt.imgs_path[i].split('/')[-1].replace('.jpg', '.ply')}"
-        dump_to_ply(vert, tri_.T, wfp, transform=True)
+        # img_ori = cv2.imread(aflw_gt.imgs_path[i])
+        # render(img_ori, [vert], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
+        # wfp = f"samples/outputs/test_{aflw_gt.imgs_path[i].split('/')[-1].replace('.jpg', '.ply')}"
+        # dump_to_ply(vert, tri_.T, wfp, transform=False)
 
     return verts
 
@@ -321,9 +321,10 @@ def main():
 if __name__ == '__main__':
     main()
 
-    import pickle 
+    # import pickle 
 
-    vert = aflw_mesh()
-    # f = open('train.configs/aflw/aflw_gt_mesh_35709_.pkl', 'wb')
+    # vert = aflw_mesh()
+    # f = open('test_configs/aflw_original_gt_mesh_35709.pkl', 'wb')
     # pickle.dump(vert, f)
+    # print("saved aflw_original_gt_mesh_35709.pkl")
     # f.close()

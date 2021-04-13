@@ -43,7 +43,7 @@ def parse_args():
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='3', type=str)
+    parser.add_argument('--devices-id', default='0', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')

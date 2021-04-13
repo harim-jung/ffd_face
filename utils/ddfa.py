@@ -11,7 +11,8 @@ import argparse
 from .io import _numpy_to_tensor, _load_cpu, _load_gpu
 from .params import *
 from math import cos, sin, sqrt
-
+from bernstein_ffd.ffd_utils import deform_matrix, control_points
+# from scipy.spatial.transform import Rotation as R
 
 def _parse_ffd_param(params):
     """Work for both numpy and tensor"""
@@ -22,8 +23,6 @@ def _parse_ffd_param(params):
     delta_p = params[12:].reshape(-1, 1)
 
     return p, offset, delta_p
-
-
 
 def _parse_param(params):
     """Work for both numpy and tensor"""
@@ -152,6 +151,54 @@ def get_rotation_matrix_batch(rot_param):
     R = Rx @ Ry @ Rz
 
     return R
+
+# def get_rot_mat_from_axis_angle_(axis_angle):
+#     # rotation = R.from_rotvec(np.pi/2 * np.array([0, 0, 1]))
+#     rotation = R.from_rotvec(axis_angle)
+
+#     return rotation.as_matrix()
+
+def get_rot_mat_from_axis_angle(r):
+    theta = torch.norm(r)
+    r_hat = (r / theta).view(-1, 1) # 3x1
+
+    r_hat_x = torch.tensor([[0, -r_hat[2], r_hat[1]],
+                            [r_hat[2], 0, -r_hat[0]],
+                            [-r_hat[1], r_hat[0], 0]])
+    R = torch.cos(theta) * torch.eye(3) + torch.sin(theta) * r_hat_x + (1-torch.cos(theta)) * (r_hat @ r_hat.T)
+
+    return R
+
+def get_rot_mat_from_axis_angle_batch(r):
+    # r -> N x 3
+    N = r.shape[0]
+    theta = torch.norm(r, dim=1).view(-1, 1) # N x 1
+    r_hat = r / theta # N x 3
+
+    r_hat_x = torch.zeros((N, 3, 3)).cuda() # N x 3 x 3
+    r_hat_x[:, 0, 1] = -r_hat[:, 2]
+    r_hat_x[:, 0, 2] = r_hat[:, 1]
+    r_hat_x[:, 1, 0] = r_hat[:, 2]
+    r_hat_x[:, 1, 2] = -r_hat[:, 0]
+    r_hat_x[:, 2, 0] = -r_hat[:, 1]
+    r_hat_x[:, 2, 1] = r_hat[:, 0]
+
+    # N x 3 x 3
+    R = torch.einsum('ab,acd->acd', torch.cos(theta), torch.eye(3).repeat(N, 1, 1).cuda()) + \
+        torch.einsum('ab,acd->acd', torch.sin(theta), r_hat_x) + \
+        torch.einsum('ab,acd->acd', (1-torch.cos(theta)), (r_hat.view(N, -1, 1) @ r_hat.view(N, -1, 1).permute(0,2,1)))
+
+    return R
+
+
+# def get_rot_mat_from_axis_angle_batch_(axis_angle, s):
+#     # rotation = R.from_rotvec(np.pi/2 * np.array([0, 0, 1]))
+#     N = axis_angle.shape[0]
+#     rotation = torch.zeros((N, 3, 3))
+#     for n in range(N):
+#         rotation[n] = s[n].cpu() * torch.from_numpy(R.from_rotvec(axis_angle[n].detach().cpu()).as_matrix())
+    
+#     return rotation.double().cuda()
 
 
 # def reconstruct_vertex(param, whitening=True, dense=False, transform=True):
@@ -404,3 +451,32 @@ class LpDataset:
             img = self.transform(img)
 
         return img, coeff
+
+
+
+class DDFAMeshDataset(data.Dataset):
+    def __init__(self, root, filelists, param_fp, transform=None, **kargs):
+        self.root = root
+        self.transform = transform
+        self.lines = Path(filelists).read_text().strip().split('\n')
+        self.params = _numpy_to_tensor(_load_cpu(param_fp))
+
+        self.param_mean = _numpy_to_tensor(param_full_mean)
+        self.param_std = _numpy_to_tensor(param_full_std)
+
+        self.u = _numpy_to_tensor(u_)#.double()
+        self.w_shp = _numpy_to_tensor(w_shp_)#.double()
+        self.w_exp = _numpy_to_tensor(w_exp_)#.double()
+    
+
+    def __getitem__(self, index):
+        gt_param = self.params[index]
+        gt_param = gt_param * self.param_std + self.param_mean
+        pg, offsetg, alpha_shpg, alpha_expg = _parse_param(gt_param.float())
+
+        target_vert = (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg).view(-1, 3)
+
+        return target_vert, target_vert
+
+    def __len__(self):
+        return len(self.lines)
