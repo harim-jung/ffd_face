@@ -138,9 +138,9 @@ class VertexOutput(nn.Module):
         N = target.shape[0]
 
         target_vert = self.reconstruct_mesh(target, N, z_shift=z_shift)
-        deformed_vert = self.deform_mesh_no_pose(input, N) # delta p only without pose param
+        # deformed_vert = self.deform_mesh_no_pose(input, N) # delta p only without pose param
         # deformed_vert = self.deform_p_mesh(input, N) # use predicted pose
-        # deformed_vert = self.deform_aap_mesh(input, N) # use predicted pose with s, axis_angle, offset
+        deformed_vert = self.deform_aap_mesh(input, N) # use predicted pose with s, axis_angle, offset
 
         return target_vert, deformed_vert
 

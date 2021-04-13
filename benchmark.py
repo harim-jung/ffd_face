@@ -446,9 +446,9 @@ def main():
     min_2_index = 0
     min_3 = 100
     min_3_index = 0
-    for i in range(1, 51):
+    for i in range(1, 32):
         # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-        checkpoint = f"snapshot/ffd_resnet_vertex_lm_region_lr_0.0001/ffd_resnet_vertex_lm_region_lr_0.0001_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_resnet_vertex_lm_region_lr_decay/ffd_resnet_vertex_lm_region_lr_decay_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_ratio/ffd_resnet_region_ratio_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_lm/ffd_resnet_lm_checkpoint_epoch_{i}.pth.tar"
         print(i, checkpoint)

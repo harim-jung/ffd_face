@@ -149,7 +149,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
         vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
         up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
         
-        delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)).detach()
+        delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)) #.detach()
         loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
 
         delta_p_norm = (delta_p_l2 / (3 * epoch)).item()
@@ -173,9 +173,23 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
         r_eye_losses.update(r_eye.item(), input.size(0))
         contour_losses.update(contour.item(), input.size(0))
 
-
+        
         # compute gradient and do SGD step
         optimizer.zero_grad()
+
+        loss.register_hook(lambda grad: print("loss:", grad)) 
+        vertex_loss.register_hook(lambda grad: print("vertex loss:", grad)) 
+        delta_p_l2.register_hook(lambda grad: print("delta P L2", grad)) 
+        up_mouth.register_hook(lambda grad: print("up mouth:", grad)) 
+        low_mouth.register_hook(lambda grad: print("low mouth:", grad)) 
+        up_nose.register_hook(lambda grad: print("up nose: ", grad)) 
+        low_nose.register_hook(lambda grad: print("low nose: ", grad)) 
+        l_brow.register_hook(lambda grad: print("left brow: ", grad)) 
+        r_brow.register_hook(lambda grad: print("right brow:", grad)) 
+        l_eye.register_hook(lambda grad: print("left eye:", grad)) 
+        r_eye.register_hook(lambda grad: print("right eye:", grad)) 
+        contour.register_hook(lambda grad: print("contour:", grad)) 
+        
         loss.backward()
         optimizer.step()
 

@@ -8153,3 +8153,12 @@ losses/__pycache__/deform_loss_flex.cpython-38.pyc
 *.pyc
 *.pyc
 *.pyc
+snapshot/ffd_resnet_no_pose_axis_angle_test/ffd_resnet_no_pose_axis_angle_test_checkpoint_epoch_18.pth.tar
+snapshot/ffd_resnet_no_pose_axis_angle_test/ffd_resnet_no_pose_axis_angle_test_checkpoint_epoch_19.pth.tar
+snapshot/ffd_resnet_no_pose_axis_angle_test/ffd_resnet_no_pose_axis_angle_test_checkpoint_epoch_20.pth.tar
+training/runs/ffd_resnet_no_pose_axis_angle_test/events.out.tfevents.1618289633.DESKTOP-FSVJU3I.42976.0
+training/runs/ffd_resnet_no_pose_axis_angle_test/events.out.tfevents.1618289850.DESKTOP-FSVJU3I.19028.0
+training/runs/ffd_resnet_no_pose_axis_angle_test/events.out.tfevents.1618289863.DESKTOP-FSVJU3I.32736.0
+training/runs/ffd_resnet_no_pose_axis_angle_test/events.out.tfevents.1618289985.DESKTOP-FSVJU3I.50352.0
+training/runs/ffd_resnet_no_pose_axis_angle_test/events.out.tfevents.1618291427.DESKTOP-FSVJU3I.39264.0
+*.pyc
