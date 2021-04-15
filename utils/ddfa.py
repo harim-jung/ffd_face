@@ -11,7 +11,7 @@ import argparse
 from .io import _numpy_to_tensor, _load_cpu, _load_gpu
 from .params import *
 from math import cos, sin, sqrt
-from bernstein_ffd.ffd_utils import deform_matrix, control_points
+# from bernstein_ffd.ffd_utils import deform_matrix, control_points
 # from scipy.spatial.transform import Rotation as R
 
 def _parse_ffd_param(params):
@@ -159,6 +159,7 @@ def get_rotation_matrix_batch(rot_param):
 #     return rotation.as_matrix()
 
 def get_rot_mat_from_axis_angle(r):
+    r = torch.from_numpy(r)
     theta = torch.norm(r)
     r_hat = (r / theta).view(-1, 1) # 3x1
 
@@ -166,6 +167,17 @@ def get_rot_mat_from_axis_angle(r):
                             [r_hat[2], 0, -r_hat[0]],
                             [-r_hat[1], r_hat[0], 0]])
     R = torch.cos(theta) * torch.eye(3) + torch.sin(theta) * r_hat_x + (1-torch.cos(theta)) * (r_hat @ r_hat.T)
+
+    return R
+
+def get_rot_mat_from_axis_angle_np(r):
+    theta = np.linalg.norm(r)
+    r_hat = (r / theta).reshape(-1, 1) # 3x1
+
+    r_hat_x = np.array([[0, -r_hat[2][0], r_hat[1][0]],
+                        [r_hat[2][0], 0, -r_hat[0][0]],
+                        [-r_hat[1][0], r_hat[0][0], 0]])
+    R = np.cos(theta) * np.eye(3) + np.sin(theta) * r_hat_x + (1-np.cos(theta)) * (r_hat @ r_hat.T)
 
     return R
 

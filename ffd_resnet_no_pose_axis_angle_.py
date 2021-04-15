@@ -38,20 +38,20 @@ def parse_args():
     parser.add_argument('-j', '--workers', default=8, type=int)
     parser.add_argument('--epochs', default=50, type=int)
     parser.add_argument('--start-epoch', default=1, type=int)
-    parser.add_argument('--batch-size', default=64, type=int) # 128 for v2
-    parser.add_argument('--val-batch-size', default=64, type=int)
+    parser.add_argument('--batch-size', default=128, type=int) # 128 for v2
+    parser.add_argument('--val-batch-size', default=128, type=int)
     parser.add_argument('--base-lr', '--learning-rate', default=0.0005, type=float)
     # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
     parser.add_argument('--weight-decay', '--wd', default=0.001, type=float)
     parser.add_argument('--print-freq', '-p', default=500, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='0', type=str)
+    parser.add_argument('--devices-id', default='1', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_no_pose_axis_angle_s', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_no_pose_axis_angle_s_210414.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_no_pose_axis_angle_abss', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_no_pose_axis_angle_abss_210414.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--dimensions', default='6, 9, 6', type=str)
     parser.add_argument('--param-classes', default=1477, type=int) # 1470 + 7
@@ -64,7 +64,7 @@ def parse_args():
     parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
     parser.add_argument('--source_mesh', default='300w-lp mean shape', type=str)
     parser.add_argument('--loss', default='vdc_lm_mse', type=str)
-    parser.add_argument('--comment', default='axis angle pose with scale, no pose param loss', type=str)
+    parser.add_argument('--comment', default='axis angle pose with abs(scale), no pose param loss', type=str)
     parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
     # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.00001', type=str)
 
@@ -469,6 +469,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_no_pose_axis_angle_s')
+    writer = SummaryWriter('training/runs/ffd_resnet_no_pose_axis_angle_abss')
     main()
     writer.close()

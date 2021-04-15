@@ -365,23 +365,23 @@ if __name__== "__main__":
     #     print(gt_vert[2].min(), gt_vert[2].max())
 
 
-    # plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
-    # v = plydata['vertex']
+    plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
+    v = plydata['vertex']
 
-    # vert = np.zeros((3, 53215))
-    # for i, vt in enumerate(v):
-    #     vert[:, i] = np.array(list(vt))
+    vert = np.zeros((3, 53215))
+    for i, vt in enumerate(v):
+        vert[:, i] = np.array(list(vt))
 
-    # vert = vert[:, sampling_indices]
+    vert = vert[:, sampling_indices]
 
-    # vert_ = vert * 0.4 #0.27
-    # vert_[0] -= vert_[0].min()
-    # vert_[0] += (std_size - vert_[0].max()) / 2
-    # vert_[1] -= vert_[1].min()
-    # vert_[1] += (std_size - vert_[1].max()) / 2
-    # vert_[2] -= vert_[2].min()
+    vert_ = vert * 0.4 #0.27
+    vert_[0] -= vert_[0].min()
+    vert_[0] += (std_size - vert_[0].max()) / 2
+    vert_[1] -= vert_[1].min()
+    vert_[1] += (std_size - vert_[1].max()) / 2
+    vert_[2] -= vert_[2].min()
     
-    # dump_to_ply(vert_, tri_.T, f"train.configs/reference_mesh_lp_new_.ply", transform=False)
+    dump_to_ply(vert_, tri_.T, f"train.configs/reference_mesh_lp_new_.ply", transform=False)
 
 
     # rewhiten_lp_data()

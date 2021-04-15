@@ -46,12 +46,12 @@ def parse_args():
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='3', type=str)
+    parser.add_argument('--devices-id', default='0', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_delta_p_regression_from_gt_mesh', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_delta_p_regression_from_gt_mesh_210412.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_delta_p_regression_from_gt_mesh_fcs', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_delta_p_regression_from_gt_mesh_fcs_210413.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--dimensions', default='6, 9, 6', type=str)
     parser.add_argument('--param-classes', default=1470, type=int) # 1470 + 12
@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument('--param-fp-train',default='train.configs/param_all_full_norm.pkl', type=str) # todo - changed to normalized version
     parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
     parser.add_argument('--source_mesh', default='300w-lp mean shape', type=str)
-    parser.add_argument('--loss', default='vdc_lm_l1', type=str)
+    parser.add_argument('--loss', default='vdc_lm_mse', type=str)
     parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
     # parser.add_argument('--weights', default='0.5, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1', type=str)
     
@@ -441,6 +441,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_delta_p_regression_from_gt_mesh')
+    writer = SummaryWriter('training/runs/ffd_delta_p_regression_from_gt_mesh_fcs')
     main()
     writer.close()

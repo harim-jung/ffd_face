@@ -46,7 +46,7 @@ from utils.params import *
 
 
 class SimpleRegressionNet(nn.Module):
-    def __init__(self,param_classes=343):
+    def __init__(self, param_classes=343, input_dim=107127):
     # def __init__(self, widen_factor=1.0, param_classes=192, lm_classes=136, prelu=False, input_channel=3):
         super(SimpleRegressionNet, self).__init__()
 
@@ -79,8 +79,15 @@ class SimpleRegressionNet(nn.Module):
         # self.dw6 = block(1024 * widen_factor, 1024 * widen_factor, prelu=prelu)
 
         # self.avgpool = nn.AdaptiveAvgPool2d(1)
-
-        self.fc = nn.Linear(107127, param_classes)
+        
+        self.relu = nn.ReLU(inplace=True)   
+        self.fc1 = nn.Linear(107127, param_classes*2)
+        # self.fc2 = nn.Linear(param_classes*3, param_classes*2)
+        self.fc2 = nn.Linear(param_classes*2, param_classes)
+        # self.fc1 = nn.Linear(107127, param_classes*3)
+        # self.fc2 = nn.Linear(param_classes*3, param_classes*2)
+        # self.fc3 = nn.Linear(param_classes*2, param_classes)
+        
 
     def forward(self, x):
         # x = self.conv1(x)
@@ -103,13 +110,22 @@ class SimpleRegressionNet(nn.Module):
 
         # x = self.avgpool(x)
         
-        x = x.contiguous().view(x.size(0), -1)
-        param = self.fc(x)
+        # x = x.contiguous().view(x.size(0), -1) # N X 107127
+        # x = self.fc1(x) # N X 1029
+        # x = self.relu(x) # N X 1029
+        # x = self.fc2(x) # N X 686
+        # x = self.relu(x)
+        # param = self.fc3(x)
+
+        x = x.contiguous().view(x.size(0), -1) # N X 107127
+        x = self.fc1(x) # N X 1029
+        x = self.relu(x) # N X 1029
+        param = self.fc2(x) # N X 686
 
         return param
 
 if __name__ == '__main__':
-    model = SimpleRegressionNet(param_classes=343)
+    model = SimpleRegressionNet(param_classes=343, input_dim=107127)
 
     filelists_train ='train.configs/train_aug_120x120.list.train'
     filelists_val = 'train.configs/train_aug_120x120.list.val'

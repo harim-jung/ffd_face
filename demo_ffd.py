@@ -106,7 +106,6 @@ if __name__ == '__main__':
     # parser.add_argument('-f', '--files', nargs='+',
     #                     help='image files paths fed into network, single or multiple images')
     parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
-    parser.add_argument('--show_flag', default='false', type=str2bool, help='whether show the visualization result')
     parser.add_argument('--bbox_init', default='one', type=str,
                         help='one|two: one-step bbox initialization or two-step')
 
@@ -117,15 +116,16 @@ if __name__ == '__main__':
     parser.add_argument('--keep_top_k', default=750, type=int, help='keep_top_k')
     parser.add_argument('--vis_thres', default=0.6, type=float, help='visualization_threshold')
 
+    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str, metavar='PATH')
     parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
-    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_11.pth.tar', type=str, metavar='PATH')
-    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_checkpoint_epoch_31.pth.tar', type=str, metavar='PATH')
-    # parser.add_argument('--recon-checkpoint', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar'', type=str, metavar='PATH')
     parser.add_argument('--recon-model', default='resnet', type=str)
+    # parser.add_argument('--param-classes', default=1470, type=int)
     parser.add_argument('--param-classes', default=1029, type=int)
     parser.add_argument('--dump_lm_img', default='false', type=str2bool, help='whether write out the visualization image')
-    parser.add_argument('--dump_ply', default='false', type=str2bool)
+    parser.add_argument('--dump_ply', default='true', type=str2bool)
     parser.add_argument('--dump_vert_img', default='true', type=str2bool)
+    parser.add_argument('--show_flag', default='false', type=str2bool, help='whether show the visualization result')
+
 
 
     args = parser.parse_args()
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     # d = '../Datasets/300W_LP/Data/'
     # save = '../Datasets/300W_LP/results_ffd/'
     for (dirpath, dirnames, filenames) in walk(d):
-        for img_fp in filenames[:1000]:
+        for img_fp in filenames[:5000]:
             if img_fp.endswith(".jpg") or img_fp.endswith(".png"):
                 # for img_fp in args.files:
                 img_ori = cv2.imread(d + img_fp)
@@ -218,7 +218,8 @@ if __name__ == '__main__':
                     #    dump_rendered_img(vertices, img_fp, wfp='{}_{}.jpg'.format(wfp.replace(suffix, ''), ind), show_flag=args.show_flag)
                     if args.dump_ply:
                         # saves to ply file for each face
-                        dump_to_ply(vertices, tri.T, '{}_{}.ply'.format(wfp.replace(suffix, ''), ind), transform=False)
+                        wfp = save + '{}_{}.ply'.format(img_fp.replace(suffix, ''), ind)
+                        dump_to_ply(vertices, tri.T, wfp, transform=False)
                     ind += 1
                 if args.dump_lm_img:
                     # saves rendered landmarks for all faces

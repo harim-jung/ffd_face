@@ -121,8 +121,9 @@ class VertexOutput(nn.Module):
     def deform_aap_mesh(self, param, batch):
         pose_param = param[:, :7].double()
 
-        x = pose_param[:, 0]
-        s = torch.exp(x).view(batch, 1) # N x 1
+        # s = torch.abs(pose_param[:, 0]).view(batch, 1)
+        s = pose_param[:, 0].view(batch, 1)
+        # s = torch.exp(x).view(batch, 1) # N x 1
         axis_angle = pose_param[:, 1:4]
         offset = pose_param[:, 4:].view(batch, 3, 1)
         p = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
@@ -145,49 +146,64 @@ class VertexOutput(nn.Module):
         return target_vert, deformed_vert
 
 
-class VertexNonRigidOutput(nn.Module):
+class VertexOutputwoPose(nn.Module):
     def __init__(self):
-        super(VertexNonRigidOutput, self).__init__()
+        super(VertexOutputwoPose, self).__init__()
+
+        # self.param_mean = _to_tensor(param_mean)
+        # self.param_std = _to_tensor(param_std)
+        self.u_c = _to_tensor(u_c)# .double()
+        self.u_lp = _to_tensor(u_)
+
+        self.w_shp_c = _to_tensor(w_shp_c)# .double()
+        self.w_exp_c = _to_tensor(w_exp_c)# .double()
+        self.w_shp_lp = _to_tensor(w_shp_lp)
+        self.w_exp_lp = _to_tensor(w_exp_lp)
+
         # 300w-lp full params
         self.param_mean = _to_tensor(param_full_mean)
         self.param_std = _to_tensor(param_full_std)
 
-        self.u = _to_tensor(u_)
-        self.w_shp = _to_tensor(w_shp_)
-        self.w_exp = _to_tensor(w_exp_)
+        self.u = _to_tensor(u_).double()
+        self.w_shp = _to_tensor(w_shp_).double()
+        self.w_exp = _to_tensor(w_exp_).double()
 
-        self.deform_matrix = _to_tensor(deform_matrix)
-        self.control_points = _to_tensor(control_points)
+        self.deform_matrix = _to_tensor(deform_matrix).double()
+        self.control_points = _to_tensor(control_points).double()
     
-    def reconstruct_mesh(self, param, batch, z_shift=False):
-        param = param * self.param_std + self.param_mean
+    
+    def reconstruct_mesh(self, gt_param, batch, z_shift=False):
         # parse param
-        p, offset, alpha_shp, alpha_exp = _parse_param_batch(param)
+        gt_param = gt_param * self.param_std + self.param_mean
+        pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
 
-        # without rigid transformation (rotation and translation)
-        target_vert = (self.u + self.w_shp @ alpha_shp + self.w_exp @ alpha_exp).view(batch, -1, 3).permute(0, 2, 1)
+        if gt_param.shape[1] == 62:
+            target_vert = pg @ (self.u_lp + self.w_shp_lp @ alpha_shpg + self.w_exp_lp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        elif gt_param.shape[1] == 240:
+            # rewhiten needed
+            target_vert = pg @ (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        else:
+            target_vert = pg @ (self.u_c + self.w_shp_c @ alpha_shpg + self.w_exp_c @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
         
         target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
 
-        # if z_shift:
-        #     for i in range(target_vert.shape[0]):
-        #         target_vert[i,:,2] -= target_vert[i,:,2].min()
+        if z_shift:
+            for i in range(target_vert.shape[0]):
+                target_vert[i,:,2] -= target_vert[i,:,2].min()
 
         return target_vert
 
+    def deform_mesh_no_pose(self, param, batch):
+        deform = param.view(batch, cp_num//3, -1).double() # reshape to 3d
+        deformed_vert = (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1)
 
-    def deform_mesh(self, param, batch):
-        deform = param.view(batch, cp_num//3, -1) # reshape to 3d
-        deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
+        return deformed_vert.permute(0, 2, 1).type(torch.float32)
 
-        return deformed_vert
-
-
-    def forward(self, input, target, z_shift=True):
+    def forward(self, input, target, z_shift=False):
         N = target.shape[0]
 
         target_vert = self.reconstruct_mesh(target, N, z_shift=z_shift)
-        deformed_vert = self.deform_mesh(input, N)
+        deformed_vert = self.deform_mesh_no_pose(input, N) # delta p only without pose param
 
         return target_vert, deformed_vert
 
