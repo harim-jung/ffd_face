@@ -30,7 +30,7 @@ class WPDCPoseLoss(nn.Module):
         target = torch.tensor(target_.data.clone(), requires_grad=False)
 
         # rewhiten
-        input = self.param_std[:12] * input + self.param_mean[:12]
+        input = self.param_std[:12] * input + self.param_mean[:12] # input: N x 12
         target = self.param_std * target + self.param_mean
 
         (pg, offsetg, alpha_shpg, alpha_expg) = _parse_param_batch(target)
@@ -105,12 +105,12 @@ class WPDCAxisAngleLoss(nn.Module):
 
         N = input_pose.shape[0]
 
-        pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1)
-        pg_ = target_pose[:, :12].view(N, 3, -1)
-        rotg = pg_[:, :, :3]
-        offsetg = pg_[:, :, -1].view(N, 3, 1)
+        pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1) # N x 12 x1
+        pg_ = target_pose[:, :12].view(N, 3, -1) # N x 3 x 4
+        rotg = pg_[:, :, :3] # N x 3 x 3
+        offsetg = pg_[:, :, -1].view(N, 3, 1) # the 4th column
 
-        s = torch.abs(input_pose[:, 0]).view(N, 1)
+        s = torch.abs(input_pose[:, 0]).view(N, 1) # N x 1 from input_pose: N x 7:  s, axis_angle, offset
         axis_angle = input_pose[:, 1:4]
         offset = input_pose[:, 4:].view(N, 3, 1)
         rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3

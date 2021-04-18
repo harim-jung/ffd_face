@@ -23,160 +23,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_configs/AFLW2000-3D.pose.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_configs/AFLW2000-3D.pts68.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_configs/AFLW2000-3D_crop.roi_box.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/sfn.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.idea/webServers.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/Sim3DR.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/Sim3DR_Cython.cp37-win_amd64.pyd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/_init_paths.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/build_sim3dr.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/lib/rasterize.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/lib/rasterize.pyx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/lib/rasterize_kernel.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/lighting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/readme.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/setup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/tests/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/tests/CMakeLists.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/tests/io.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/tests/io.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Sim3DR/tests/test.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/35709_keypoints_51.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/35709_keypoints_68.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/bfm.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/bfm_mean_shape_w_scale_param_35709.ply" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/bfm_noneck_v3.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/keypoints_sim.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../bfm/vert_indices_35709.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_1.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_11.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_13.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_16.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_17.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_19.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_2.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_21.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_26.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_3.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_31.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_33.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_4.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_5.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_6.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_7.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_mn/checkpoint_epoch_9.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_1.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_10.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_100.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_11.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_12.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_13.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_145.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_16.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_177.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_19.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_2.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_229.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_27.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_28.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_29.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_3.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_34.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_35.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_36.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_39.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_4.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_5.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_50.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_52.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_58.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_59.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_6.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_7.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_73.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_74.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_75.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_78.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_79.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_82.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_86.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_88.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_9.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/crop_112_v1_sfn/checkpoint_epoch_95.pth.tar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../checkpoints/mobilenet0.25_Final.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../config/config.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../config/params.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../config/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../convert_onnx.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/300w_lp_data_list.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/300w_lp_train.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/300w_lp_val.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/300w_lp_val_gt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/aflw_gt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/aflw_pt3d_68.pickle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/300w_lp_train_cropped_ratio.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/300w_lp_val_cropped_gt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/300w_lp_val_cropped_norm_gt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/aflw_cropped_gt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/cropped_112_param_mean.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/cropped_112_param_std.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/cropped_param_mean_std_112.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_list/cropped_112/lp_cropped_img_mean_std_112.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_preprocess.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../demo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../demo_video.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eval_aflw_cropped.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../eval_aflw_ori.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/aflw_ori_NME_v1_299.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/aflw_ori_NMSE_v1_299.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/aflw_ori_recon_NMSE_v1_299_crop_by_ratio.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/aflw_ori_recon_NMSE_v1_299_crop_by_ratio_all.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/aflw_ori_recon_NMSE_v1_mn_33_crop_by_ratio_all.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NME_v1_299.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NMSE_v1_19.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NMSE_v1_229.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NMSE_v1_50.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NMSE_v1_mn_21.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evaluation/crop_112/aflw_cropped_NMSE_v1_mn_33.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/inputs/1_Handshaking_Handshaking_1_950.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/inputs/214.avi" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/1_Handshaking_Handshaking_1_950_0.ply" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/1_Handshaking_Handshaking_1_950_1.ply" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/1_Handshaking_Handshaking_1_950_2.ply" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/1_Handshaking_Handshaking_1_950_bbox.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/1_Handshaking_Handshaking_1_950_mesh.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../examples/results/214_mesh_sfn.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../loss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/mobilenetv1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/pretrained_mobile_net.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/retinaface.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/se_module.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/sfn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/sfn_vert.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/squeezenet.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../models/trained_models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../runs/train_log/crop_112_v1_mn/events.out.tfevents.1605874790.pr02.2833.0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../runs/train_log/crop_112_v1_sfn/events.out.tfevents.1605870551.DESKTOP-FSVJU3I.21424.0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../runs/train_log/crop_112_v1_sfn/events.out.tfevents.1605884612.DESKTOP-FSVJU3I.20812.0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../runs/train_log/crop_112_v1_sfn/events.out.tfevents.1605884631.DESKTOP-FSVJU3I.8612.0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../train_v1_mn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../train_v1_sfn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/box_utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/functions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/load_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/model_utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/prior_box.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/py_cpu_nms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../utils/render.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.configs/new_reference_mesh.ply" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.train" beforeDir="false" afterPath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.train" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val" beforeDir="false" afterPath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val.part" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/params.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -184,7 +38,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
@@ -212,7 +66,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySupportGeventDebugging" value="true" />
@@ -233,7 +87,7 @@
       <recent name="D:\ai\3d face reconstruction\3DDFA_V1\old" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.benchmark">
+  <component name="RunManager" selected="Python.ffd_utils">
     <configuration name="benchmark" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="3DDFA-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -307,9 +161,9 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="F:\Dropbox\Anaconda\envs\ffd\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bernstein_ffd" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -376,9 +230,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ffd_utils" />
         <item itemvalue="Python.benchmark" />
         <item itemvalue="Python.train_ffd" />
-        <item itemvalue="Python.ffd_utils" />
         <item itemvalue="Python.mobilenet_v1_ffd" />
         <item itemvalue="Python.ffd_params (1)" />
       </list>
@@ -421,6 +275,8 @@
       <workItem from="1612855204692" duration="15070000" />
       <workItem from="1613206848075" duration="1397000" />
       <workItem from="1613360371820" duration="1557000" />
+      <workItem from="1618462077557" duration="3930000" />
+      <workItem from="1618544939762" duration="609000" />
     </task>
     <servers />
   </component>
@@ -492,13 +348,18 @@
           <line>93</line>
           <option name="timeStamp" value="191" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/bernstein_ffd/ffd_utils.py</url>
+          <line>350</line>
+          <option name="timeStamp" value="192" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1613207555486" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$mobilenet_v1_ffd.coverage" NAME="mobilenet_v1_ffd Coverage Results" MODIFIED="1612856963445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1618462597433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
