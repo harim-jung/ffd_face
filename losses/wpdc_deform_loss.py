@@ -6,7 +6,7 @@ import torch.nn as nn
 from math import sqrt
 from utils.io import _numpy_to_cuda
 from utils.params import *
-from utils.ddfa import _parse_param_batch
+from utils.ddfa import _parse_param_batch, get_rot_mat_from_axis_angle_batch
 
 _to_tensor = _numpy_to_cuda  # gpu
 
@@ -82,6 +82,47 @@ class WPDCPoseLoss(nn.Module):
         # input, target --> pose parameter
         weights = self.calc_weights(input, target)
         loss = weights * (input - target[:, :12]) ** 2 # MSE
+        return loss.mean()
+
+
+class WPDCAxisAngleLoss(nn.Module):
+    """Input and target are all 62-d param"""
+
+    def __init__(self, opt_style='resample', resample_num=132):
+        super(WPDCAxisAngleLoss, self).__init__()
+        self.opt_style = opt_style
+        self.param_mean = _to_tensor(param_full_mean)
+        self.param_std = _to_tensor(param_full_std)
+
+        self.u = _to_tensor(u_).double()
+        self.w_shp = _to_tensor(w_shp_).double()
+        self.w_exp = _to_tensor(w_exp_).double()
+
+    def calc_diff(self, input_, target_):
+        # freeze only for calcualting the weights
+        input_pose = torch.tensor(input_.data.clone(), requires_grad=False)
+        target_pose = torch.tensor(target_.data.clone(), requires_grad=False)
+
+        N = input_pose.shape[0]
+
+        pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1)
+        pg_ = target_pose[:, :12].view(N, 3, -1)
+        rotg = pg_[:, :, :3]
+        offsetg = pg_[:, :, -1].view(N, 3, 1)
+
+        s = torch.abs(input_pose[:, 0]).view(N, 1)
+        axis_angle = input_pose[:, 1:4]
+        offset = input_pose[:, 4:].view(N, 3, 1)
+        rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
+        rot = (torch.einsum('ab,acd->acd', s, rot_mat))
+
+        p = torch.cat((rot, offset), 2).view(N, -1, 1)
+
+        return p - pg
+    
+    def forward(self, input, target):
+        # input, target --> pose parameter
+        loss = self.calc_diff(input, target) ** 2 # MSE
         return loss.mean()
 
 

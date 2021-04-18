@@ -202,6 +202,10 @@ def get_rot_mat_from_axis_angle_batch(r):
 
     return R
 
+def get_axis_angle_from_rot_mat(r):
+
+    
+    return R
 
 # def get_rot_mat_from_axis_angle_batch_(axis_angle, s):
 #     # rotation = R.from_rotvec(np.pi/2 * np.array([0, 0, 1]))

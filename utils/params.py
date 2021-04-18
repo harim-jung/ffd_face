@@ -96,25 +96,25 @@ w_exp_full = exp_params["w_exp"]  # 159645x29 double
 tri = (shape_params["tri"] - 1).T # 105840x3 double # subtract 1 to match python index
 
 # load Exp_Pca.bin
-root = '../Datasets/Coarse_Dataset/'
-with open(root + "Exp_Pca.bin", mode='rb') as file: # b is important -> binary
-    pca = np.fromfile(file, np.float32)
-    pca = pca[1:] # 12771600
+# root = '../Datasets/Coarse_Dataset/'
+# with open(root + "Exp_Pca.bin", mode='rb') as file: # b is important -> binary
+#     pca = np.fromfile(file, np.float32)
+#     pca = pca[1:] # 12771600
 
-    mean_exp_c = pca[:3*53215].reshape(-1, 1) # expression mean (159645,1)
-    w_exp_full_c = pca[3*53215:].reshape(3*53215, 79, order='F') # expression basis (159645, 79)
+#     mean_exp_c = pca[:3*53215].reshape(-1, 1) # expression mean (159645,1)
+#     w_exp_full_c = pca[3*53215:].reshape(3*53215, 79, order='F') # expression basis (159645, 79)
 
-w_shp_full_c = w_shp_full[:, :100]
-mean_c = mean_shp + mean_exp_c
+# w_shp_full_c = w_shp_full[:, :100]
+# mean_c = mean_shp + mean_exp_c
 
 
 """Coarse Data - face only (3 x 35709) (199, 29 dim)
 https://github.com/microsoft/Deep3DFaceReconstruction/tree/master/BFM"""
 
 sampling_indices = _load(osp.join(d, '35709_indices.npy')).astype(int)
-u_c = np.reshape(mean_c, [-1, 3, 1])[sampling_indices, :].reshape([-1, 1]).astype(np.float32)
-w_shp_c = np.reshape(w_shp_full_c, [-1, 3, 100])[sampling_indices, :, :].reshape([-1, 100]).astype(np.float32)
-w_exp_c = np.reshape(w_exp_full_c, [-1, 3, 79])[sampling_indices, :, :].reshape([-1, 79]).astype(np.float32)
+# u_c = np.reshape(mean_c, [-1, 3, 1])[sampling_indices, :].reshape([-1, 1]).astype(np.float32)
+# w_shp_c = np.reshape(w_shp_full_c, [-1, 3, 100])[sampling_indices, :, :].reshape([-1, 100]).astype(np.float32)
+# w_exp_c = np.reshape(w_exp_full_c, [-1, 3, 79])[sampling_indices, :, :].reshape([-1, 79]).astype(np.float32)
 
 
 """300W-LP - face only (3 x 35709) (199, 29 dim)"""
@@ -143,9 +143,9 @@ w_shp_base_lp = w_shp_base_[:, :40]
 w_exp_base_lp = w_exp_base_[:, :10]
 
 # coarse data
-u_base_c = u_c[keypoints_flat].reshape(-1, 1)
-w_shp_base_c = w_shp_base_[:, :100]
-w_exp_base_c = w_exp_c[keypoints_flat]
+# u_base_c = u_c[keypoints_flat].reshape(-1, 1)
+# w_shp_base_c = w_shp_base_[:, :100]
+# w_exp_base_c = w_exp_c[keypoints_flat]
 
 
 """param_mean and param_std are used for re-whitening"""
@@ -158,9 +158,9 @@ param_full_mean = params.get('param_mean')
 param_full_std = params.get('param_std')
 
 
-delta_p_params = _load('train.configs/delta_p_full_mean_std.pkl')
-delta_p_mean = delta_p_params["delta_p_mean"]
-delta_p_std = delta_p_params["delta_p_std"]
+# delta_p_params = _load('train.configs/delta_p_full_mean_std.pkl')
+# delta_p_mean = delta_p_params["delta_p_mean"]
+# delta_p_std = delta_p_params["delta_p_std"]
 
 """300w-lp V2"""
 # params = _load(osp.join(d, 'param_mean_std_62d_120x120.pkl'))

@@ -26,7 +26,7 @@ from utils.ddfa import str2bool, AverageMeter
 from utils.io import mkdir
 from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutput, MouthLoss, RegionLMLoss
 from losses.lm_loss import LMFittedLoss, LML1Loss
-from losses.wpdc_deform_loss import WPDCPoseLoss
+from losses.wpdc_deform_loss import WPDCPoseLoss, WPDCAxisAngleLoss
 
 
 # global args (configuration)
@@ -34,27 +34,61 @@ args = None
 lr = None
 
 def parse_args():
+    # parser = argparse.ArgumentParser(description='FFD')
+    # parser.add_argument('-j', '--workers', default=8, type=int)
+    # parser.add_argument('--epochs', default=50, type=int)
+    # parser.add_argument('--start-epoch', default=1, type=int)
+    # parser.add_argument('--batch-size', default=128, type=int) # 128 for v2
+    # parser.add_argument('--val-batch-size', default=128, type=int)
+    # parser.add_argument('--base-lr', '--learning-rate', default=0.00001, type=float)
+    # # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
+    # parser.add_argument('--weight-decay', '--wd', default=0.001, type=float)
+    # parser.add_argument('--print-freq', '-p', default=500, type=int)
+    # parser.add_argument('--resume', default='snapshot/ffd_resnet_no_pose_axis_angle_abss/ffd_resnet_no_pose_axis_angle_abss_checkpoint_epoch_50.pth.tar', type=str, metavar='PATH')
+    # # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--devices-id', default='1', type=str)
+    # parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
+    # parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
+    # parser.add_argument('--root', default='../Datasets/train_aug_120x120')
+    # parser.add_argument('--snapshot', default='snapshot/ffd_resnet_no_pose_axis_angle_abss_phase_2', type=str)
+    # parser.add_argument('--log-file', default='training/logs/ffd_resnet_no_pose_axis_angle_abss_phase_2_210414.log', type=str)
+    # parser.add_argument('--log-mode', default='w', type=str)
+    # parser.add_argument('--dimensions', default='6, 9, 6', type=str)
+    # parser.add_argument('--param-classes', default=1477, type=int) # 1470 + 7
+    # parser.add_argument('--arch', default='resnet', type=str)
+    # parser.add_argument('--optimizer', default='adamw', type=str)
+    # parser.add_argument('--milestones', default='30, 40', type=str)
+    # parser.add_argument('--test_initial', default='true', type=str2bool)
+    # parser.add_argument('--warmup', default=5, type=int)
+    # parser.add_argument('--param-fp-train',default='train.configs/param_all_full_norm.pkl', type=str) # todo - changed to normalized version
+    # parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
+    # parser.add_argument('--source_mesh', default='300w-lp mean shape', type=str)
+    # parser.add_argument('--loss', default='vdc_lm_mse', type=str)
+    # parser.add_argument('--comment', default='axis angle pose with abs(scale), no pose param loss', type=str)
+    # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
+    # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.00001', type=str)
+
     parser = argparse.ArgumentParser(description='FFD')
     parser.add_argument('-j', '--workers', default=8, type=int)
     parser.add_argument('--epochs', default=50, type=int)
     parser.add_argument('--start-epoch', default=1, type=int)
-    parser.add_argument('--batch-size', default=128, type=int) # 128 for v2
-    parser.add_argument('--val-batch-size', default=128, type=int)
-    parser.add_argument('--base-lr', '--learning-rate', default=0.0005, type=float)
+    parser.add_argument('--batch-size', default=32, type=int) # 128 for v2
+    parser.add_argument('--val-batch-size', default=32, type=int)
+    parser.add_argument('--base-lr', '--learning-rate', default=0.001, type=float)
     # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
     parser.add_argument('--weight-decay', '--wd', default=0.001, type=float)
     parser.add_argument('--print-freq', '-p', default=500, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='1', type=str)
+    parser.add_argument('--devices-id', default='3', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_no_pose_axis_angle_abss', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_no_pose_axis_angle_abss_210414.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_pose_axis_angle_abss', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_pose_axis_angle_abss_210418.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
-    parser.add_argument('--dimensions', default='6, 9, 6', type=str)
-    parser.add_argument('--param-classes', default=1477, type=int) # 1470 + 7
+    parser.add_argument('--dimensions', default='6, 99, 4', type=str)
+    parser.add_argument('--param-classes', default=10507, type=int) # 10500 + 7
     parser.add_argument('--arch', default='resnet', type=str)
     parser.add_argument('--optimizer', default='adamw', type=str)
     parser.add_argument('--milestones', default='30, 40', type=str)
@@ -64,8 +98,8 @@ def parse_args():
     parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
     parser.add_argument('--source_mesh', default='300w-lp mean shape', type=str)
     parser.add_argument('--loss', default='vdc_lm_mse', type=str)
-    parser.add_argument('--comment', default='axis angle pose with abs(scale), no pose param loss', type=str)
-    parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
+    parser.add_argument('--comment', default='axis angle pose with abs(scale), pose param loss', type=str)
+    parser.add_argument('--weights', default='0.2, 0.5, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
     # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.00001', type=str)
 
 
@@ -120,7 +154,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
-    # param_losses = AverageMeter()
+    param_losses = AverageMeter()
     vertex_losses = AverageMeter()
     lm_losses = AverageMeter()
     up_mouth_losses = AverageMeter()
@@ -154,7 +188,9 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
 
         pose_output = output[:, :7]
         deform_output = output[:, 7:]
-        # param_loss = param_criterion(param_output, param_target)
+        pose_target = target[:, :12]
+
+        param_loss = param_criterion(pose_output, pose_target)
 
         target_vert, deformed_vert = vertex_criterion(output, target)
 
@@ -163,15 +199,15 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
         
         # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)) #.detach()
         # loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
-        loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
+        loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
 
         # w1 * l1 + w2* l2 + ... w_n * l_n + w_reg * delta_p_l2 에서 w1 * l1 + w2* l2 + ... w_n * l_n  = w_reg * delta_p_l2 
         # w_reg = (torch.tensor(loss_weights[:-1]).cuda() @ loss_group[:-1]) / (3 * delta_p_l2)
         # loss_weights[-1] = w_reg
-        loss = torch.tensor(loss_weights).cuda() @ loss_group
+        loss = torch.tensor(loss_weights).double().cuda() @ loss_group
 
         losses.update(loss.item(), input.size(0))
-        # param_losses.update(param_loss.item(), input.size(0))
+        param_losses.update(param_loss.item(), input.size(0))
         vertex_losses.update(vertex_loss.item(), input.size(0))
         lm_losses.update(loss_group[2:].mean(), input.size(0)) # without vertex loss
         up_mouth_losses.update(up_mouth.item(), input.size(0))
@@ -236,7 +272,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
                          f'Contour Loss {contour_losses.val:.4f} ({contour_losses.avg:.4f})\t'
                          f'Landmark Loss {lm_losses.val:.4f} ({lm_losses.avg:.4f})\t'
                          f'Vertex Loss {vertex_losses.val:.4f} ({vertex_losses.avg:.4f})\t'
-                        #  f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
+                         f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
                         #  f'Delta P Norm {delta_p_norms.val:.4f} ({delta_p_norms.avg:.4f})\t'
                          f'Delta P Avg {delta_p_vals.val:.4f} ({delta_p_vals.avg:.4f}) \t'
                          f'Scale Avg {s_vals.avg:.8f} \t'
@@ -251,7 +287,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
             step += 1
 
     writer.add_scalar('training_loss_by_epoch', losses.avg, epoch)
-    # writer.add_scalar('param_loss_by_epoch', param_losses.avg, epoch)
+    writer.add_scalar('param_loss_by_epoch', param_losses.avg, epoch)
     writer.add_scalar('vertex_loss_by_epoch', vertex_losses.avg, epoch)
     writer.add_scalar('landmark_loss_by_epoch', lm_losses.avg, epoch)
     writer.add_scalar('up_mouth_loss_by_epoch', up_mouth_losses.avg, epoch)
@@ -274,7 +310,7 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
         losses = []
         lm_losses = []
         vertex_losses = []
-        # param_losses = []
+        param_losses = []
         up_mouth_losses = []
         low_mouth_losses = []
         up_nose_losses = []
@@ -292,25 +328,28 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
             target = target.cuda(non_blocking=True)
             output = model(input)
 
+            pose_output = output[:, :7]
             deform_output = output[:, 7:]
-            # param_loss = param_criterion(param_output, param_target)
+            pose_target = target[:, :12]
+
+            param_loss = param_criterion(pose_output, pose_target)
 
             target_vert, deformed_vert = vertex_criterion(output, target)
 
             vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
             up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
             
-            # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2))
+            # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)) #.detach()
             # loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
-            loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
+            loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
 
             # w_reg = (torch.tensor(loss_weights[:-1]).cuda() @ loss_group[:-1]) / delta_p_l2
             # loss_weights[-1] = w_reg
-            loss = torch.tensor(loss_weights).cuda() @ loss_group
+            loss = torch.tensor(loss_weights).double().cuda() @ loss_group
 
             losses.append(loss.item())
             lm_losses.append(loss_group[2:].mean().item())
-            # param_losses.append(param_loss.item())
+            param_losses.append(param_loss.item())
             vertex_losses.append(vertex_loss.item())
             up_mouth_losses.append(up_mouth.item())
             low_mouth_losses.append(low_mouth.item())
@@ -326,7 +365,7 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
     
         loss = np.mean(losses)
         lm_loss = np.mean(lm_losses)
-        # param_loss = np.mean(param_losses)
+        param_loss = np.mean(param_losses)
         vertex_loss = np.mean(vertex_losses)
         up_mouth_loss = np.mean(up_mouth_losses)
         low_mouth_loss = np.mean(low_mouth_losses)
@@ -351,12 +390,12 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
                     f'Contour Loss {contour_loss:.4f}\t'
                      f'Landmark Loss {lm_loss:.4f}\t'
                      f'Vertex Loss {vertex_loss:.4f}\t'
-                    #  f'Param Loss {param_loss:.4f}\t'
+                     f'Param Loss {param_loss:.4f}\t'
                      f'Loss {loss:.4f}\t'
                      f'Time {elapse:.3f}')
         if log:
             writer.add_scalar('validation_loss_by_epoch', loss, epoch)
-            # writer.add_scalar('param_val_loss_by_epoch', param_loss, epoch)
+            writer.add_scalar('param_val_loss_by_epoch', param_loss, epoch)
             writer.add_scalar('vertex_val_loss_by_epoch', vertex_loss, epoch)
             writer.add_scalar('landmark_val_loss_by_epoch', lm_loss, epoch)
             writer.add_scalar('up_mouth_val_loss_by_epoch', up_mouth_loss, epoch)
@@ -399,7 +438,7 @@ def main():
     vertex_criterion = VertexOutput().cuda()
     criterion = DeformVDCLoss().cuda()
     lm_criterion = RegionLMLoss().cuda()
-    param_criterion = WPDCPoseLoss().cuda()
+    param_criterion = WPDCAxisAngleLoss().cuda()
 
     if args.optimizer == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=args.base_lr)
@@ -469,6 +508,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_no_pose_axis_angle_abss')
+    writer = SummaryWriter('training/runs/ffd_resnet_pose_axis_angle_abss')
     main()
     writer.close()

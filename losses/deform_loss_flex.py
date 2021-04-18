@@ -41,13 +41,13 @@ class VertexOutput(nn.Module):
 
         # self.param_mean = _to_tensor(param_mean)
         # self.param_std = _to_tensor(param_std)
-        self.u_c = _to_tensor(u_c)# .double()
-        self.u_lp = _to_tensor(u_)
+        # self.u_c = _to_tensor(u_c)# .double()
+        # self.u_lp = _to_tensor(u_)
 
-        self.w_shp_c = _to_tensor(w_shp_c)# .double()
-        self.w_exp_c = _to_tensor(w_exp_c)# .double()
-        self.w_shp_lp = _to_tensor(w_shp_lp)
-        self.w_exp_lp = _to_tensor(w_exp_lp)
+        # self.w_shp_c = _to_tensor(w_shp_c)# .double()
+        # self.w_exp_c = _to_tensor(w_exp_c)# .double()
+        # self.w_shp_lp = _to_tensor(w_shp_lp)
+        # self.w_exp_lp = _to_tensor(w_exp_lp)
 
         # 300w-lp full params
         self.param_mean = _to_tensor(param_full_mean)
@@ -121,8 +121,8 @@ class VertexOutput(nn.Module):
     def deform_aap_mesh(self, param, batch):
         pose_param = param[:, :7].double()
 
-        # s = torch.abs(pose_param[:, 0]).view(batch, 1)
-        s = pose_param[:, 0].view(batch, 1)
+        s = torch.abs(pose_param[:, 0]).view(batch, 1)
+        # s = pose_param[:, 0].view(batch, 1)
         # s = torch.exp(x).view(batch, 1) # N x 1
         axis_angle = pose_param[:, 1:4]
         offset = pose_param[:, 4:].view(batch, 3, 1)
@@ -152,17 +152,19 @@ class VertexOutputwoPose(nn.Module):
 
         # self.param_mean = _to_tensor(param_mean)
         # self.param_std = _to_tensor(param_std)
-        self.u_c = _to_tensor(u_c)# .double()
-        self.u_lp = _to_tensor(u_)
+        # self.u_c = _to_tensor(u_c)# .double()
+        # self.u_lp = _to_tensor(u_)
 
-        self.w_shp_c = _to_tensor(w_shp_c)# .double()
-        self.w_exp_c = _to_tensor(w_exp_c)# .double()
-        self.w_shp_lp = _to_tensor(w_shp_lp)
-        self.w_exp_lp = _to_tensor(w_exp_lp)
+        # self.w_shp_c = _to_tensor(w_shp_c)# .double()
+        # self.w_exp_c = _to_tensor(w_exp_c)# .double()
+        # self.w_shp_lp = _to_tensor(w_shp_lp)
+        # self.w_exp_lp = _to_tensor(w_exp_lp)
 
         # 300w-lp full params
         self.param_mean = _to_tensor(param_full_mean)
         self.param_std = _to_tensor(param_full_std)
+        # self.param_mean = _to_tensor(param_full_mean)
+        # self.param_std = _to_tensor(param_full_std)
 
         self.u = _to_tensor(u_).double()
         self.w_shp = _to_tensor(w_shp_).double()

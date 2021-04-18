@@ -229,27 +229,27 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 """reference meshes"""
 
 """scaled bfm mean shape"""
-# scaled mean shape
-R = np.array([[1,0,0],[0,1,0],[0,0,1]])
-# 0.001236969662055349 # mean of 300w-lp
-s = 0.0004  # 35709
-# s = 0.0006 # 38365
-p = s * R
+# # scaled mean shape
+# R = np.array([[1,0,0],[0,1,0],[0,0,1]])
+# # 0.001236969662055349 # mean of 300w-lp
+# s = 0.0004  # 35709
+# # s = 0.0006 # 38365
+# p = s * R
 
-# just u_
-vertices = p @ u_.reshape(3, -1, order='F') # (3, 37509)
+# # just u_
+# vertices = p @ u_.reshape(3, -1, order='F') # (3, 37509)
 
-# scale x, y within 120x120 and shift to middle
-vertices[0] -= vertices[0].min()
-vertices[0] += (std_size - vertices[0].max()) / 2
-vertices[1] -= vertices[1].min()
-vertices[1] += (std_size - vertices[1].max()) / 2
-# shift z to start from 0
-vertices[2] -= vertices[2].min()
-reference_mesh = vertices
+# # scale x, y within 120x120 and shift to middle
+# vertices[0] -= vertices[0].min()
+# vertices[0] += (std_size - vertices[0].max()) / 2
+# vertices[1] -= vertices[1].min()
+# vertices[1] += (std_size - vertices[1].max()) / 2
+# # shift z to start from 0
+# vertices[2] -= vertices[2].min()
+# reference_mesh = vertices
 
 """original bfm mean shape"""
-# reference_mesh = u_.reshape(3, -1, order='F')
+reference_mesh = u_.reshape(3, -1, order='F')
 
 """new reference mesh (aflw/image00044.ply)"""
 # plydata = PlyData.read('train.configs/new_reference_mesh.ply')
@@ -284,19 +284,6 @@ reference_mesh = vertices
 
 # reference_mesh = vert
 
-"""LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp_120.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# # vert[0] -= vert[0].min()
-# # vert[1] -= vert[1].min()
-# # vert[2] -= vert[2].min()
-# reference_mesh = vert
-
 
 """LP reference mesh (HELEN_3083968872_1_0.jpg)"""
 # plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
@@ -308,15 +295,16 @@ reference_mesh = vertices
 
 # reference_mesh = vert
 
-
-
 faces = tri_ # (76073, 3)
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
-dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
+dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
+# dic = test_face_ffd(reference_mesh.T, faces, n=(9, 99, 4)) # 5000 control points # 7 pts between lips along y-axis & 4 pts along x-axis
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]
@@ -329,35 +317,32 @@ deform_matrix_ = dic_["b"] #(38365, 216)
 control_points_ = dic_["p"] #(216, 3)
 cp_num_ = control_points_.reshape(-1).shape[0]
 
-# cp_num_[:, :6, :]
-# cp_num_[:, 6:, :]
 
-
-# coord_range = vertices[:, mouth_index]
+# coord_range = reference_mesh[:, mouth_index]
 # # upper = 44.53444489630172
 # # lower = 43.128484579586235
 # # upper_ = 44.53444489630172
 # # lower_ = 43.128484579586235
-# # # upper_ = 40
-# # # lower_ = 47
+# # upper_ = 40
+# # lower_ = 47
 # cps = []
-# # upper_ind = []
-# # lower_ind = []
-# for i, cp in enumerate(control_points_):
+# upper_ind = []
+# lower_ind = []
+# for i, cp in enumerate(control_points):
 #     if coord_range[0].min() <= cp[0] <= coord_range[0].max():
 #         if coord_range[1].min() <= cp[1] <= coord_range[1].max():
 #             cps.append(i)
-# #         if upper_ <= cp[1] <= upper:
-# #             upper_ind.append(i)
-# #         if lower_ <= cp[1] <= lower:
-# #             lower_ind.append(i)
-# #         # if cp[1] == upper:
-# #         #     upper_ind.append(i)
-# #         # if cp[1] == lower:
-# #         #     lower_ind.append(i)
-# # print(cps)
-# # print(upper_ind)
-# # print(lower_ind)
+#         # if upper_ <= cp[1] <= upper:
+#         #     upper_ind.append(i)
+#         # if lower_ <= cp[1] <= lower:
+#         #     lower_ind.append(i)
+#         # if cp[1] == upper:
+#         #     upper_ind.append(i)
+#         # if cp[1] == lower:
+#         #     lower_ind.append(i)
+# print(cps)
+# print(upper_ind)
+# print(lower_ind)
 
 # # reference_mesh = (deform_matrix_ @ control_points_).T.astype(np.float32)
 # # dump_to_ply(reference_mesh, tri_.T, f"samples/outputs/reference_mesh.ply", transform=False)

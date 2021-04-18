@@ -117,10 +117,13 @@ if __name__ == '__main__':
     parser.add_argument('--vis_thres', default=0.6, type=float, help='visualization_threshold')
 
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
+    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_mse_1000_checkpoint_epoch_37.pth.tar', type=str, metavar='PATH')
+
     parser.add_argument('--recon-model', default='resnet', type=str)
     # parser.add_argument('--param-classes', default=1470, type=int)
-    parser.add_argument('--param-classes', default=1029, type=int)
+    # parser.add_argument('--param-classes', default=1029, type=int)
+    parser.add_argument('--param-classes', default=3000, type=int)
     parser.add_argument('--dump_lm_img', default='false', type=str2bool, help='whether write out the visualization image')
     parser.add_argument('--dump_ply', default='true', type=str2bool)
     parser.add_argument('--dump_vert_img', default='true', type=str2bool)
@@ -162,7 +165,7 @@ if __name__ == '__main__':
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
     # for img_fp in args.files:
     d = '../Datasets/CelebA/Img/img_align_celeba_png.7z/img_align_celeba_png/'
-    save = '../Datasets/CelebA/results/ffd_resnet_lm_adamw/'
+    save = '../Datasets/CelebA/results/ffd_resnet_region_lm_0.46_mse_1000/'
     # d = '../Datasets/300W_LP/Data/'
     # save = '../Datasets/300W_LP/results_ffd/'
     for (dirpath, dirnames, filenames) in walk(d):

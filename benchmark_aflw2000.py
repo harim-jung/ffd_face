@@ -35,10 +35,37 @@ pts68_all = _load(osp.join(d, 'AFLW2000-3D.pts68.npy'))
 roi_boxs = _load(osp.join(d, 'AFLW2000-3D_crop.roi_box.npy'))
 
 aflw_meshes = _load(osp.join(d, 'aflw_original_gt_mesh_35709.pkl'))
+aflw_meshes_z = _load(osp.join(d, 'aflw_gt_mesh_35709_z.pkl'))
 
 root = '../Datasets/AFLW2000/Data/'
 filelist = open('../Datasets/AFLW2000/test.data/AFLW2000-3D_crop.list', "r").read().split("\n")
 
+def divide_yaws():
+    yaw_list_abs = np.abs(yaws_list)
+    small = []
+    medium = []
+    large = []
+    for i, yaw in enumerate(yaw_list_abs):
+        if yaw <= 30:
+            small.append(i)
+        elif 30 < yaw <= 60:
+            medium.append(i)
+        elif yaw > 60:
+            large.append(i)
+    small = np.array(small)
+    medium = np.array(medium)
+    large = np.array(large)
+
+    small_sampled = np.random.choice(small, 232)
+    medium_sampled = np.random.choice(medium, 232)
+    large_sampled = np.random.choice(large, 232)
+
+    # np.save("test_configs/AFLW2000-3D.small-pose.npy", small_sampled)    
+    # np.save("test_configs/AFLW2000-3D.med-pose.npy", medium_sampled)    
+    # np.save("test_configs/AFLW2000-3D.large-pose.npy", large)    
+
+    return small_sampled, medium_sampled, large_sampled
+    # return small_sampled, medium_sampled, large
 
 def aflw_mesh():
     root = '../Datasets/AFLW2000/Data/'
@@ -92,6 +119,48 @@ def ana(nme_list):
     s = '\n'.join([s1, s2, s3, s5])#, s4])
     print(s)
 
+    return mean_nme_1, mean_nme_2, mean_nme_3, mean, std
+
+def ana_sampled(nme_list):
+    yaw_list_abs = np.abs(yaws_list)
+    # ind_yaw_1 = np.load("test_configs/AFLW2000-3D.small-pose-3.427.npy")
+    # ind_yaw_2 = np.load("test_configs/AFLW2000-3D.med-pose-3.427.npy")
+    # ind_yaw_3 = np.load("test_configs/AFLW2000-3D.large-pose-3.427.npy")
+    ind_yaw_1, ind_yaw_2, ind_yaw_3 = divide_yaws()
+
+    nme_1 = nme_list[ind_yaw_1]
+    nme_2 = nme_list[ind_yaw_2]
+    nme_3 = nme_list[ind_yaw_3]
+
+    mean_nme_1 = np.mean(nme_1) * 100
+    mean_nme_2 = np.mean(nme_2) * 100
+    mean_nme_3 = np.mean(nme_3) * 100
+    mean_nme_all = np.mean(nme_list) * 100
+
+    std_nme_1 = np.std(nme_1) * 100
+    std_nme_2 = np.std(nme_2) * 100
+    std_nme_3 = np.std(nme_3) * 100
+    std_nme_all = np.std(nme_list) * 100
+
+    mean_all = [mean_nme_1, mean_nme_2, mean_nme_3]
+    mean = np.mean(mean_all)
+    std = np.std(mean_all)
+
+    s1 = '[ 0, 30]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_1, std_nme_1)
+    s2 = '[30, 60]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_2, std_nme_2)
+    s3 = '[60, 90]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_3, std_nme_3)
+    # s4 = '[ALL]\tMean: \x1b[31m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_all, std_nme_all)
+    s5 = '[ 0, 90]\tMean: \x1b[31m{:.3f}\x1b[0m, Std: \x1b[31m{:.3f}\x1b[0m'.format(mean, std)
+
+    s = '\n'.join([s1, s2, s3, s5])#, s4])
+    print(s)
+
+    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
+    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
+    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
+    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
+    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
+    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
     return mean_nme_1, mean_nme_2, mean_nme_3, mean, std
 
 
@@ -179,9 +248,13 @@ def calc_nme_mesh(vert, dim=3):
     nme_list = []
     for i in range(len(roi_boxs)):
         vert_fit = vert[i]
-        vert_gt = aflw_meshes[i]
+        vert_gt = aflw_meshes_z[i]
+        # vert_gt = aflw_meshes[i]
         pts68_gt = pts68_all[i]
 
+        if dim == 3:
+            vert_gt[2, :] -= np.min(vert_fit[2, :])
+        
         # rescale to original image size
         vert_fit = convert_to_ori(vert_fit, i, dim=dim)
 
@@ -204,7 +277,6 @@ def calc_nme_mesh(vert, dim=3):
         print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
         # contour loss
         print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
-
 
         dis = np.sqrt(np.sum(np.power(dis, 2), 0))
         dis = np.mean(dis)
@@ -321,6 +393,7 @@ def main():
 if __name__ == '__main__':
     main()
 
+    divide_yaws()
     # import pickle 
 
     # vert = aflw_mesh()
