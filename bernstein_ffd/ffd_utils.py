@@ -275,14 +275,14 @@ reference_mesh = u_.reshape(3, -1, order='F')
 # reference_mesh = vert
 
 """Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
-plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
-v = plydata['vertex']
+# plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
+# v = plydata['vertex']
 
-vert = np.zeros((3, 35709))
-for i, vt in enumerate(v):
-    vert[:, i] = np.array(list(vt))
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
 
-reference_mesh = vert
+# reference_mesh = vert
 
 
 """LP reference mesh (HELEN_3083968872_1_0.jpg)"""

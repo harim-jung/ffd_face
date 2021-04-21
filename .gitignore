@@ -8333,3 +8333,14 @@ losses/__pycache__/deform_loss_flex.cpython-38.pyc
 utils/__pycache__/ddfa.cpython-38.pyc
 utils/__pycache__/inference.cpython-38.pyc
 utils/__pycache__/params.cpython-38.pyc
+*.log
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1618995373.DESKTOP-FSVJU3I.24752.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619007817.DESKTOP-FSVJU3I.24804.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619008186.DESKTOP-FSVJU3I.26908.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619008734.DESKTOP-FSVJU3I.17032.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619009176.DESKTOP-FSVJU3I.18568.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619009574.DESKTOP-FSVJU3I.1900.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619009959.DESKTOP-FSVJU3I.24320.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619010389.DESKTOP-FSVJU3I.21272.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619011046.DESKTOP-FSVJU3I.21976.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619011815.DESKTOP-FSVJU3I.3344.0

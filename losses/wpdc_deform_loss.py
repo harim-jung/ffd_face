@@ -192,26 +192,32 @@ class WPDCAxisAngleLoss(nn.Module):
         
 
     def calc_diff(self, input_pose, target_pose):
-        N = input_pose.shape[0]
+        # N = input_pose.shape[0]
 
-        pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1) # N x 12 x1
-        pg_ = target_pose[:, :12].view(N, 3, -1) # N x 3 x 4
-        rotg = pg_[:, :, :3] # N x 3 x 3
-        offsetg = pg_[:, :, -1].view(N, 3, 1) # the 4th column
+        # pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1) # N x 12 x 1
+        # pg_ = target_pose[:, :12].view(N, 3, -1) # N x 3 x 4
+        # rotg = pg_[:, :, :3] # N x 3 x 3
+        # offsetg = pg_[:, :, -1].view(N, 3, 1) # the 4th column
 
-        s = torch.abs(input_pose[:, 0]).view(N, 1) # N x 1 from input_pose: N x 7:  s, axis_angle, offset
-        axis_angle = input_pose[:, 1:4]
-        offset = input_pose[:, 4:].view(N, 3, 1)
-        rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
-        rot = (torch.einsum('ab,acd->acd', s, rot_mat))
+        # s = torch.abs(input_pose[:, 0]).view(N, 1) # N x 1 from input_pose: N x 7:  s, axis_angle, offset
+        # axis_angle = input_pose[:, 1:4]
+        # offset = input_pose[:, 4:].view(N, 3, 1)
+        # rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
+        # rot = (torch.einsum('ab,acd->acd', s, rot_mat))
 
-        p = torch.cat((rot, offset), 2).view(N, -1, 1)
+        # p = torch.cat((rot, offset), 2).view(N, -1, 1)
 
-        return p - pg
+        pg = self.param_std[:12] * target_pose + self.param_mean[:12] # N x 12 x 1
+        pg_axis_angle= get_axis_angle_s_t_from_rot_mat_batch(pg)
+        p_axis_angle = input_pose
+        # scale
+        p_axis_angle[:, 0] = torch.abs(p_axis_angle[:, 0])
+
+        return p_axis_angle - pg_axis_angle
     
     def forward(self, input, target):
         # input, target --> pose parameter
-        weights = self.calc_weights(input, target)
+        weights = self.calc_weights(input, target) # N x 7
         loss = weights * self.calc_diff(input, target[:, :12]) ** 2 # MSE
         return loss.mean()
 

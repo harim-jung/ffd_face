@@ -225,7 +225,7 @@ class VertexOutputwoZoffset(nn.Module):
         self.deform_matrix = _to_tensor(deform_matrix).double()
         self.control_points = _to_tensor(control_points).double()
     
-    def reconstruct_mesh(self, pg, offsetg, alpha_shpg, alpha_expg, batch):
+    def reconstruct_mesh(self, gt_param, pg, offsetg, alpha_shpg, alpha_expg, batch):
         # parse param
         # gt_param = gt_param * self.param_std + self.param_mean
         # pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
@@ -268,7 +268,7 @@ class VertexOutputwoZoffset(nn.Module):
         gt_param = target * self.param_std + self.param_mean
         pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
 
-        target_vert = self.reconstruct_mesh(pg, offsetg, alpha_shpg, alpha_expg, N)
+        target_vert = self.reconstruct_mesh(gt_param, pg, offsetg, alpha_shpg, alpha_expg, N)
         deformed_vert = self.deform_aap_mesh(input, offsetg, N) # use predicted pose with s, axis_angle, offset
 
         return target_vert, deformed_vert

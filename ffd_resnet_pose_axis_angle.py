@@ -177,91 +177,93 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
 
     end = time.time()
     step = len(train_loader) // args.print_freq * (epoch - 1)
-
+    
     loss_weights = args.weights.copy()
+
     for i, (input, target) in enumerate(train_loader):
-        target.requires_grad = False
-        target = target.cuda(non_blocking=True)
-        output = model(input)
+        with torch.autograd.set_detect_anomaly(True):
+            target.requires_grad = False
+            target = target.cuda(non_blocking=True)
+            output = model(input)
 
-        # output.retain_grad()
+            # output.retain_grad()
 
-        pose_output = output[:, :7]
-        deform_output = output[:, 7:]
-        # pose_target = target[:, :12]
+            pose_output = output[:, :7]
+            deform_output = output[:, 7:]
+            # pose_target = target[:, :12]
 
-        param_loss = param_criterion(pose_output, target)
+            param_loss = param_criterion(pose_output, target)
 
-        target_vert, deformed_vert = vertex_criterion(output, target)
+            target_vert, deformed_vert = vertex_criterion(output, target)
 
-        vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
-        up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
-        
-        # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)) #.detach()
-        # loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
-        loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
+            vertex_loss = criterion(deformed_vert, target_vert, loss_type="mse")
+            up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour = lm_criterion(deformed_vert, target_vert, loss_type="mse")
+            
+            # delta_p_l2 = torch.mean(torch.sqrt(deform_output ** 2)) #.detach()
+            # loss_group = torch.stack((vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour, delta_p_l2))
+            loss_group = torch.stack((param_loss, vertex_loss, up_mouth, low_mouth, up_nose, low_nose, l_brow, r_brow, l_eye, r_eye, contour))
 
-        # w1 * l1 + w2* l2 + ... w_n * l_n + w_reg * delta_p_l2 에서 w1 * l1 + w2* l2 + ... w_n * l_n  = w_reg * delta_p_l2 
-        # w_reg = (torch.tensor(loss_weights[:-1]).cuda() @ loss_group[:-1]) / (3 * delta_p_l2)
-        # loss_weights[-1] = w_reg
-        loss = torch.tensor(loss_weights).double().cuda() @ loss_group
+            # w1 * l1 + w2* l2 + ... w_n * l_n + w_reg * delta_p_l2 에서 w1 * l1 + w2* l2 + ... w_n * l_n  = w_reg * delta_p_l2 
+            # w_reg = (torch.tensor(loss_weights[:-1]).cuda() @ loss_group[:-1]) / (3 * delta_p_l2)
+            # loss_weights[-1] = w_reg
+            loss = torch.tensor(loss_weights).double().cuda() @ loss_group
 
-        losses.update(loss.item(), input.size(0))
-        param_losses.update(param_loss.item(), input.size(0))
-        vertex_losses.update(vertex_loss.item(), input.size(0))
-        lm_losses.update(loss_group[2:].mean(), input.size(0)) # without vertex loss
-        up_mouth_losses.update(up_mouth.item(), input.size(0))
-        low_mouth_losses.update(low_mouth.item(), input.size(0))
-        up_nose_losses.update(up_nose.item(), input.size(0))
-        low_nose_losses.update(low_nose.item(), input.size(0))
-        l_brow_losses.update(l_brow.item(), input.size(0))
-        r_brow_losses.update(r_brow.item(), input.size(0))
-        l_eye_losses.update(l_eye.item(), input.size(0))
-        r_eye_losses.update(r_eye.item(), input.size(0))
-        contour_losses.update(contour.item(), input.size(0))
-        # delta_p_norms.update(delta_p_l2.item(), input.size(0))
-        delta_p_vals.update(torch.abs(deform_output).mean().item(), input.size(0))
-        s_vals.update(pose_output[:, 0].mean().item(), input.size(0))
-        rot_vals.update(pose_output[:, 1:4].mean().item(), input.size(0))
-        offset_vals.update(torch.abs(pose_output[4:]).mean().item(), input.size(0))
+            losses.update(loss.item(), input.size(0))
+            param_losses.update(param_loss.item(), input.size(0))
+            vertex_losses.update(vertex_loss.item(), input.size(0))
+            lm_losses.update(loss_group[2:].mean(), input.size(0)) # without vertex loss
+            up_mouth_losses.update(up_mouth.item(), input.size(0))
+            low_mouth_losses.update(low_mouth.item(), input.size(0))
+            up_nose_losses.update(up_nose.item(), input.size(0))
+            low_nose_losses.update(low_nose.item(), input.size(0))
+            l_brow_losses.update(l_brow.item(), input.size(0))
+            r_brow_losses.update(r_brow.item(), input.size(0))
+            l_eye_losses.update(l_eye.item(), input.size(0))
+            r_eye_losses.update(r_eye.item(), input.size(0))
+            contour_losses.update(contour.item(), input.size(0))
+            # delta_p_norms.update(delta_p_l2.item(), input.size(0))
+            delta_p_vals.update(torch.abs(deform_output).mean().item(), input.size(0))
+            s_vals.update(pose_output[:, 0].mean().item(), input.size(0))
+            rot_vals.update(pose_output[:, 1:4].mean().item(), input.size(0))
+            offset_vals.update(torch.abs(pose_output[4:]).mean().item(), input.size(0))
 
-        # compute gradient and do SGD step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            # compute gradient and do SGD step
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
 
-        # log
-        if i > 0 and i % args.print_freq == 0:
-            logging.info(f'Epoch: [{epoch}][{i}/{len(train_loader)}]\t'
-                         f'LR: {lr:8f}\t'
-                         f'Delta P Avg {delta_p_vals.val:.4f} ({delta_p_vals.avg:.4f}) \t'
-                         f'Scale Avg {s_vals.avg:.8f} \t'
-                         f'Rot Avg {rot_vals.avg:.4f} \t'
-                         f'Offset Avg {offset_vals.avg:.4f} \t'
-                         f'Up Mouth Loss {up_mouth_losses.val:.4f} ({up_mouth_losses.avg:.4f})\t'
-                         f'Low Mouth Loss {low_mouth_losses.val:.4f} ({low_mouth_losses.avg:.4f})\t'
-                         f'Up Nose Loss {up_nose_losses.val:.4f} ({up_nose_losses.avg:.4f})\t'
-                         f'Low Nose Loss {low_nose_losses.val:.4f} ({low_nose_losses.avg:.4f})\t'
-                         f'Left Brow Loss {l_brow_losses.val:.4f} ({l_brow_losses.avg:.4f})\t'
-                         f'Right Brow Loss {r_brow_losses.val:.4f} ({r_brow_losses.avg:.4f})\t'
-                         f'Left Eye Loss {l_eye_losses.val:.4f} ({l_eye_losses.avg:.4f})\t'
-                         f'Right Eye Loss {r_eye_losses.val:.4f} ({r_eye_losses.avg:.4f})\t'
-                         f'Contour Loss {contour_losses.val:.4f} ({contour_losses.avg:.4f})\t'
-                         f'Landmark Loss {lm_losses.val:.4f} ({lm_losses.avg:.4f})\t'
-                         f'Vertex Loss {vertex_losses.val:.4f} ({vertex_losses.avg:.4f})\t'
-                         f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
-                        #  f'Delta P Norm {delta_p_norms.val:.4f} ({delta_p_norms.avg:.4f})\t'
-                         f'Loss {losses.val:.4f} ({losses.avg:.4f})\t'
-                         f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-            )
+            # log
+            if i > 0 and i % args.print_freq == 0:
+                logging.info(f'Epoch: [{epoch}][{i}/{len(train_loader)}]\t'
+                            f'LR: {lr:8f}\t'
+                            f'Delta P Avg {delta_p_vals.val:.4f} ({delta_p_vals.avg:.4f}) \t'
+                            f'Scale Avg {s_vals.avg:.8f} \t'
+                            f'Rot Avg {rot_vals.avg:.4f} \t'
+                            f'Offset Avg {offset_vals.avg:.4f} \t'
+                            f'Up Mouth Loss {up_mouth_losses.val:.4f} ({up_mouth_losses.avg:.4f})\t'
+                            f'Low Mouth Loss {low_mouth_losses.val:.4f} ({low_mouth_losses.avg:.4f})\t'
+                            f'Up Nose Loss {up_nose_losses.val:.4f} ({up_nose_losses.avg:.4f})\t'
+                            f'Low Nose Loss {low_nose_losses.val:.4f} ({low_nose_losses.avg:.4f})\t'
+                            f'Left Brow Loss {l_brow_losses.val:.4f} ({l_brow_losses.avg:.4f})\t'
+                            f'Right Brow Loss {r_brow_losses.val:.4f} ({r_brow_losses.avg:.4f})\t'
+                            f'Left Eye Loss {l_eye_losses.val:.4f} ({l_eye_losses.avg:.4f})\t'
+                            f'Right Eye Loss {r_eye_losses.val:.4f} ({r_eye_losses.avg:.4f})\t'
+                            f'Contour Loss {contour_losses.val:.4f} ({contour_losses.avg:.4f})\t'
+                            f'Landmark Loss {lm_losses.val:.4f} ({lm_losses.avg:.4f})\t'
+                            f'Vertex Loss {vertex_losses.val:.4f} ({vertex_losses.avg:.4f})\t'
+                            f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
+                            #  f'Delta P Norm {delta_p_norms.val:.4f} ({delta_p_norms.avg:.4f})\t'
+                            f'Loss {losses.val:.4f} ({losses.avg:.4f})\t'
+                            f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                )
 
-                         
-            writer.add_scalar('training_loss', losses.avg, step)
-            step += 1
+                            
+                writer.add_scalar('training_loss', losses.avg, step)
+                step += 1
 
     writer.add_scalar('training_loss_by_epoch', losses.avg, epoch)
     writer.add_scalar('param_loss_by_epoch', param_losses.avg, epoch)
