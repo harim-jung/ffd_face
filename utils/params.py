@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
 import os
-from scipy.io import loadmat
 
 # os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -10,7 +9,7 @@ import os.path as osp
 import numpy as np
 from .io import _load
 import pickle
-
+from scipy.io import loadmat
 
 def make_abs_path(d):
     return osp.join(osp.dirname(osp.realpath(__file__)), d)

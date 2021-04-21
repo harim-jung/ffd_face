@@ -188,9 +188,9 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
 
         pose_output = output[:, :7]
         deform_output = output[:, 7:]
-        # pose_target = target[:, :12]
+        pose_target = target[:, :12]
 
-        param_loss = param_criterion(pose_output, target)
+        param_loss = param_criterion(pose_output, pose_target)
 
         target_vert, deformed_vert = vertex_criterion(output, target)
 
@@ -415,7 +415,7 @@ def main():
     vertex_criterion = VertexOutput().cuda()
     criterion = DeformVDCLoss().cuda()
     lm_criterion = RegionLMLoss().cuda()
-    param_criterion = WPDCAxisAngleLoss().cuda()
+    param_criterion = PDCAxisAngleLoss().cuda()
 
     if args.optimizer == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=args.base_lr)

@@ -56,9 +56,9 @@ def divide_yaws():
     medium = np.array(medium)
     large = np.array(large)
 
-    small_sampled = np.random.choice(small, 232)
-    medium_sampled = np.random.choice(medium, 232)
-    large_sampled = np.random.choice(large, 232)
+    small_sampled = np.random.choice(small, 232, replace=False)
+    medium_sampled = np.random.choice(medium, 232, replace=False)
+    large_sampled = np.random.choice(large, 232, replace=False)
 
     # np.save("test_configs/AFLW2000-3D.small-pose.npy", small_sampled)    
     # np.save("test_configs/AFLW2000-3D.med-pose.npy", medium_sampled)    
@@ -121,7 +121,7 @@ def ana(nme_list):
 
     return mean_nme_1, mean_nme_2, mean_nme_3, mean, std
 
-def ana_sampled(nme_list):
+def ana_sampled(nme_list, save_folder="ffd_resnet_region_lm_0.46"):
     yaw_list_abs = np.abs(yaws_list)
     # ind_yaw_1 = np.load("test_configs/AFLW2000-3D.small-pose-3.427.npy")
     # ind_yaw_2 = np.load("test_configs/AFLW2000-3D.med-pose-3.427.npy")
@@ -155,9 +155,9 @@ def ana_sampled(nme_list):
     s = '\n'.join([s1, s2, s3, s5])#, s4])
     print(s)
 
-    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
-    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
-    np.save(f"test_configs/ffd_resnet_region_lm_0.46_10500/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
+    np.save(f"test_configs/{save_folder}/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
+    np.save(f"test_configs/{save_folder}/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
+    np.save(f"test_configs/{save_folder}/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
     # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
     # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
     # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
@@ -248,12 +248,12 @@ def calc_nme_mesh(vert, dim=3):
     nme_list = []
     for i in range(len(roi_boxs)):
         vert_fit = vert[i]
-        vert_gt = aflw_meshes_z[i]
-        # vert_gt = aflw_meshes[i]
+        # vert_gt = aflw_meshes_z[i]
+        vert_gt = aflw_meshes[i]
         pts68_gt = pts68_all[i]
 
-        if dim == 3:
-            vert_gt[2, :] -= np.min(vert_fit[2, :])
+        vert_gt[1] = 450 + 1 - vert_gt[1]
+        vert_gt[2, :] -= np.min(vert_gt[2, :])
         
         # rescale to original image size
         vert_fit = convert_to_ori(vert_fit, i, dim=dim)
@@ -264,19 +264,19 @@ def calc_nme_mesh(vert, dim=3):
         llength = sqrt((maxx - minx) * (maxy - miny))
 
         dis = vert_fit - vert_gt
-
+        print(i, dis[2].mean())
         # temp
-        print(i, filelist[i])
-        # mouth loss
-        print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
-        # eye loss
-        print("eyes: ", np.mean(np.abs(dis[:, [*left_eye, *right_eye]])))
-        # nose loss
-        print("nose: ", np.mean(np.abs(dis[:, [*lower_nose, *upper_nose]])))
-        # brow loss
-        print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
-        # contour loss
-        print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
+        # print(i, filelist[i])
+        # # mouth loss
+        # print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
+        # # eye loss
+        # print("eyes: ", np.mean(np.abs(dis[:, [*left_eye, *right_eye]])))
+        # # nose loss
+        # print("nose: ", np.mean(np.abs(dis[:, [*lower_nose, *upper_nose]])))
+        # # brow loss
+        # print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
+        # # contour loss
+        # print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
 
         dis = np.sqrt(np.sum(np.power(dis, 2), 0))
         dis = np.mean(dis)

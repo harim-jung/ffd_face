@@ -6,7 +6,7 @@ import torch.nn as nn
 from math import sqrt
 from utils.io import _numpy_to_cuda
 from utils.params import *
-from utils.ddfa import _parse_param_batch, get_rot_mat_from_axis_angle_batch
+from utils.ddfa import _parse_param_batch, get_rot_mat_from_axis_angle_batch, get_axis_angle_s_t_from_rot_mat_batch
 
 _to_tensor = _numpy_to_cuda  # gpu
 
@@ -66,7 +66,6 @@ class WPDCPoseLoss(nn.Module):
             .view(N, -1, 3).permute(0, 2, 1) + offset
 
             weights[:, i] = torch.norm(pred_vertex - gt_vertex, dim = (1,2))
-            # weights[:, i] = torch.norm(pred_vertex - gt_vertex)#, dim=2)
         
         eps = 1e-6
         weights[:, :11] += eps
@@ -85,11 +84,11 @@ class WPDCPoseLoss(nn.Module):
         return loss.mean()
 
 
-class WPDCAxisAngleLoss(nn.Module):
+class PDCAxisAngleLoss(nn.Module):
     """Input and target are all 62-d param"""
 
     def __init__(self, opt_style='resample', resample_num=132):
-        super(WPDCAxisAngleLoss, self).__init__()
+        super(PDCAxisAngleLoss, self).__init__()
         self.opt_style = opt_style
         self.param_mean = _to_tensor(param_full_mean)
         self.param_std = _to_tensor(param_full_std)
@@ -98,10 +97,10 @@ class WPDCAxisAngleLoss(nn.Module):
         self.w_shp = _to_tensor(w_shp_).double()
         self.w_exp = _to_tensor(w_exp_).double()
 
-    def calc_diff(self, input_, target_):
+    def calc_diff(self, input_pose, target_pose):
         # freeze only for calcualting the weights
-        input_pose = torch.tensor(input_.data.clone(), requires_grad=False)
-        target_pose = torch.tensor(target_.data.clone(), requires_grad=False)
+        # input_pose = torch.tensor(input_.data.clone(), requires_grad=False)
+        # target_pose = torch.tensor(target_.data.clone(), requires_grad=False)
 
         N = input_pose.shape[0]
 
@@ -123,6 +122,99 @@ class WPDCAxisAngleLoss(nn.Module):
     def forward(self, input, target):
         # input, target --> pose parameter
         loss = self.calc_diff(input, target) ** 2 # MSE
+        return loss.mean()
+
+
+class WPDCAxisAngleLoss(nn.Module):
+    """Input and target are all 62-d param"""
+
+    def __init__(self, opt_style='resample', resample_num=132):
+        super(WPDCAxisAngleLoss, self).__init__()
+        self.opt_style = opt_style
+        self.param_mean = _to_tensor(param_full_mean)
+        self.param_std = _to_tensor(param_full_std)
+
+        self.u = _to_tensor(u_).double()
+        self.w_shp = _to_tensor(w_shp_).double()
+        self.w_exp = _to_tensor(w_exp_).double()
+
+    def calc_weights(self, input_, target_):
+        # freeze only for calcualting the weights
+        input = torch.tensor(input_.data.clone(), requires_grad=False)
+        target = torch.tensor(target_.data.clone(), requires_grad=False)
+
+        # rewhiten
+        target = self.param_std * target + self.param_mean
+
+        (pg, offsetg, alpha_shpg, alpha_expg) = _parse_param_batch(target)
+
+        N = input.shape[0] 
+
+        weights = torch.zeros((N, 7), dtype=torch.float).cuda()
+        #input = the predicted parameters; weights has the same shape as input, N x 62 matrix, where N is the number of samples.
+
+        # V3d(p^g) of equation 7
+        gt_vertex = pg @ (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg) \
+            .view(N, -1, 3).permute(0, 2, 1) + offsetg
+        # calculate weights
+        for i in range(weights.shape[1]):
+            # V3d(p^de,i) of equation 7
+            p_degraded = target[:, :12]
+
+            # assume that p_degraded_axis_angle_s_t has 7 elements in the order of s, axis_angle, t
+            p_degraded_axis_angle_s_t = get_axis_angle_s_t_from_rot_mat_batch(p_degraded)  
+            
+            # degrade the target pose by input
+            p_degraded_axis_angle_s_t[:,i] = input[:,i]
+
+            s = torch.abs(p_degraded_axis_angle_s_t[:, 0]).view(N, 1) # N x 1 from input_pose: N x 7:  s, axis_angle, offset
+            axis_angle = p_degraded_axis_angle_s_t[:, 1:4]
+            offset = p_degraded_axis_angle_s_t[:, 4:].view(N, 3, 1)
+            rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
+            p = (torch.einsum('ab,acd->acd', s, rot_mat))
+           
+            pred_vertex = p @ (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg) \
+            .view(N, -1, 3).permute(0, 2, 1) + offset
+
+            weights[:, i] = torch.norm(pred_vertex - gt_vertex, dim = (1,2))
+
+        eps = 1e-6
+        weights[:, :11] += eps
+        weights[:, 12:] += eps
+
+        maxes, _ = weights.max(dim=1)
+        maxes = maxes.view(-1, 1)
+        weights /= maxes
+
+        return weights
+        
+
+    def calc_diff(self, input_pose, target_pose):
+        # freeze only for calcualting the weights
+        # input_pose = torch.tensor(input_.data.clone(), requires_grad=False)
+        # target_pose = torch.tensor(target_.data.clone(), requires_grad=False)
+
+        N = input_pose.shape[0]
+
+        pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1) # N x 12 x1
+        pg_ = target_pose[:, :12].view(N, 3, -1) # N x 3 x 4
+        rotg = pg_[:, :, :3] # N x 3 x 3
+        offsetg = pg_[:, :, -1].view(N, 3, 1) # the 4th column
+
+        s = torch.abs(input_pose[:, 0]).view(N, 1) # N x 1 from input_pose: N x 7:  s, axis_angle, offset
+        axis_angle = input_pose[:, 1:4]
+        offset = input_pose[:, 4:].view(N, 3, 1)
+        rot_mat = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
+        rot = (torch.einsum('ab,acd->acd', s, rot_mat))
+
+        p = torch.cat((rot, offset), 2).view(N, -1, 1)
+
+        return p - pg
+    
+    def forward(self, input, target):
+        # input, target --> pose parameter
+        weights = self.calc_weights(input, target)
+        loss = weights * self.calc_diff(input, target) ** 2 # MSE
         return loss.mean()
 
 

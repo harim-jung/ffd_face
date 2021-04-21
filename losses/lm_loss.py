@@ -39,7 +39,7 @@ class LMFittedLoss(nn.Module):
 
         return lms
 
-    def forward(self, input, target, z_shift=True):
+    def forward(self, input, target):
         loss = nn.MSELoss()
 
         # N = target.shape[0]
@@ -68,7 +68,7 @@ class LML1Loss(nn.Module):
 
         return lms
 
-    def forward(self, input, target, z_shift=True):
+    def forward(self, input, target):
         loss = nn.L1Loss()
 
         target_lm = self.get_lms(target)

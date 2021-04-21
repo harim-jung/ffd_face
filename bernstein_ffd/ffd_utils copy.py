@@ -2,16 +2,27 @@ import os
 import numpy as np
 import torch
 from utils.params import *
+# => e.g. d = make_abs_path('../train.configs')
+#   68 landmarks
+#   keypoints = _load(osp.join(d, 'keypoints_sim.npy'))
 # from params import *
 from math import cos, sin, atan2, sqrt
 from utils.inference import dump_to_ply
 from utils.ddfa import get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_angle
-from utils.render_simdr import render
+#from utils.render_simdr import render
 import cv2
 from plyfile import PlyData, PlyElement
 
-def _calculate_ffd(vertices, faces, n=3, n_samples=None):
-    import bernstein_ffd.ffd.deform as ffd
+from ffd import bernstein, deform, util
+
+
+def test_face_ffd(vertices, faces, n, stu_origin, stu_axes):
+    #pdb.set_trace()
+    b, control_lattice, p = _calculate_ffd(vertices, faces, n, stu_origin, stu_axes)
+    return dict(b=b, control_lattice=control_lattice,p=p)
+
+def _calculate_ffd(vertices, faces, n, stu_origin, stu_axes, n_samples=None):
+    # import bernstein_ffd.ffd.deform as ffd
     # import util3d.mesh.sample as sample
     # stu_origin, stu_axes = ffd.get_stu_params(vertices)
     if n_samples is None:
@@ -21,7 +32,21 @@ def _calculate_ffd(vertices, faces, n=3, n_samples=None):
     dims = n
     # dims = (n,) * 3
     # dims = (6, 9, 6)
-    return ffd.get_reference_ffd_param(points, dims)
+    #This file is in bernstein_ffd, which contains ffd package
+
+    return deform.get_reference_ffd_param(points, dims, stu_origin, stu_axes)
+
+
+
+# def get_reference_ffd_param(vertices, dims, stu_origin=None, stu_axes=None):
+#    if stu_origin is None or stu_axes is None:
+#        if not (stu_origin is None and stu_axes is None):
+#            raise ValueError(
+#                'Either both or neither of stu_origin/stu_axes must be None')
+#        stu_origin, stu_axes = get_stu_params(vertices)
+#    b = get_deformation_matrix(vertices, dims, stu_origin, stu_axes)
+#    p = get_control_points(dims, stu_origin, stu_axes)
+#    return b, p
 
 
 def sample_triangle(v, n=None):
@@ -69,11 +94,6 @@ def sample_faces(vertices, faces, n_total):
     return np.concatenate(positions, axis=0)
 
 
-def test_face_ffd(vertices, faces, n=3):
-    b, p = _calculate_ffd(vertices, faces, n=n)
-    return dict(b=b, p=p)
-
-
 def deformed_vert(deform, transform=False, face=True):
     if face:
         dm = deform_matrix
@@ -114,122 +134,39 @@ def deformed_vert_w_pose(params, transform=False, rewhiten=True, pose='rot_mat')
     return deformed_vert.astype(np.float32)
 
 
-def chamfer_distance_without_batch(p1, p2, debug=False):
+def split_mesh(ref_mesh, y_midpoint):
+    # ref_mesh N x 3
+    upper_indices = []
+    lower_indices = []
+    for i in range(ref_mesh.shape[0]):
+        vertex = ref_mesh[i]
+        if vertex[1] > y_midpoint:
+            upper_indices.append(i)
+        else:
+            lower_indices.append(i)
 
-    '''
-    Calculate Chamfer Distance between two point sets
-    :param p1: size[1, N, D]
-    :param p2: size[1, M, D]
-    :param debug: whether need to output debug info
-    :return: sum of Chamfer Distance of two point sets
-    '''
+    upper_indices = np.array(upper_indices)
+    lower_indices = np.array(lower_indices)
 
-    assert p1.size(0) == 1 and p2.size(0) == 1
-    assert p1.size(2) == p2.size(2)
-
-    if debug:
-        print(p1[0][0])
-
-    p1 = p1.repeat(p2.size(1), 1, 1)
-    if debug:
-        print('p1 size is {}'.format(p1.size()))
-
-    p1 = p1.transpose(0, 1)
-    if debug:
-        print('p1 size is {}'.format(p1.size()))
-        print(p1[0])
-
-    p2 = p2.repeat(p1.size(0), 1, 1)
-    if debug:
-        print('p2 size is {}'.format(p2.size()))
-        print(p2[0])
-
-    dist = torch.add(p1, torch.neg(p2))
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist[0])
-
-    dist = torch.norm(dist, 2, dim=2)
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist)
-
-    dist = torch.min(dist, dim=1)[0]
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist)
-
-    dist = torch.sum(dist)
-    if debug:
-        print('-------')
-        print(dist)
-
-    return dist
-
-
-def chamfer_distance_with_batch(p1, p2, debug=False):
-
-    '''
-    Calculate Chamfer Distance between two point sets
-    :param p1: size[B, N, D]
-    :param p2: size[B, M, D]
-    :param debug: whether need to output debug info
-    :return: sum of all batches of Chamfer Distance of two point sets
-    '''
-
-    assert p1.size(0) == p2.size(0) and p1.size(2) == p2.size(2)
-
-    if debug:
-        print(p1[0])
-
-    p1 = p1.unsqueeze(1)
-    p2 = p2.unsqueeze(1)
-    if debug:
-        print('p1 size is {}'.format(p1.size()))
-        print('p2 size is {}'.format(p2.size()))
-        print(p1[0][0])
-
-    p1 = p1.repeat(1, p2.size(2), 1, 1)
-    if debug:
-        print('p1 size is {}'.format(p1.size()))
-
-    p1 = p1.transpose(1, 2)
-    if debug:
-        print('p1 size is {}'.format(p1.size()))
-        print(p1[0][0])
-
-    p2 = p2.repeat(1, p1.size(1), 1, 1)
-    if debug:
-        print('p2 size is {}'.format(p2.size()))
-        print(p2[0][0])
-
-    dist = torch.add(p1, torch.neg(p2))
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist[0])
-
-    dist = torch.norm(dist, 2, dim=3)
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist)
-
-    dist = torch.min(dist, dim=2)[0]
-    if debug:
-        print('dist size is {}'.format(dist.size()))
-        print(dist)
-
-    dist = torch.sum(dist)
-    if debug:
-        print('-------')
-        print(dist)
-
-    return dist
-
+    return lower_indices, upper_indices
 
 """reference meshes"""
 
+# the  face just below the nose
+#face# 15997 : vert# (8084 8204 8203)
+#face vert 0 : vert# 8084
+#position [61.493000 63.313400 -32.137001]
+#normal [-0.141119 -4.286755 4.582139]
+#face vert 1 : vert# 8204
+#position [62.125301 63.311699 -32.132500]
+#normal [0.385106 -4.480810 4.356285]
+#face vert 2 : vert# 8203
+#position [62.130501 63.812500 -31.638201]
+#normal [0.303801 -4.853062 3.926230]
+
+
 """scaled bfm mean shape"""
-# # scaled mean shape
+# scaled mean shape
 # R = np.array([[1,0,0],[0,1,0],[0,0,1]])
 # # 0.001236969662055349 # mean of 300w-lp
 # s = 0.0004  # 35709
@@ -249,7 +186,7 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 # reference_mesh = vertices
 
 """original bfm mean shape"""
-reference_mesh = u_.reshape(3, -1, order='F')
+# reference_mesh = u_.reshape(3, -1, order='F')
 
 """new reference mesh (aflw/image00044.ply)"""
 # plydata = PlyData.read('train.configs/new_reference_mesh.ply')
@@ -284,6 +221,19 @@ for i, vt in enumerate(v):
 
 reference_mesh = vert
 
+"""LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)"""
+# plydata = PlyData.read('train.configs/reference_mesh_lp_120.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# # vert[0] -= vert[0].min()
+# # vert[1] -= vert[1].min()
+# # vert[2] -= vert[2].min()
+# reference_mesh = vert
+
 
 """LP reference mesh (HELEN_3083968872_1_0.jpg)"""
 # plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
@@ -295,54 +245,140 @@ reference_mesh = vert
 
 # reference_mesh = vert
 
+
 faces = tri_ # (76073, 3)
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
-# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
-dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
-# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
-# dic = test_face_ffd(reference_mesh.T, faces, n=(9, 99, 4)) # 5000 control points # 7 pts between lips along y-axis & 4 pts along x-axis
-deform_matrix = dic["b"] #(38365, 216)
-control_points = dic["p"] #(216, 3)
-cp_num = control_points.reshape(-1).shape[0]
 
 
-# dic_ = test_face_ffd(reference_mesh.T, faces, n=19) 
-# dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
-dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
-deform_matrix_ = dic_["b"] #(38365, 216)
-control_points_ = dic_["p"] #(216, 3)
-cp_num_ = control_points_.reshape(-1).shape[0]
+#upper_index
+#lower_index
+
+# The point just below the nose
+#face# 15997 : vert# (8084 8204 8203)
+#face vert 0 : vert# 8084
+#position [61.493000 63.313400 -32.137001]
+#normal [-0.141119 -4.286755 4.582139]
+#face vert 1 : vert# 8204
+#position [62.125301 63.311699 -32.132500]
+#normal [0.385106 -4.480810 4.356285]
+#face vert 2 : vert# 8203
+#position [62.130501 63.812500 -31.638201]
+#normal [0.303801 -4.853062 3.926230]
+
+y_mid_point = 63.313400
+print("reference_mesh.T.shape=", reference_mesh.T.shape)
+
+import pdb
+#pdb.set_trace()
+stu_origin, stu_axes = deform.get_stu_params(reference_mesh.T)
+
+# You need to implement the following function
+lower_indices, upper_indices = split_mesh( reference_mesh.T, y_mid_point )
+
+# create grid 1, 2
+stu_origin1 = np.empty( (3,) )
+stu_origin1 = stu_origin
+
+stu_axes1 = np.empty( (3,) )
+stu_axes1[0] = stu_axes[0]
+stu_axes1[1] = y_mid_point - stu_origin1[1]
+stu_axes1[2] = stu_axes[2]
+
+stu_origin2 = np.empty( (3,) )
+stu_origin2[0]= stu_origin[0]
+stu_origin2[1] = y_mid_point
+stu_origin2[2] = stu_origin[2]
+
+stu_axes2 =  np.empty( (3,) )
+stu_axes2[0] = stu_axes[0]
+stu_axes2[1] = stu_axes[1] - stu_axes1[1]
+stu_axes2[2] = stu_axes[2]
+
+print("stu_origin=", stu_origin)
+print("stu_axes=", stu_axes)
+
+print("stu_origin1=", stu_origin1)
+print("stu_axes1=", stu_axes1)
+
+print("stu_origin2=", stu_origin2)
+print("stu_axes2=", stu_axes2)
 
 
-# coord_range = reference_mesh[:, mouth_index]
+#import pdb; pdb.set_trace()
+n1x = 3
+n1y = 6
+n1z = 3
+
+n2y = 5
+
+dic = test_face_ffd(reference_mesh.T[lower_indices], faces, n=(n1x, n1y, n1z),stu_origin1, stu_axes1) 
+deform_matrix1 = dic["b"] #(38365, 216)
+
+control_points1_in_3d_lattice = dic["p"] #(216, 3)
+cp_num1 = control_points1_in_3d_lattice.reshape(-1).shape[0]
+
+# control_points[
+
+dic = test_face_ffd(reference_mesh.T[upper_indices], faces, n=(n1x, n2y, n1z),stu_origin2, stu_axes2) 
+deform_matrix2 = dic["b"] #(38365, 216)
+
+control_points2_in_3d_lattice  = dic["p"] #(216, 3)
+cp_num2 = control_points1_in_3d_lattice .reshape(-1).shape[0]
+
+# control_points1_in_3d_lattice[:, n1y,:] and control_points2_in_3d_lattice[:, 0,:] contain the common control points on the interface
+# plane of grid1 (defined by stu_origin1 and stu_axes1) and grid2 (defined by stu_origin2 and stu_axes2).
+
+#The size of deltaP vector of the neural net will be the number of control points counting the common control points
+#just once; it will be N1 + N2
+
+# N1 = (n1x + 1) x (n1y + 1) x (n1z +1)
+# N2 = (n1x + 1) x (n2y + 1) x (n1z +1); The number of common control points is (n1x * n1z)
+# When you apply the control points1 and the control points2 to the Bernstein matrix B1 and B2:
+# do:
+# NC = (n1x + 1) * (n1z + 1)
+#  control_points1_in_3d_lattice[:,:,:].view(N,3) += deltaP[:N1] # deltaP: N x 3 (3N x 1)
+#  control_points2_in_3d_lattice[:,:,:].view(N,3) += deltaP[N1-NC:N1+N2-NC]
+# N1 + N2 - NC - N1 + NC = N2
+# Assign the common control points:
+#   control_points2_in_3d_lattice[:,0,:].view(N,3) += deltaP[N1 - ((n1x + 1) * (n1z + 1)) : N1]
+#
+
+# The number of the common control points are (n1x + 1) * (n1z + 1), which are located in control_points1[ ], and control_points2[ ]
+# The output paramters for deltaP of the neural net contain do not contain the redundant control parameters, so some part of deltaP should be assigned to both control_points1
+# control_points2 when performing the computation of deformed_mesh[lower_indices] = B1@(P10 + deltaP1); deformed_mesh[upper_indices] = B2@(P20 + deltaP2)
+# cp_num_[:, :6, :]
+# cp_num_[:, 6:, :]
+
+
+# coord_range = vertices[:, mouth_index]
 # # upper = 44.53444489630172
 # # lower = 43.128484579586235
 # # upper_ = 44.53444489630172
 # # lower_ = 43.128484579586235
-# # upper_ = 40
-# # lower_ = 47
+# # # upper_ = 40
+# # # lower_ = 47
 # cps = []
-# upper_ind = []
-# lower_ind = []
-# for i, cp in enumerate(control_points):
+# # upper_ind = []
+# # lower_ind = []
+# for i, cp in enumerate(control_points_):
 #     if coord_range[0].min() <= cp[0] <= coord_range[0].max():
 #         if coord_range[1].min() <= cp[1] <= coord_range[1].max():
 #             cps.append(i)
-#         # if upper_ <= cp[1] <= upper:
-#         #     upper_ind.append(i)
-#         # if lower_ <= cp[1] <= lower:
-#         #     lower_ind.append(i)
-#         # if cp[1] == upper:
-#         #     upper_ind.append(i)
-#         # if cp[1] == lower:
-#         #     lower_ind.append(i)
-# print(cps)
-# print(upper_ind)
-# print(lower_ind)
+# #         if upper_ <= cp[1] <= upper:
+# #             upper_ind.append(i)
+# #         if lower_ <= cp[1] <= lower:
+# #             lower_ind.append(i)
+# #         # if cp[1] == upper:
+# #         #     upper_ind.append(i)
+# #         # if cp[1] == lower:
+# #         #     lower_ind.append(i)
+# # print(cps)
+# # print(upper_ind)
+# # print(lower_ind)
 
 # # reference_mesh = (deform_matrix_ @ control_points_).T.astype(np.float32)
 # # dump_to_ply(reference_mesh, tri_.T, f"samples/outputs/reference_mesh.ply", transform=False)
@@ -434,4 +470,3 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 # deform_matrix = dic["b"] #(38365, 64)
 # control_points = dic["p"] #(64, 3)
 # # vert = b @ p # (p + dp)
-# cp_num = control_points.reshape(-1).shape[0]

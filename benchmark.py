@@ -22,7 +22,9 @@ from benchmark_aflw2000 import ana as ana_alfw2000
 from benchmark_aflw2000 import calc_nme_rescaled, calc_nmse, aflw_meshes, draw_landmarks
 from utils.inference import _predict_vertices, dump_rendered_img, dump_to_ply, rescale_w_roi, get_landmarks
 from utils.io import _load
-from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, reconstruct_vertex, get_rot_mat_from_axis_angle, get_rot_mat_from_axis_angle_batch
+from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, LpDataset, reconstruct_vertex, reconstruct_vertex_full, \
+get_rot_mat_from_axis_angle, get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_angle_batch, \
+get_axis_angle_from_rot_mat, get_axis_angle_from_rot_mat_batch, get_axis_angle_s_t_from_rot_mat_batch
 from utils.params import *
 from utils.render_simdr import render
 from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_, deformed_vert_w_pose
@@ -30,17 +32,47 @@ import mobilenet_v1_ffd
 import mobilenet_v1
 import mobilenet_v1_ffd_lm
 
-# r = torch.tensor([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]]).float()
-# R1 = get_rot_mat_from_axis_angle_batch(r)
-# R2 = get_rot_mat_from_axis_angle_(r)
+
+# root = '../Datasets/AFLW2000/Data/'
+# aflw_gt = LpDataset('test_configs/aflw_gt.txt', root)
+# file = aflw_gt.imgs_path[0]
+# print(file)
+# gt_param = aflw_gt[0][1].numpy()
+
+# lms = reconstruct_vertex_full(gt_param, dense=False, face=False, transform=True, std_size=450)
+
+# pts68_all = _load(osp.join('test_configs', 'AFLW2000-3D.pts68.npy'))
+# gt_lms = pts68_all[0]
+
+# from scipy.io import loadmat
+# # temp test
+# example_mat = loadmat("../Datasets/AFLW2000/Data/image04375.mat")
+# alpha_shp = example_mat["Shape_Para"]
+# alpha_exp = example_mat["Exp_Para"]
+# pose_param = example_mat["Pose_Para"].T
+# param = np.concatenate((pose_param, alpha_shp, alpha_exp))
+
+# vertex = reconstruct_vertex(param, dense=True, face=False, transform=False, std_size=std_size)
+
+params = np.load("train.configs/param_all_full.pkl", allow_pickle=True)
+pose_param = torch.tensor([params[0][:12], params[1][:12]]).cuda()
+new_pose_param = get_axis_angle_s_t_from_rot_mat_batch(pose_param)
+
+# r = torch.tensor([[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]]).float().cuda()
+# rot_mat = get_rot_mat_from_axis_angle_batch(r)
+# new_axis_angle = get_axis_angle_s_t_from_rot_mat_batch
+
+# axis_angle = np.array([1.5, 2.5, 3.5])
+# rot_mat = get_rot_mat_from_axis_angle_np(axis_angle)
+# new_axis_angle = get_axis_angle_from_rot_mat(rot_mat)
 
 
 root = '../Datasets/AFLW2000/Data/'
 filelist = open('../Datasets/AFLW2000/test.data/AFLW2000-3D_crop.list', "r").read().split("\n")
 roi_boxs = _load('test_configs/AFLW2000-3D_crop.roi_box.npy')
 
-root_lp = '../Datasets/train_aug_120x120/'
-filelist_lp = open('train.configs/train_aug_120x120.list.val.part', "r").read().split("\n")
+# root_lp = '../Datasets/train_aug_120x120/'
+# filelist_lp = open('train.configs/train_aug_120x120.list.val.part', "r").read().split("\n")
 
 
 def remove_prefix(state_dict, prefix):
@@ -179,8 +211,8 @@ def extract_feat(checkpoint_fp,arch='mobilenet_1', param_classes=cp_num, lm_clas
 
 
 def _benchmark_aflw2000(outputs, dense=False, dim=2):
-    # return ana_alfw2000(calc_nme(outputs, dense=dense, all=True, dim=dim))
-    return ana_sampled(calc_nme(outputs, dense=dense, all=True, dim=dim))
+    return ana_alfw2000(calc_nme(outputs, dense=dense, all=True, dim=dim))
+    # return ana_sampled(calc_nme(outputs, dense=dense, all=True, dim=dim))
     # return ana_alfw2000(calc_nmse(outputs))
 
 
@@ -292,31 +324,31 @@ def reconstruct_face_mesh(params, pose=None):
     return outputs
 
 
-def reconstruct_face_mesh_(params):
-    outputs = []
-    for i in range(len(params)):
-        deform = params[i][0]
-        vertex = deformed_vert(deform, transform=True, face=True) # 3 x 38365
-        # vertex = rescale_w_roi(vert, roi_boxs[i])
+# def reconstruct_face_mesh_(params):
+#     outputs = []
+#     for i in range(len(params)):
+#         deform = params[i][0]
+#         vertex = deformed_vert(deform, transform=True, face=True) # 3 x 38365
+#         # vertex = rescale_w_roi(vert, roi_boxs[i])
 
-        gt_param = np.array(params[i][1][:62])
-        gt_vert = reconstruct_vertex(gt_param, dense=True, transform=True)
+#         gt_param = np.array(params[i][1][:62])
+#         gt_vert = reconstruct_vertex(gt_param, dense=True, transform=True)
 
-        # wfp_gt = f"samples/outputs/300w-lp/{filelist_lp[i].replace('.jpg', '_gt.jpg')}"
-        # wfp = f"samples/outputs/300w-lp/{filelist_lp[i]}"
-        # dump_rendered_img(gt_vert, root_lp + filelist_lp[i], wfp=None, show_flag=True, alpha=0.8)
+#         # wfp_gt = f"samples/outputs/300w-lp/{filelist_lp[i].replace('.jpg', '_gt.jpg')}"
+#         # wfp = f"samples/outputs/300w-lp/{filelist_lp[i]}"
+#         # dump_rendered_img(gt_vert, root_lp + filelist_lp[i], wfp=None, show_flag=True, alpha=0.8)
 
-        img_ori = cv2.imread(root_lp + filelist_lp[i])
-        vertex[1, :] = img_ori.shape[0] + 1 - vertex[1, :]
-        render(img_ori, [vertex], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
+#         img_ori = cv2.imread(root_lp + filelist_lp[i])
+#         vertex[1, :] = img_ori.shape[0] + 1 - vertex[1, :]
+#         render(img_ori, [vertex], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
-        gt_vert[1, :] = img_ori.shape[0] + 1 - gt_vert[1, :]
-        render(img_ori, [gt_vert], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
-        # wfp = f"samples/outputs/{filelist[i].replace('.jpg', '.ply')}"
-        # dump_to_ply(vertex, tri_.T, wfp, transform=True)
-        outputs.append(vertex)
+#         gt_vert[1, :] = img_ori.shape[0] + 1 - gt_vert[1, :]
+#         render(img_ori, [gt_vert], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
+#         # wfp = f"samples/outputs/{filelist[i].replace('.jpg', '.ply')}"
+#         # dump_to_ply(vertex, tri_.T, wfp, transform=True)
+#         outputs.append(vertex)
 
-    return outputs
+#     return outputs
 
 
 def reconstruct_full_mesh(params):
@@ -414,8 +446,7 @@ def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
     parser.add_argument('--arch', default='resnet', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_8.pth.tar', type=str)
-    # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_30.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_30.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
@@ -441,9 +472,12 @@ def main():
     #         pickle.dump(ind, i)
 
 
-    for i in range(20):
-        print("checkpoint: ", args.checkpoint_fp)
-        benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
+    # for i in range(20):
+    #     print("checkpoint: ", args.checkpoint_fp)
+    #     benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
+
+    print("checkpoint: ", args.checkpoint_fp)
+    benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
     # aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num, pose=None)
@@ -456,15 +490,15 @@ def main():
     # min_2_index = 0
     # min_3 = 100
     # min_3_index = 0
-    # for i in range(1, 27):
-    #     checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-    #     checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+    # for i in range(1, 51):
+    #     # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
     #     checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
-    #     checkpoint = f"snapshot/ffd_resnet_region_ratio/ffd_resnet_region_ratio_checkpoint_epoch_{i}.pth.tar"
-    #     checkpoint = f"snapshot/ffd_resnet_lm/ffd_resnet_lm_checkpoint_epoch_{i}.pth.tar"
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
     #     print(i, checkpoint)
     #     mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
-    #     mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+7, dim=2, rewhiten=True, pose='axis_angle')
+    #     # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+7, dim=2, rewhiten=True, pose='axis_angle')
     #     if mean < min_nme:
     #         min_nme = mean
     #         min_index = i

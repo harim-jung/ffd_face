@@ -27,7 +27,7 @@ from retina_face.data.config import cfg_mnet
 from retina_face.layers.functions.prior_box import PriorBox
 from retina_face.utils.box_utils import decode, decode_landm
 from retina_face.utils.nms.py_cpu_nms import py_cpu_nms
-from bernstein_ffd.ffd_utils import deformed_vert
+from bernstein_ffd.ffd_utils import deformed_vert, cp_num
 
 import argparse
 import torch.backends.cudnn as cudnn
@@ -105,7 +105,7 @@ if __name__ == '__main__':
                         help='image files paths fed into network, single or multiple images')
     # parser.add_argument('-f', '--files', nargs='+',
     #                     help='image files paths fed into network, single or multiple images')
-    parser.add_argument('-m', '--mode', default='cpu', type=str, help='gpu or cpu mode')
+    parser.add_argument('-m', '--mode', default='gpu', type=str, help='gpu or cpu mode')
     parser.add_argument('--bbox_init', default='one', type=str,
                         help='one|two: one-step bbox initialization or two-step')
 
@@ -118,12 +118,13 @@ if __name__ == '__main__':
 
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str, metavar='PATH')
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_mse_1000_checkpoint_epoch_37.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_mse_1000_checkpoint_epoch_37.pth.tar', type=str, metavar='PATH')
+    parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_30.pth.tar', type=str, metavar='PATH')
 
     parser.add_argument('--recon-model', default='resnet', type=str)
     # parser.add_argument('--param-classes', default=1470, type=int)
     # parser.add_argument('--param-classes', default=1029, type=int)
-    parser.add_argument('--param-classes', default=3000, type=int)
+    parser.add_argument('--param-classes', default=cp_num, type=int)
     parser.add_argument('--dump_lm_img', default='false', type=str2bool, help='whether write out the visualization image')
     parser.add_argument('--dump_ply', default='true', type=str2bool)
     parser.add_argument('--dump_vert_img', default='true', type=str2bool)
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
     # for img_fp in args.files:
     d = '../Datasets/CelebA/Img/img_align_celeba_png.7z/img_align_celeba_png/'
-    save = '../Datasets/CelebA/results/ffd_resnet_region_lm_0.46_mse_1000/'
+    save = '../Datasets/CelebA/results/ffd_resnet_region_lm_0.46_5000/'
     # d = '../Datasets/300W_LP/Data/'
     # save = '../Datasets/300W_LP/results_ffd/'
     for (dirpath, dirnames, filenames) in walk(d):
