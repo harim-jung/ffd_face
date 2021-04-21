@@ -210,6 +210,70 @@ class VertexOutputwoPose(nn.Module):
         return target_vert, deformed_vert
 
 
+class VertexOutputwoZoffset(nn.Module):
+    def __init__(self):
+        super(VertexOutputwoZoffset, self).__init__()
+
+        # 300w-lp full params
+        self.param_mean = _to_tensor(param_full_mean)
+        self.param_std = _to_tensor(param_full_std)
+
+        self.u = _to_tensor(u_).double()
+        self.w_shp = _to_tensor(w_shp_).double()
+        self.w_exp = _to_tensor(w_exp_).double()
+
+        self.deform_matrix = _to_tensor(deform_matrix).double()
+        self.control_points = _to_tensor(control_points).double()
+    
+    def reconstruct_mesh(self, pg, offsetg, alpha_shpg, alpha_expg, batch):
+        # parse param
+        # gt_param = gt_param * self.param_std + self.param_mean
+        # pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
+        
+        if gt_param.shape[1] == 62:
+            target_vert = pg @ (self.u_lp + self.w_shp_lp @ alpha_shpg + self.w_exp_lp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        elif gt_param.shape[1] == 240:
+            # rewhiten needed
+            target_vert = pg @ (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        else:
+            target_vert = pg @ (self.u_c + self.w_shp_c @ alpha_shpg + self.w_exp_c @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        
+        target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
+
+        return target_vert
+
+    def deform_aap_mesh(self, pred_param, offsetg, batch):
+        pose_param = pred_param[:, :7].double()
+
+        s = torch.abs(pose_param[:, 0]).view(batch, 1)
+        axis_angle = pose_param[:, 1:4]
+        offset = pose_param[:, 4:].view(batch, 3, 1)
+
+        # use offset gt for z coordinate
+        offset[:, -1] = offsetg[:, -1]
+
+        p = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
+
+        deform_param = pred_param[:, 7:]
+        deform = deform_param.view(batch, cp_num//3, -1).double() # reshape to 3d
+        deformed_vert = (torch.einsum('ab,acd->acd', s, p)) @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + offset
+
+        return deformed_vert.permute(0, 2, 1).type(torch.float32)
+
+
+    def forward(self, input, target):
+        N = target.shape[0]
+
+        # parse param
+        gt_param = target * self.param_std + self.param_mean
+        pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
+
+        target_vert = self.reconstruct_mesh(pg, offsetg, alpha_shpg, alpha_expg, N)
+        deformed_vert = self.deform_aap_mesh(input, offsetg, N) # use predicted pose with s, axis_angle, offset
+
+        return target_vert, deformed_vert
+
+
 class DeformVDCLoss(nn.Module):
     def __init__(self):
         super(DeformVDCLoss, self).__init__()

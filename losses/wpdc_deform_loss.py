@@ -179,21 +179,19 @@ class WPDCAxisAngleLoss(nn.Module):
             weights[:, i] = torch.norm(pred_vertex - gt_vertex, dim = (1,2))
 
         eps = 1e-6
-        weights[:, :11] += eps
-        weights[:, 12:] += eps
+        weights[:, :] += eps
 
         maxes, _ = weights.max(dim=1)
         maxes = maxes.view(-1, 1)
         weights /= maxes
 
+        # zero the z
+        weights[:, 6] = 0
+
         return weights
         
 
     def calc_diff(self, input_pose, target_pose):
-        # freeze only for calcualting the weights
-        # input_pose = torch.tensor(input_.data.clone(), requires_grad=False)
-        # target_pose = torch.tensor(target_.data.clone(), requires_grad=False)
-
         N = input_pose.shape[0]
 
         pg = (self.param_std[:12] * target_pose + self.param_mean[:12]).view(N, -1, 1) # N x 12 x1
@@ -214,7 +212,7 @@ class WPDCAxisAngleLoss(nn.Module):
     def forward(self, input, target):
         # input, target --> pose parameter
         weights = self.calc_weights(input, target)
-        loss = weights * self.calc_diff(input, target) ** 2 # MSE
+        loss = weights * self.calc_diff(input, target[:, :12]) ** 2 # MSE
         return loss.mean()
 
 

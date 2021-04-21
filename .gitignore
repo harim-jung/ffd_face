@@ -8329,3 +8329,7 @@ test_configs/AFLW2000-3D.med-pose-3.427.npy
 test_configs/AFLW2000-3D.small-pose-3.427.npy
 *.pyc
 losses/__pycache__/deform_loss_flex.cpython-38.pyc
+losses/__pycache__/deform_loss_flex.cpython-38.pyc
+utils/__pycache__/ddfa.cpython-38.pyc
+utils/__pycache__/inference.cpython-38.pyc
+utils/__pycache__/params.cpython-38.pyc

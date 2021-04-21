@@ -24,7 +24,7 @@ from collections import OrderedDict
 from utils.ddfa import DDFADataset, ToTensorGjz, NormalizeGjz
 from utils.ddfa import str2bool, AverageMeter
 from utils.io import mkdir
-from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutput, MouthLoss, RegionLMLoss
+from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutputwoZoffset, MouthLoss, RegionLMLoss
 from losses.lm_loss import LMFittedLoss, LML1Loss
 from losses.wpdc_deform_loss import WPDCPoseLoss, WPDCAxisAngleLoss, PDCAxisAngleLoss
 
@@ -80,12 +80,12 @@ def parse_args():
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='3', type=str)
+    parser.add_argument('--devices-id', default='0', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_pose_axis_angle_abss', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_pose_axis_angle_abss_210419.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_wpose_axis_angle_abss', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_wpose_axis_angle_abss_210421.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--dimensions', default='6, 99, 4', type=str)
     parser.add_argument('--param-classes', default=10507, type=int) # 10500 + 7
@@ -188,9 +188,9 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
 
         pose_output = output[:, :7]
         deform_output = output[:, 7:]
-        pose_target = target[:, :12]
+        # pose_target = target[:, :12]
 
-        param_loss = param_criterion(pose_output, pose_target)
+        param_loss = param_criterion(pose_output, target)
 
         target_vert, deformed_vert = vertex_criterion(output, target)
 
@@ -238,6 +238,10 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
         if i > 0 and i % args.print_freq == 0:
             logging.info(f'Epoch: [{epoch}][{i}/{len(train_loader)}]\t'
                          f'LR: {lr:8f}\t'
+                         f'Delta P Avg {delta_p_vals.val:.4f} ({delta_p_vals.avg:.4f}) \t'
+                         f'Scale Avg {s_vals.avg:.8f} \t'
+                         f'Rot Avg {rot_vals.avg:.4f} \t'
+                         f'Offset Avg {offset_vals.avg:.4f} \t'
                          f'Up Mouth Loss {up_mouth_losses.val:.4f} ({up_mouth_losses.avg:.4f})\t'
                          f'Low Mouth Loss {low_mouth_losses.val:.4f} ({low_mouth_losses.avg:.4f})\t'
                          f'Up Nose Loss {up_nose_losses.val:.4f} ({up_nose_losses.avg:.4f})\t'
@@ -251,10 +255,6 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, param_
                          f'Vertex Loss {vertex_losses.val:.4f} ({vertex_losses.avg:.4f})\t'
                          f'Param Loss {param_losses.val:.4f} ({param_losses.avg:.4f})\t'
                         #  f'Delta P Norm {delta_p_norms.val:.4f} ({delta_p_norms.avg:.4f})\t'
-                         f'Delta P Avg {delta_p_vals.val:.4f} ({delta_p_vals.avg:.4f}) \t'
-                         f'Scale Avg {s_vals.avg:.8f} \t'
-                         f'Rot Avg {rot_vals.avg:.4f} \t'
-                         f'Offset Avg {offset_vals.avg:.4f} \t'
                          f'Loss {losses.val:.4f} ({losses.avg:.4f})\t'
                          f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
             )
@@ -297,6 +297,10 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
         l_eye_losses = []
         r_eye_losses = []
         contour_losses = []
+        delta_p_vals = []
+        s_vals = []
+        rot_vals = []
+        offset_vals = []
 
         loss_weights = args.weights.copy()
         for i, (input, target) in enumerate(val_loader):
@@ -307,9 +311,9 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
 
             pose_output = output[:, :7]
             deform_output = output[:, 7:]
-            pose_target = target[:, :12]
+            # pose_target = target[:, :12]
 
-            param_loss = param_criterion(pose_output, pose_target)
+            param_loss = param_criterion(pose_output, target)
 
             target_vert, deformed_vert = vertex_criterion(output, target)
 
@@ -337,6 +341,11 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
             l_eye_losses.append(l_eye.item())
             r_eye_losses.append(r_eye.item())
             contour_losses.append(contour.item())
+            delta_p_vals.append(torch.abs(deform_output).mean().item())
+            s_vals.append(pose_output[:, 0].mean().item())
+            rot_vals.append(pose_output[:, 1:4].mean().item())
+            offset_vals.append(torch.abs(pose_output[4:]).mean().item())
+
 
         elapse = time.time() - end
     
@@ -353,9 +362,17 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
         l_eye_loss = np.mean(l_eye_losses)
         r_eye_loss = np.mean(r_eye_losses)
         contour_loss = np.mean(contour_losses)
+        delta_p_val = np.mean(delta_p_vals)
+        s_val = np.mean(s_vals)
+        rot_val = np.mean(rot_vals)
+        offset_val = np.mean(offset_vals)
         
         
         logging.info(f'Val: [{epoch}][{len(val_loader)}]\t'
+                    f'Delta P Avg {delta_p_val:.4f} \t'
+                    f'Scale Avg {s_val:.8f} \t'
+                    f'Rot Avg {rot_val:.4f} \t'
+                    f'Offset Avg {offset_val:.4f} \t'
                     f'Up Mouth Loss {up_mouth_loss:.4f}\t'
                     f'Low Mouth Loss {low_mouth_loss:.4f}\t'
                     f'Up Nose Loss {up_nose_loss:.4f}\t'
@@ -365,11 +382,12 @@ def validate(val_loader, model, criterion, vertex_criterion, lm_criterion, param
                     f'Left Eye Loss {l_eye_loss:.4f}\t'
                     f'Right Eye Loss {r_eye_loss:.4f}\t'
                     f'Contour Loss {contour_loss:.4f}\t'
-                     f'Landmark Loss {lm_loss:.4f}\t'
-                     f'Vertex Loss {vertex_loss:.4f}\t'
-                     f'Param Loss {param_loss:.4f}\t'
-                     f'Loss {loss:.4f}\t'
-                     f'Time {elapse:.3f}')
+                    f'Landmark Loss {lm_loss:.4f}\t'
+                    f'Vertex Loss {vertex_loss:.4f}\t'
+                    f'Param Loss {param_loss:.4f}\t'
+                    f'Loss {loss:.4f}\t'
+                    f'Time {elapse:.3f}')
+
         if log:
             writer.add_scalar('validation_loss_by_epoch', loss, epoch)
             writer.add_scalar('param_val_loss_by_epoch', param_loss, epoch)
@@ -412,10 +430,10 @@ def main():
 
     model = nn.DataParallel(model, device_ids=args.devices_id).cuda()  # -> GPU
 
-    vertex_criterion = VertexOutput().cuda()
+    vertex_criterion = VertexOutputwoZoffset().cuda()
     criterion = DeformVDCLoss().cuda()
     lm_criterion = RegionLMLoss().cuda()
-    param_criterion = PDCAxisAngleLoss().cuda()
+    param_criterion = WPDCAxisAngleLoss().cuda()
 
     if args.optimizer == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=args.base_lr)
@@ -485,6 +503,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_pose_axis_angle_abss')
+    writer = SummaryWriter('training/runs/ffd_resnet_wpose_axis_angle_abss')
     main()
     writer.close()
