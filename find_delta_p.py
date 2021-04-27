@@ -16,7 +16,7 @@ filelists_train ='train.configs/train_aug_120x120.list.train'
 filelists_val = 'train.configs/train_aug_120x120.list.val'
 root ='../Datasets/train_aug_120x120/'
 param_fp_train = 'train.configs/param_all_full.pkl'
-param_fp_train = 'train.configs/param_all.pkl'
+# param_fp_train = 'train.configs/param_all.pkl'
 param_fp_val ='train.configs/param_all_val_full.pkl'
 
 normalize = NormalizeGjz(mean=127.5, std=128)  # may need optimization
@@ -104,14 +104,14 @@ for i in range(0, len(train_dataset), 100):
     gt_param = train_dataset[i][1].numpy()
 
     p, offset, alpha_shp, alpha_exp = _parse_param(gt_param)
-    gt_vert = (u_ + w_shp_lp @ alpha_shp + w_exp_lp @ alpha_exp).reshape(3, -1, order='F')
-    # gt_vert = (u_ + w_shp_ @ alpha_shp + w_exp_ @ alpha_exp).reshape(3, -1, order='F')
+    # gt_vert = (u_ + w_shp_lp @ alpha_shp + w_exp_lp @ alpha_exp).reshape(3, -1, order='F')
+    gt_vert = (u_ + w_shp_ @ alpha_shp + w_exp_ @ alpha_exp).reshape(3, -1, order='F')
     gt_transformed_vert = p @ gt_vert + offset
 
     print(train_dataset.lines[i])
     img = cv2.imread(root + train_dataset.lines[i])
     render(img, [gt_transformed_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
-    dump_to_ply(gt_transformed_vert, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_62.ply", transform=False)
+    dump_to_ply(gt_vert, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply", transform=False)
 
     # Ax = b
     begin = time.time()

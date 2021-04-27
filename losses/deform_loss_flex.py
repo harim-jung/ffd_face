@@ -250,13 +250,15 @@ class VertexOutputwoZoffset(nn.Module):
         offset = pose_param[:, 4:].view(batch, 3, 1)
 
         # use offset gt for z coordinate
-        offset[:, -1] = offsetg[:, -1]
+        # offset_z = offsetg[:, -1].clone().view(batch, -1, 1)
+        offset_z = offsetg[:, -1].view(batch, -1, 1)
+        new_offset = torch.cat((offset[:, :2], offset_z), 1)
 
         p = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
 
         deform_param = pred_param[:, 7:]
         deform = deform_param.view(batch, cp_num//3, -1).double() # reshape to 3d
-        deformed_vert = (torch.einsum('ab,acd->acd', s, p)) @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + offset
+        deformed_vert = (torch.einsum('ab,acd->acd', s, p)) @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + new_offset
 
         return deformed_vert.permute(0, 2, 1).type(torch.float32)
 

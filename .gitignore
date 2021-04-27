@@ -8344,3 +8344,17 @@ training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619009959.DE
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619010389.DESKTOP-FSVJU3I.21272.0
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619011046.DESKTOP-FSVJU3I.21976.0
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619011815.DESKTOP-FSVJU3I.3344.0
+training/runs/ffd_mobilenet_no_pose_axis_angle_abss/events.out.tfevents.1619428325.DESKTOP-FSVJU3I.16880.0
+training/runs/ffd_mobilenet_no_pose_axis_angle_abss/events.out.tfevents.1619435264.DESKTOP-FSVJU3I.13660.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619013087.DESKTOP-FSVJU3I.21792.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619052108.DESKTOP-FSVJU3I.29492.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619053490.DESKTOP-FSVJU3I.27692.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619053744.DESKTOP-FSVJU3I.13844.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619054116.DESKTOP-FSVJU3I.16624.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619054406.DESKTOP-FSVJU3I.26800.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619054736.DESKTOP-FSVJU3I.22840.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619055545.DESKTOP-FSVJU3I.24636.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619056837.DESKTOP-FSVJU3I.24392.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619056967.DESKTOP-FSVJU3I.10096.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619057295.DESKTOP-FSVJU3I.26392.0
+training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619066115.DESKTOP-FSVJU3I.22632.0
