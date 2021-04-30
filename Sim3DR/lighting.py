@@ -34,10 +34,11 @@ class RenderPipeline(object):
     def update_light_pos(self, light_pos):
         self.light_pos = convert_type(light_pos)
 
-    def __call__(self, vertices, triangles, bg, texture=None):
+    #overlap = render_app(ver, tri, overlap), with  overlap = img.copy(), which is bg
+    def __call__(self, vertices, triangles, bg, texture=None): # bg = depth buffer
         normal = get_normal(vertices, triangles)
 
-        # 2. lighting
+        # 2. lighting the vertices
         light = np.zeros_like(vertices, dtype=np.float32)
         # ambient component
         if self.intensity_ambient > 0:
@@ -62,8 +63,10 @@ class RenderPipeline(object):
         light = np.clip(light, 0, 1)
 
         # 2. rasterization, [0, 1]
-        if texture is None:
+        if texture is None: # rasterize the colors computed at the vertices of the mesh onto render_img
             render_img = rasterize(vertices, triangles, light, bg=bg)
+              # this function is defined in Sim3DR/lib/rasterize_kernel.cpp
+              # bg is used as the depth_buffer (current depth buffer) in the process of rendering
             return render_img
         else:
             texture *= light

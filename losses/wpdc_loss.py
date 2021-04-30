@@ -103,7 +103,7 @@ class WPDCLoss(nn.Module):
         weights /= maxes
 
         # zero the z
-        weights[:, 11] = 0
+        weights[:, 11] = 0 # This cause the z component of the offset  not change.
 
         return weights
 

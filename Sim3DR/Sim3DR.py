@@ -11,8 +11,8 @@ def get_normal(vertices, triangles):
     return normal
 
 
-def rasterize(vertices, triangles, colors, bg=None,
-              height=None, width=None, channel=None,
+def rasterize(vertices, triangles, colors, bg=None, # colors = texture for the mesh
+              height=None, width=None, channel=None, # bg = depth buffer
               reverse=False):
     if bg is not None:
         height, width, channel = bg.shape
@@ -20,6 +20,7 @@ def rasterize(vertices, triangles, colors, bg=None,
         assert height is not None and width is not None and channel is not None
         bg = np.zeros((height, width, channel), dtype=np.uint8)
 
+    # create the image buffer with black colors initialized
     buffer = np.zeros((height, width), dtype=np.float32) - 1e8
 
     if colors.dtype != np.float32:

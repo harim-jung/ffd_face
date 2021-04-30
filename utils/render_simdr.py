@@ -44,11 +44,11 @@ def plot_image(img):
     plt.show()
 
 
-def render(img, ver_lst, tri, alpha=0.6, show_flag=False, wfp=None, with_bg_flag=True, transform=False):
+def render(img, ver_lst, tri, alpha=0.6, show_flag=False, wfp=None, with_bg_flag=True, transform=False): # transform = True in our experiment
     tri = _to_ctype(tri)
 
     if transform:
-        img = cv2.flip(img, 0)
+        img = cv2.flip(img, 0) # img = original image:  vertical flipping: flip the image around the x-axis, by passing the value 0 as second argument
 
     if with_bg_flag:
         overlap = img.copy()
@@ -57,7 +57,7 @@ def render(img, ver_lst, tri, alpha=0.6, show_flag=False, wfp=None, with_bg_flag
 
     for ver_ in ver_lst:
         ver = _to_ctype(ver_.T)  # transpose
-        overlap = render_app(ver, tri, overlap)
+        overlap = render_app(ver, tri, overlap) # overlap = bg = depth buffer
 
     if with_bg_flag:
         res = cv2.addWeighted(img, 1 - alpha, overlap, alpha, 0)
@@ -65,7 +65,7 @@ def render(img, ver_lst, tri, alpha=0.6, show_flag=False, wfp=None, with_bg_flag
         res = overlap
 
     if transform:    
-        res = cv2.flip(res, 0)
+        res = cv2.flip(res, 0) # vertical flip the rendered image
 
     if wfp is not None:
         cv2.imwrite(wfp, res)

@@ -9,6 +9,9 @@ def bernstein_poly(n, v, stu):
     return weights
 
 
+
+
+
 def trivariate_bernstein(stu, lattice):
     # what is lattice?
     if len(lattice.shape) != 4 or lattice.shape[3] != 3:

@@ -216,8 +216,9 @@ void _get_normal(float *ver_normal, float *vertices, int *triangles, int nver, i
 
 // rasterization by Z-Buffer with optimization
 // Complexity: < ntri * h * w * c
+// called by image =  rasterize(vertices, triangles, light, bg=bg) in lighting.py
 void _rasterize(
-        unsigned char *image, float *vertices, int *triangles, float *colors, float *depth_buffer,
+        unsigned char *image, float *vertices, int *triangles, float *colors, float *depth_buffer, // depth_buffer = bg
         int ntri, int h, int w, int c, float alpha, bool reverse) {
     int x, y, k;
     int tri_p0_ind, tri_p1_ind, tri_p2_ind;
@@ -227,7 +228,7 @@ void _rasterize(
     float p_color, p0_color, p1_color, p2_color;
     float weight[3];
 
-    for (int i = 0; i < ntri; i++) {
+    for (int i = 0; i < ntri; i++) { // for each triangle in the mesh
         tri_p0_ind = triangles[3 * i];
         tri_p1_ind = triangles[3 * i + 1];
         tri_p2_ind = triangles[3 * i + 2];
@@ -265,7 +266,7 @@ void _rasterize(
                     get_point_weight(weight, p, p0, p1, p2);
                     p_depth = weight[0] * p0_depth + weight[1] * p1_depth + weight[2] * p2_depth;
 
-                    if ((p_depth > depth_buffer[y * w + x])) {
+                    if ((p_depth > depth_buffer[y * w + x])) { // p_depth is in front of depth_buffer[y * w + x]
                         for (k = 0; k < c; k++) {
                             p0_color = colors[c * tri_p0_ind + k];
                             p1_color = colors[c * tri_p1_ind + k];
@@ -281,15 +282,15 @@ void _rasterize(
                                         (1 - alpha) * image[y * w * c + x * c + k] + alpha * 255 * p_color);
 //                                image[y * w * c + x * c + k] = (unsigned char) (255 * p_color);
                             }
-                        }
+                        } // for (k = 0; k < c; k++) {
 
                         depth_buffer[y * w + x] = p_depth;
-                    }
-                }
-            }
-        }
-    }
-}
+                    } // if ((p_depth > depth_buffer[y * w + x])) {
+                } //   if (weight[2] >= 0 && weight[1] >= 0 && weight[0] > 0) {
+            } //for (x = x_min; x <= x_max; x++) {
+        } //  for (y = y_min; y <= y_max; y++) {
+    } // for (int i = 0; i < ntri; i++) { // for each triangle in the mesh
+} // void _rasterize(
 
 
 void _rasterize_triangles(
