@@ -249,30 +249,19 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 # reference_mesh = vertices
 
 """original bfm mean shape"""
-reference_mesh = u_.reshape(3, -1, order='F')
+# reference_mesh = u_.reshape(3, -1, order='F')
 
-"""new reference mesh (aflw/image00044.ply)"""
-# plydata = PlyData.read('train.configs/new_reference_mesh.ply')
-# v = plydata['vertex']
 
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
+"""Augmented LP reference mesh (only rigid part wo pose) (HELEN_HELEN_3036412907_2_0_1_wo_pose.ply)"""
+plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply')
+v = plydata['vertex']
 
-# vert_ = vert * 0.3
-# vert_[1] -= vert_[1].min()
-# vert_[1] += (std_size - vert_[1].max()) / 2
-# vertices = vert_
+vert = np.zeros((3, 35709))
+for i, vt in enumerate(v):
+    vert[:, i] = np.array(list(vt))
 
-"""LP reference mesh (HELEN_3036412907_2_0.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
-# v = plydata['vertex']
+reference_mesh = vert
 
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# reference_mesh = vert
 
 """Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
 # plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
@@ -285,17 +274,9 @@ reference_mesh = u_.reshape(3, -1, order='F')
 # reference_mesh = vert
 
 
-"""LP reference mesh (HELEN_3083968872_1_0.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# reference_mesh = vert
-
 faces = tri_ # (76073, 3)
+
+
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
@@ -316,6 +297,7 @@ dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6))
 deform_matrix_ = dic_["b"] #(38365, 216)
 control_points_ = dic_["p"] #(216, 3)
 cp_num_ = control_points_.reshape(-1).shape[0]
+
 
 
 # coord_range = reference_mesh[:, mouth_index]
@@ -435,3 +417,39 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 # control_points = dic["p"] #(64, 3)
 # # vert = b @ p # (p + dp)
 # cp_num = control_points.reshape(-1).shape[0]
+
+
+
+
+"""new reference mesh (aflw/image00044.ply)"""
+# plydata = PlyData.read('train.configs/new_reference_mesh.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# vert_ = vert * 0.3
+# vert_[1] -= vert_[1].min()
+# vert_[1] += (std_size - vert_[1].max()) / 2
+# vertices = vert_
+
+"""LP reference mesh (HELEN_3036412907_2_0.jpg)"""
+# plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# reference_mesh = vert
+
+"""LP reference mesh (HELEN_3083968872_1_0.jpg)"""
+# plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
+# v = plydata['vertex']
+
+# vert = np.zeros((3, 35709))
+# for i, vt in enumerate(v):
+#     vert[:, i] = np.array(list(vt))
+
+# reference_mesh = vert
