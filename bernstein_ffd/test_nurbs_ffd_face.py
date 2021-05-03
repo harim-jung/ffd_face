@@ -21,6 +21,7 @@ from utils.ddfa import get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_ang
 # from utils.render_simdr import render
 import cv2
 from plyfile import PlyData, PlyElement
+from utils.params import keypoints_
 
 from ffd import bernstein, deform, util
 
@@ -264,91 +265,20 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 # normal [0.303801 -4.853062 3.926230]
 
 # %%
+"""Augmented LP reference mesh (only rigid part wo pose) (HELEN_HELEN_3036412907_2_0_1_wo_pose.ply)"""
+plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply')
+v = plydata['vertex']
 
+vert = np.zeros((3, 35709))
+for i, vt in enumerate(v):
+    vert[:, i] = np.array(list(vt))
 
-"""scaled bfm mean shape"""
-# scaled mean shape
-R = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-# 0.001236969662055349 # mean of 300w-lp
-s = 0.0004  # 35709
-# s = 0.0006 # 38365
-p = s * R
-
-print('mean face=', u_)
-# just u_
-vertices = p @ u_.reshape(3, -1, order='F')  # (3, 37509)
-
-# scale x, y within 120x120 and shift to middle
-vertices[0] -= vertices[0].min()
-vertices[0] += (std_size - vertices[0].max()) / 2
-vertices[1] -= vertices[1].min()
-vertices[1] += (std_size - vertices[1].max()) / 2
-# shift z to start from 0
-vertices[2] -= vertices[2].min()
-reference_mesh = vertices
-
-"""original bfm mean shape"""
-# reference_mesh = u_.reshape(3, -1, order='F')
-
-"""new reference mesh (aflw/image00044.ply)"""
-# plydata = PlyData.read('train.configs/new_reference_mesh.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# vert_ = vert * 0.3
-# vert_[1] -= vert_[1].min()
-# vert_[1] += (std_size - vert_[1].max()) / 2
-# vertices = vert_
-
-"""LP reference mesh (HELEN_3036412907_2_0.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# reference_mesh = vert
-
-"""Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
-# plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# reference_mesh = vert
-
-"""LP reference mesh (HELEN_HELEN_3036412907_2_0_1.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp_120.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# # vert[0] -= vert[0].min()
-# # vert[1] -= vert[1].min()
-# # vert[2] -= vert[2].min()
-# reference_mesh = vert
-
-
-"""LP reference mesh (HELEN_3083968872_1_0.jpg)"""
-# plydata = PlyData.read('train.configs/reference_mesh_lp_new.ply')
-# v = plydata['vertex']
-
-# vert = np.zeros((3, 35709))
-# for i, vt in enumerate(v):
-#     vert[:, i] = np.array(list(vt))
-
-# reference_mesh = vert
+reference_mesh = vert
 
 
 faces = tri_  # (76073, 3)
+
+landmarks = keypoints_
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9))
