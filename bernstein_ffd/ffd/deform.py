@@ -9,14 +9,13 @@ import math
 from scipy import optimize
 
 
-
 def xyz_to_stu(xyz, origin, STU_axes):
     if STU_axes.shape == (3,):
         STU_axes = np.diag(STU_axes)
         # raise ValueError(
         #     'stu_axes should have shape (3,), got %s' % str(stu_axes.shape))
     # s, t, u = np.diag(stu_axes)
-    assert(STU_axes.shape == (3, 3))
+    assert (STU_axes.shape == (3, 3))
     S, T, U = STU_axes
     TU = np.cross(T, U)
     SU = np.cross(S, U)
@@ -32,85 +31,250 @@ def xyz_to_stu(xyz, origin, STU_axes):
     ], axis=-1)
     return stu
 
+#https://math.stackexchange.com/questions/413563/potential-division-by-zero-in-the-construction-of-nurbs-basis-functions-how-to
+def N(i, p, u, U):
 
-
-
-def N(i,p, u, U):
-
-    if (i == 0):
-        if ( U[i] <= u && u > U[i+1]):
+    if p == 0:
+        if U[i] <= u and u < U[i + 1]:
             return 1.0
-        else
-            return 0.0
+        else:
+            return 0.0 # U[i] == U[i+1]
     else:
-        if ( u - U[i]) == 0 &&  ( U[i+p] - U[i]) == 0:
-            coeff1 = 0.0
+
+        if (U[i + p] - U[i]) == 0:  # the case of division by zero
+            w1 = 0.0
         else:
-            coeff1 =  ( u - U[i]) / ( U[i+p] - U[i])
+            w1 = (u - U[i]) / (U[i + p] - U[i])
 
-        if    ( U[i+p+1] - u) == 0 &&   ( U[i+p+1] - U[i+1]) == 0
-            coeff2 = 0.0
+        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+            w2 = 0.0
+
         else:
-            coeff2  =   ( U[i+p+1] - u) / ( U[i+p+1] - U[i+1])\
+            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
+
+        return w1 * N(i, p - 1, u, U) + w2 * N(i + 1, p - 1, u, U)
 
 
-        return  coeff1  * N(i, p-1, u, U) +  coeff2 * N(i+1, p-1, u, U)
 
-def fun( x, F, U, V, W, P, N):  # G = 1; x = [u,v,w]; F=[x,y,z]: (a+1) x (b+1) x (c+1)  are control points
+
+def N1(i, p, u, U):
+
+    if p == 0:
+        if U[i] <= u and u < U[i + 1]:
+            return 1.0
+        else:
+            return 0.0  # U[i] == U[i+1]
+    else:
+
+        if (U[i + p] - U[i]) == 0:  # the case of division by zero
+            w1 = 0.0
+        else:
+            w1 = (u - U[i]) / (U[i + p] - U[i])
+            #if (w1 < 0):
+               # print('w1: N1(i,p,u,U)= N1({0}, {1}, {2}, {3})'.format(i,p,u,U) )
+               # print("(u- U[{0}]) / (U[{1}] - U[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+               #          .format(i, i + p,  i,  u, U[i], U[i+p], U[i] )  )
+
+        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+            w2 = 0.0
+
+        else:
+            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
+            #if (w2 < 0):
+                #print('w2: N1(i,p,u,U)= N1({0}, {1}, {2}, {3})'.format(i, p, u, U))
+                #print(" (U[{0}] - u) / (U[{1}] - U[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+                #      .format(i+p+1,    i + p+1, i+1, U[i + p+1], u, U[i+p+1], U[i+1] ) )
+
+
+        #print("N1(i, p-1, u, U) = N1({0}, {1}, {2}, U) = {3}".format( i,p-1, u,  N1(i, p-1, u, U) ) )
+        #print("N1(i+1, p-1, u, U) = N1({0}, {1}, {2}, U) = {3}".format(i+1, p - 1, u, N1(i+1, p-1, u, U)  ))
+        assert N1(i, p-1, u, U) >= 0, "N1(i, p-1, u, U) should be  non-negative"
+        assert N1(i+1, p-1, u, U) >= 0, "N1(i+1, p-1, u, V) should be non-negative"
+
+        #The previous property shows that Ni-p,p(u), Ni-p+1,p(u), Ni-p+2,p(u), ..., and Ni,p(u) are non-zero on [ui, ui+1).
+        # (1) Basis function Ni,p(u) is non-zero on [ui, ui+p+1). Or, equivalently, Ni,p(u) is non-zero on p+1 knot spans [ui, ui+1), [ui+1, ui+2), ..., [ui+p, ui+p+1).
+
+        # This one states that the sum of these p+1 basis functions is 1.
+        # (2) On any knot span [ui, ui+1), at most p+1 degree p basis functions are non-zero, namely: Ni-p,p(u), Ni-p+1,p(u), Ni-p+2,p(u), ..., Ni-1,p(u) and Ni,p(u),
+
+
+
+        return w1 * N1(i, p - 1, u, U) + w2 * N1(i + 1, p - 1, u, U)
+
+
+def N2(i, p, u, U):
+    if p == 0:
+        if U[i] <= u and u < U[i + 1]:
+            return 1.0
+        else:
+            return 0.0  # U[i] == U[i+1]
+    else:
+
+        if (U[i + p] - U[i]) == 0:  # the case of division by zero
+            w1 = 0.0
+        else:
+            w1 = (u - U[i]) / (U[i + p] - U[i])
+            #if (w1 < 0):
+             #   print('w1: N2(i,p,v,V)= N2({0}, {1}, {2}, {3})'.format(i, p, u, U))
+             #   print(" (v- V[{0}]) / (V[{1}] - V[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+             #         .format(i, i + p, i, u, U[i], U[i + p], U[i]))
+
+        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+            w2 = 0.0
+
+        else:
+            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
+            #if (w2 < 0):
+            #    print('w2: N2(i,p,v,V)= N2({0}, {1}, {2}, {3})'.format(i, p, u, U))
+            #    print(" (V[{0}] - v) / (V[{1}] - V[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+            #          .format(i + p + 1, i + p + 1, i + 1, U[i + p + 1], u, U[i + p + 1], U[i + 1]))
+
+        assert N2(i, p - 1, u, U) >= 0, "N2(i, p-1, u, U) should be non-negative"
+        assert N2(i + 1, p - 1, u, U) >= 0, "N2(i+1, p-1, u, V) should be non-negative"
+
+        return w1 * N2(i, p - 1, u, U) + w2 * N2(i + 1, p - 1, u, U)
+
+
+def N3(i, p, u, U):
+    if p == 0:
+        if U[i] <= u and u < U[i + 1]:
+            return 1.0
+        else:
+            return 0.0  # U[i] == U[i+1]
+    else:
+
+        if (U[i + p] - U[i]) == 0:  # the case of division by zero
+            w1 = 0.0
+        else:
+            w1 = (u - U[i]) / (U[i + p] - U[i])
+            #if (w1 < 0):
+               # print('w1: N3(i,p,w,W)= N3({0}, {1}, {2}, {3})'.format(i, p, u, U))
+               # print(" (w- W[{0}]) / (W[{1}] - W[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+               #       .format(i, i + p, i, u, U[i], U[i + p], U[i]))
+
+        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+            w2 = 0.0
+
+        else:
+            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
+            #if (w2 < 0):
+                #print('w2: N3(i,p,w,W)= N3({0}, {1}, {2}, {3})'.format(i, p, u, U))
+                #print(" (W[{0}] - w) / (W[{1}] - W[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
+                #      .format(i + p + 1, i + p + 1, i + 1, U[i + p + 1], u, U[i + p + 1], U[i + 1]))
+
+        assert N3(i, p - 1, u, U) >= 0, "N3(i, p-1, u, U) should be non-negative"
+        assert N3(i + 1, p - 1, u, U) >= 0, "N3(i+1, p-1, u, V) should be non-negative"
+
+        return w1 * N3(i, p - 1, u, U) + w2 * N3(i + 1, p - 1, u, U)
+
+
+
+def fun(x, F, U, V, W, P, N):  # G = 1; x = [u,v,w]; F=[x,y,z]: (a+1) x (b+1) x (c+1)  are control points
 
     u = x[0]
     v = x[1]
     w = x[2]
 
-    R = 0.0
+    R = [0.0, 0.0, 0.0]
 
     for i in range(P.shape[0]):  # i =0.... a
-      for j in range(P.shape[1]):  # j =0.... b
-          for k in range(P.shape[2]):  # k =0.... c
+        for j in range(P.shape[1]):  # j =0.... b
+            for k in range(P.shape[2]):  # k =0.... c
 
-              R += P[i, j, k] * N(i, 3, u, U) * N(j, 3, v, V) * N(k, 3, w, W)  # Use cubic basis functions
+                R += P[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
 
     return R - F
 
+#https://math.stackexchange.com/questions/1486833/how-to-deduce-the-recursive-derivative-formula-of-b-spline-basis
 # refer to https://dspace5.zcu.cz/bitstream/11025/852/1/Prochazkova.pdf for the recursive formula for the derivative of N
-def dN( i,p, u, U):
-
-    if p ==0 && ( U[i+p] - U[i]) == 0:
-        coeff1 = 0.0
+def dN1(i, p, u, U):
+    if  (U[i + p] - U[i]) == 0: # the case of division by zero
+        w1 = 0.0
     else:
-        coeff1 = p /  ( U[i+p] - U[i])
+        w1 = p / (U[i + p] - U[i])
 
-    if p ==0 &&  (U[i+p+1] - U[i+1]) == 0:
-        coeff2 = 0.0
+    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+        w2 = 0.0
     else:
-        coeff2 = p /  ( U[i+p] - U[i+1])
+        w2 = p / (U[i + p +1] - U[i + 1])
 
-    return coeff1 * N(i,p-1,u,U) + coeff2 * N(i+1,p-1,u,U )
+    return w1 * N1(i, p - 1, u, U) -  w2 * N1(i + 1, p - 1, u, U)
 
-def jac( x, F, U, V, W, P,N ): # jacobain matrix 3 x 3
+def dN2(i, p, u, U):
+    if  (U[i + p] - U[i]) == 0: # the case of division by zero
+        w1 = 0.0
+    else:
+        w1 = p / (U[i + p] - U[i])
+
+    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+        w2 = 0.0
+    else:
+        w2 = p / (U[i + p +1] - U[i + 1])
+
+    return w1 * N2(i, p - 1, u, U) -  w2 * N2(i + 1, p - 1, u, U)
+
+def dN3(i, p, u, U):
+    if  (U[i + p] - U[i]) == 0: # the case of division by zero
+        w1 = 0.0
+    else:
+        w1 = p / (U[i + p] - U[i])
+
+    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
+        w2 = 0.0
+    else:
+        w2 = p / (U[i + p +1] - U[i + 1])
+
+    return w1 * N3(i, p - 1, u, U) -  w2 * N3(i + 1, p - 1, u, U)
+
+
+def jac(x, F, U, V, W, P, N):  # jacobain matrix 3 x 3
 
     u = x[0]
     v = x[1]
     w = x[2]
-    J = np.zeors( shape = (3,3), dtype=np.float)
+    J = np.zeros(shape=(3, 3), dtype=np.float)
 
     # derivative with respect to u
     # dR(u,v,w)/du = sum_{i = 0 ^ {a}sum_{j = 0} ^ {b}sum_{k = 0} ^ {c}dN(i, 3, u, U) / du N(j, 3, v, V) N(k, 3, w, W) P_ijk
 
-    gradOfXYZwrtuvw = np.zeros( shape=(3,3), dtype=np.float)
 
-    for jj in range(3):
-
-      for i in range(P.shape[0]):  # i =0.... a
+    for i in range(P.shape[0]):  # i =0.... a
         for j in range(P.shape[1]):  # j =0.... b
-          for k in range(P.shape[2]):  # k =0.... c
-              J[:,jj] = dN(i,3,u, U) * N(j,3,v,V) * N(k,3,w,W) * P[i,j,k]
+             for k in range(P.shape[2]):  # k =0.... c
 
+                    J[:, 0] = dN1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) * P[i, j, k]
+                    J[:, 1] = N1(i, 3, u, U) * dN2(j, 3, v, V) * N3(k, 3, w, W) * P[i, j, k]
+                    J[:, 2] = N1(i, 3, u, U) * N2(j, 3, v, V) * dN3(k, 3, w, W) * P[i, j, k]
 
     return J
 
-#xyz_to_stu_nurbs(p, xyz,  U, V, W, P)
-def xyz_to_stu_nurbs(xyz, U,V,W,P,N):  #  xyz: vertices of a mesh
+
+def initial_guess_for_nonlinear_equations(xyz, l, U,V,W):
+
+    # transform each of xyz to uvw by scaling xyz to the range of uvw specified in U,V,W
+
+    xyz_minimum, xyz_maximum = util.extent(xyz, axis=0)
+
+    xyz_range = xyz_maximum - xyz_minimum
+
+
+    u_max_index = U.shape[0] - 1
+    v_max_index = V.shape[0] - 1
+    w_max_index = W.shape[0] - 1
+    u_range = U[ u_max_index] - 0
+    v_range = V[ v_max_index] - 0
+    w_range = W[ w_max_index] - 0
+
+    uvw_range = np.array( [ u_range, v_range, w_range] )
+    #uvw = xyz * ( uvw_range / xyz_range )
+
+    # xyz: uvw = xyz_range: uvw_range
+    # print('xyz[l]=xyz[{0}={1}'.format(l, xyz[l]) )
+    uvw = (xyz[l] - xyz_minimum)  * ( uvw_range / xyz_range )
+
+    return uvw
+
+def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
 
@@ -121,72 +285,145 @@ def xyz_to_stu_nurbs(xyz, U,V,W,P,N):  #  xyz: vertices of a mesh
     #  U = (u0, u1,...,uq), q = a + p+1,  V = (v0, u1,...,ur), r = b + m+1, W = (w0, w1,...,ws), s = c +n+1
     #  ui = 0 if 0<= i <= p; i - p if p < i <= (q-p-1); q - 2p if (q-p-1) < i <= q
 
-    # xyz = R(s,t,u) = (R_1(s,t,u), R_2(s,t,u), R_3(s,t,u) ) =
-    #      = sum_{i=0}^{nx}sum_{j=0}^{ny}sum_{k=0}^{nz} N_{i,3}(s) N_{j,3}(t) N_{k,3}(u) ( p_{ijk}[0], p_{ijk}[1],p_{ijk}[2] )
-    #     = ( sum_{i=0}^{nx}sum_{j=0}^{ny}sum_{k=0}^{nz} N_{i,3}(s) N_{j,3}(t) N_{k,3}(u)  p_{ijk}[0],
-    #         sum_{i=0}^{nx}sum_{j=0}^{ny}sum_{k=0}^{nz} N_{i,3}(s) N_{j,3}(t) N_{k,3}(u)  p_{ijk}[1],
-    #          sum_{i=0}^{nx}sum_{j=0}^{ny}sum_{k=0}^{nz} N_{i,3}(s) N_{j,3}(t) N_{k,3}(u)  p_{ijk}[2] )
+    # xyz = R(u,v,w)
+    #      = sum_{i=0}^{a}sum_{j=0}^{b}sum_{k=0}^{c} N_{i,3}(u) N_{j,3}(v) N_{k,3}(w)  p_{ijk}
 
 
-    # Invert the equation  xyz = R(s,t,u) above.
+    # Invert the equation  xyz = R(u,v,w) above: Find (u,v,w) for each (x,y,z) on a given mesh.
 
     # cf. def fun(x,F, U, V, W, P, N):
 
-    stu = np.zeros( shape = (U.shape[0] * V.shape[0] * W.shape[2], 2),dtype=np.float  )
+    print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
+    print('xyz=', xyz)
+    uvw = np.zeros(shape=xyz.shape, dtype=np.float)
+
+    for l in range(xyz.shape[0]):
+    #for l in range(1):
+
+        #print('xyz[l]=', xyz[l])
+        x0 = initial_guess_for_nonlinear_equations(xyz, l, U, V, W)
+        #xyz_guess = uvw_to_xyz_nurbs(np.array([x0] ), U, V, W, P_lattice, N)
+
+        #print('initial guess = x0=', x0)
+        #print('xyz-guess = ', xyz_guess)
+
+        F = xyz[l]
+
+        args = (F, U, V, W, P_lattice, N)
+
+        #print('x0=', x0)
+
+        sol = optimize.root(fun, x0, args, method='hybr', jac=jac, tol=None)
+        uvw[l] = sol.x
+
+    return uvw
 
 
-    for i in range( xyz.shape[0] ):
-        F = xyz[i]
+def xyz_to_uvw_nurbs_debug(xyz,l, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
-        x0 = np.array([ ( U[0] + U[ U.shape[0] ]) /2.0,  (V[0] + V[ V.shape[0] ]) /2.0,  (W[0] + W[ W.shape[0] ] ) /2.0)     # initial guess
-        sol = optimize.root(fun, x0, (F, U,V,W,P,N), method='hybr', jac=jac, tol=None)
-        stu[i] = sol.x
+    # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
 
-    return stu
+    # extra parameters:
+    #  a,b,c: a+1, b+1, c+1 are the numbers of control points in the x, y, z direcitons
+    #  p,m,n: ( 1< p <= a, 1< m <= b, 1< n <= c)  the degrees of the basis functionns in u,v,w; default: p,m,n = 3
+    #  knot vectors:
+    #  U = (u0, u1,...,uq), q = a + p+1,  V = (v0, u1,...,ur), r = b + m+1, W = (w0, w1,...,ws), s = c +n+1
+    #  ui = 0 if 0<= i <= p; i - p if p < i <= (q-p-1); q - 2p if (q-p-1) < i <= q
+
+    # xyz = R(u,v,w)
+    #      = sum_{i=0}^{a}sum_{j=0}^{b}sum_{k=0}^{c} N_{i,3}(u) N_{j,3}(v) N_{k,3}(w)  p_{ijk}
+
+
+    # Invert the equation  xyz = R(u,v,w) above: Find (u,v,w) for each (x,y,z) on a given mesh.
+
+    # cf. def fun(x,F, U, V, W, P, N):
+
+    print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
+    print('xyz=', xyz)
+
+    uvw = np.zeros(shape=xyz.shape, dtype=np.float)
+
+    #for l in range(xyz.shape[0]):
+
+    print('xyz[l]=', xyz[l])
+    x0 = initial_guess_for_nonlinear_equations(xyz, l, U, V, W)
+        #xyz_guess = uvw_to_xyz_nurbs(np.array([x0] ), U, V, W, P_lattice, N)
+
+
+    print('initial guess = x0=', x0)
+        #print('xyz-guess = ', xyz_guess)
+
+    F = xyz[l]
+
+    args = (F, U, V, W, P_lattice, N)
+
+        #print('x0=', x0)
+
+    sol = optimize.root(fun, x0, args, method='hybr', jac=jac, tol=None)
+    uvw[l] = sol.x
+
+    return uvw
 
 
 
-def stu_to_xyz_nurbs(stu_points, U,V,W,P,N):
 
-    xyz = np.zeros( shape = stu_points.shape, dtype = np.float)
-    for i in range(stu_points.shape[0]):
+def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
+    xyz = np.zeros(shape=uvw_points.shape, dtype=np.float)
 
-      uvw = stu_points[i]
+    for l in range(uvw_points.shape[0]):
+        uvw = uvw_points[l]
 
-      R = 0.0
 
-      for i in range(P.shape[0]):  # i =0.... a
-        for j in range(P.shape[1]):  # j =0.... b
-            for k in range(P.shape[2]):  # k =0.... c
+        #print( "the {0} th  uvw {1}=".format(l, uvw) )
+        u = uvw[0]
+        v = uvw[1]
+        w = uvw[2]
 
-                R += P[i, j, k] * N(i, 3, u, U) * N(j, 3, v, V) * N(k, 3, w, W)  # Use cubic basis functions
+        R = 0.0
 
-      xyz[i] = R
+        for i in range(P_lattice.shape[0]):  # i =0.... a
+            for j in range(P_lattice.shape[1]):  # j =0.... b
+                for k in range(P_lattice.shape[2]):  # k =0.... c
+
+                    #print("N(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N(i, 3, u, U) ) )
+                    #print("N(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N(j, 3, v, V) ) )
+                    #print("N(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N(k, 3, w, W) ) )
+
+                    #https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
+
+                    assert N1(i, 3, u, U) >=0, "N1(i, 3, u, U) should be non-negative"
+                    assert N2(j, 3, v, V) >= 0, "N2(j, 3, v, V) should be non-negative"
+                    assert N3(k, 3, w, W) >= 0, "N2(k, 3, w, W) should be non-negative"
+
+                    #Local Support -- Ni,p(u) is a non-zero polynomial on [ui,ui+p+1)
+                    R += P_lattice[i, j, k] * N1(i, 3, u, U) * N1(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
+                    #print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
+
+        #print("final  xyz[{0}] = R = {1}".format(l, R))
+        xyz[l] = R
 
     return xyz
-
-
 
 
 def stu_to_xyz(stu_points, stu_origin, stu_axes):
     if stu_axes.shape != (3,):
         raise NotImplementedError()
-    return stu_origin + stu_points*stu_axes
+    return stu_origin + stu_points * stu_axes
 
 
 def get_stu_control_points(dims):
     stu_lattice = util.mesh3d(
-        *(np.linspace(0, 1, d+1) for d in dims), dtype=np.float32)
+        *(np.linspace(0, 1, d + 1) for d in dims), dtype=np.float32)
     stu_points = np.reshape(stu_lattice, (-1, 3))
     return stu_points
 
 
-
 def get_stu_control_points_nurbs(dims, STU_axes):
     stu_lattice = util.mesh3d(
-        *(np.linspace(0, STU_axes[i], dims[i]+1 ) for i in range(3) ), dtype=np.float32)
-    stu_points = np.reshape(stu_lattice, (-1, 3))
-    return  stu_points
+        *(np.linspace(0, STU_axes[i], dims[i] + 1) for i in range(3)), dtype=np.float32)
+
+    #stu_points = np.reshape(stu_lattice, (-1, 3))
+    return stu_lattice
 
 
 def get_control_points(dims, STU_origin, STU_axes):
@@ -194,17 +431,19 @@ def get_control_points(dims, STU_origin, STU_axes):
     xyz_points = stu_to_xyz(stu_points, STU_origin, STU_axes)
     return xyz_points
 
-#get_control_points_nurbs(dims, stu_origin, stu_axes)
+
+# get_control_points_nurbs(dims, stu_origin, stu_axes)
 def get_control_points_nurbs(dims, STU_origin, STU_axes):
 
-    stu_points = get_stu_control_points_nurbs(dims,  STU_axes)
+    stu_lattice = get_stu_control_points_nurbs(dims, STU_axes)
 
-    xyz_points = STU_origin + stu_points
-    return xyz_points
+    xyz_lattice = STU_origin + stu_lattice
+    return xyz_lattice
+
 
 def get_stu_deformation_matrix(stu, dims):
     v = util.mesh3d(
-        *(np.arange(0, d+1, dtype=np.int32) for d in dims),
+        *(np.arange(0, d + 1, dtype=np.int32) for d in dims),
         dtype=np.int32)
     v = np.reshape(v, (-1, 3))
 
@@ -216,44 +455,63 @@ def get_stu_deformation_matrix(stu, dims):
     b = np.prod(weights, axis=-1)
     return b
 
-def get_stu_deformation_matrix_nurbs(stu, dims, U,V,W, N):
-    #v = util.mesh3d(
+#return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
+def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
+    # v = util.mesh3d(
     #    *(np.arange(0, d+1, dtype=np.int32) for d in dims),
     #    dtype=np.int32) #V: (a+1) x (b+1) x (c+1)
 
-    #v = np.reshape(v, (-1, 3)) # N x 3 = (a+1) x (b+1) x (c+1)
+    # v = np.reshape(v, (-1, 3)) # N x 3 = (a+1) x (b+1) x (c+1)
 
-    #weights = nurbs_weight_matrix(
+    # weights = nurbs_weight_matrix(
     #    n=np.array(dims, dtype=np.int32),
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
-    weights = np.zeros( shape=( stu.shape[0], v.shape[0]*v.shape[1] * v.shape[2]))
+    weights = np.zeros( shape= ( uvw.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]) )
 
-    for l in range( stu.shape[0]):
-        for i in range( v.shape[0]):
-            for j in range( v.shape[1]):
-               for k in range( v.shape[2]):
-                  u = stu[l][0]
-                  v = stu[l][1]
-                  w = stu[l][2]
-                  weights[l, i * v.shape[1] *  v.shape[2] + j * v.shape[2] + k ] = N(i,3,u,U) * N(j,3,v,V) * N(k,3,w.W)
+    for l in range(uvw.shape[0]):
 
 
-   return weights
+        u = uvw[l][0]
+        v = uvw[l][1]
+        w = uvw[l][2]
 
+        for i in range( P_lattice.shape[0] ): # i=0...a
+            for j in range( P_lattice.shape[1]  ): # j=0...b
+                for k in range( P_lattice.shape[2] ): # k = 0...c
 
+                    #print("N1(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N1(i, 3, u, U) ) )
+                    #print("N2(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N2(j, 3, v, V) ) )
+                    #print("N3(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N3(k, 3, w, W) ) )
+                    #print("N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)= {0}".format( N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) ) )
+
+                    weights[ l, i * (P_lattice.shape[1] * P_lattice.shape[2]) + j * P_lattice.shape[2] + k]\
+                        = N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)
+
+    p =  np.reshape(P_lattice, (-1, 3) )
+    return weights, p
 
 
 def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):
     stu = xyz_to_stu(xyz, stu_origin, stu_axes)
     return get_stu_deformation_matrix(stu, dims)
 
-def get_deformation_matrix_nurbs(xyz, dims,  U, V, W, P,N):
 
-    stu = xyz_to_stu_nurbs(xyz,  U, V, W, P,N) #xyz_to_stu_nurbs(xyz, U,V,W,P):
+def get_deformation_matrix_nurbs(xyz,  U, V, W, P_lattice, N):
 
-    return get_stu_deformation_matrix_nurbs(stu, dims, U,V,W, N) #  get_stu_deformation_matrix_nurbs(stu, dims, U,V,W, N):
+    uvw = xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N) # for debugging use only xyz[0]
+
+    #uvw = xyz_to_uvw_nurbs_debug(xyz, 0, U, V, W, P_lattice, N)  # for debugging use only xyz[0]
+    # uvw: [1]
+    #print('the first  uvw=\n', uvw[0] )
+
+    #xyz2 = uvw_to_xyz_nurbs(uvw[0:1], U, V, W, P_lattice, N)
+
+    #print('the first  xyz=\n', xyz[0:1])
+    #print('the first  xyz2=\n', xyz2)
+
+    return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W, P_lattice,N)
 
 
 def get_reference_ffd_param(vertices, dims, stu_origin=None, stu_axes=None):
@@ -262,19 +520,17 @@ def get_reference_ffd_param(vertices, dims, stu_origin=None, stu_axes=None):
             raise ValueError(
                 'Either both or neither of stu_origin/stu_axes must be None')
         stu_origin, stu_axes = get_stu_params(vertices)
+
+    print('xyz.shape=', vertices.shape) #xyz.shape= (35709, 3)
     b = get_deformation_matrix(vertices, dims, stu_origin, stu_axes)
     p = get_control_points(dims, stu_origin, stu_axes)
     return b, p
 
 
 
-#get_reference_ffd_param_nurbs(xyz, dims, U, V, W, P)
-def get_reference_ffd_param_nurbs(vertices, dims, U, V, W, P ):
-
-
-    b = get_deformation_matrix_nurbs(vertices, dims, U, V, W,P,N)
-
-    return b, P
+def get_reference_ffd_param_nurbs(vertices, U, V, W, P_lattice):
+    b,p = get_deformation_matrix_nurbs(vertices,  U, V, W, P_lattice, N)
+    return b, p
 
 
 def deform_mesh(xyz, lattice):
