@@ -27,6 +27,7 @@ from utils.io import mkdir
 from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutputwoZoffset, MouthLoss, RegionLMLoss
 from losses.lm_loss import LMFittedLoss, LML1Loss
 from losses.wpdc_deform_loss import WPDCPoseLoss, WPDCAxisAngleLoss, PDCAxisAngleLoss
+from losses.fwpdc_loss import FWPDCAxisAngleLoss
 
 
 # global args (configuration)
@@ -113,17 +114,17 @@ def parse_args():
     parser.add_argument('--weight-decay', '--wd', default=0.001, type=float)
     parser.add_argument('--print-freq', '-p', default=1000, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='1', type=str)
+    parser.add_argument('--devices-id', default='2', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_wpose_axis_angle_abss_ref', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnet_wpose_axis_angle_abss_ref_210426.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnet_fwpose_axis_angle_abss', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnet_fwpose_axis_angle_abss_210428.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
-    parser.add_argument('--dimensions', default='6, 99, 4', type=str)
-    parser.add_argument('--param-classes', default=10507, type=int) # 10500 + 7
+    parser.add_argument('--dimensions', default='6, 9, 6', type=str)
+    parser.add_argument('--param-classes', default=1477, type=int) # 1470 + 7
     parser.add_argument('--arch', default='resnet', type=str)
-    parser.add_argument('--optimizer', default='adamw', type=str)
+    parser.add_argument('--optimizer', default='adam', type=str)
     parser.add_argument('--milestones', default='30, 40', type=str)
     parser.add_argument('--test_initial', default='false', type=str2bool)
     parser.add_argument('--warmup', default=5, type=int)
@@ -467,7 +468,7 @@ def main():
     vertex_criterion = VertexOutputwoZoffset().cuda()
     criterion = DeformVDCLoss().cuda()
     lm_criterion = RegionLMLoss().cuda()
-    param_criterion = WPDCAxisAngleLoss().cuda()
+    param_criterion = FWPDCAxisAngleLoss().cuda()
 
     if args.optimizer == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=args.base_lr)
@@ -537,6 +538,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnet_wpose_axis_angle_abss_ref')
+    writer = SummaryWriter('training/runs/ffd_resnet_fwpose_axis_angle_abss')
     main()
     writer.close()

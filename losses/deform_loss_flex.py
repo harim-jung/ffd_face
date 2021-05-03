@@ -251,8 +251,8 @@ class VertexOutputwoZoffset(nn.Module):
 
         # use offset gt for z coordinate
         # offset_z = offsetg[:, -1].clone().view(batch, -1, 1)
-        offset_z = offsetg[:, -1].view(batch, -1, 1)
-        new_offset = torch.cat((offset[:, :2], offset_z), 1)
+        offsetg_z = offsetg[:, -1].view(batch, -1, 1)
+        new_offset = torch.cat((offset[:, :2], offsetg_z), 1)
 
         p = get_rot_mat_from_axis_angle_batch(axis_angle) # N x 3 x 3
 
@@ -272,6 +272,68 @@ class VertexOutputwoZoffset(nn.Module):
 
         target_vert = self.reconstruct_mesh(gt_param, pg, offsetg, alpha_shpg, alpha_expg, N)
         deformed_vert = self.deform_aap_mesh(input, offsetg, N) # use predicted pose with s, axis_angle, offset
+
+        return target_vert, deformed_vert
+
+
+class VertexOutputRMwoZoffset(nn.Module):
+    def __init__(self):
+        super(VertexOutputRMwoZoffset, self).__init__()
+
+        # 300w-lp full params
+        self.param_mean = _to_tensor(param_full_mean)
+        self.param_std = _to_tensor(param_full_std)
+
+        self.u = _to_tensor(u_).double()
+        self.w_shp = _to_tensor(w_shp_).double()
+        self.w_exp = _to_tensor(w_exp_).double()
+
+        self.deform_matrix = _to_tensor(deform_matrix).double()
+        self.control_points = _to_tensor(control_points).double()
+    
+    def reconstruct_mesh(self, gt_param, pg, offsetg, alpha_shpg, alpha_expg, batch):
+        # parse param
+        # gt_param = gt_param * self.param_std + self.param_mean
+        # pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
+        
+        if gt_param.shape[1] == 62:
+            target_vert = pg @ (self.u_lp + self.w_shp_lp @ alpha_shpg + self.w_exp_lp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        elif gt_param.shape[1] == 240:
+            # rewhiten needed
+            target_vert = pg @ (self.u + self.w_shp @ alpha_shpg + self.w_exp @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        else:
+            target_vert = pg @ (self.u_c + self.w_shp_c @ alpha_shpg + self.w_exp_c @ alpha_expg).view(batch, -1, 3).permute(0, 2, 1) + offsetg
+        
+        target_vert = target_vert.permute(0, 2, 1).type(torch.float32)
+
+        return target_vert
+
+    def deform_rm_mesh(self, param, offsetg, batch):
+        pose_param = param[:, :12].double()
+        pose_param = self.param_std[:12] * pose_param + self.param_mean[:12]
+
+        p_ = pose_param.view(batch, 3, -1)
+        p = p_[:, :, :3]
+        offset = p_[:, :, -1].view(batch, 3, 1)
+
+        offsetg_z = offsetg[:, -1].view(batch, -1, 1)
+        new_offset = torch.cat((offset[:, :2], offsetg_z), 1)
+
+        deform_param = param[:, 12:]
+        deform = deform_param.view(batch, cp_num//3, -1).double() # reshape to 3d
+        deformed_vert = p @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + new_offset
+
+        return deformed_vert.permute(0, 2, 1).type(torch.float32)
+
+    def forward(self, input, target):
+        N = target.shape[0]
+
+        # parse param
+        gt_param = target * self.param_std + self.param_mean
+        pg, offsetg, alpha_shpg, alpha_expg = _parse_param_batch(gt_param)
+
+        target_vert = self.reconstruct_mesh(gt_param, pg, offsetg, alpha_shpg, alpha_expg, N)
+        deformed_vert = self.deform_rm_mesh(input, offsetg, N) # use predicted pose with rot matrix
 
         return target_vert, deformed_vert
 

@@ -241,7 +241,7 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
     print("L1 Loss ", np.array(l1_list, dtype=np.float32).mean())
     return nme_list
 
-
+ 
 def calc_nme_mesh(vert, dim=3):
     # vert_gt = aflw_mesh()
 

@@ -415,7 +415,8 @@ def main():
     elif args.arch.startswith("resnext"):
         model = torchvision.models.resnext50_32x4d(pretrained=False, num_classes=args.param_classes)
     elif args.arch.startswith("efficientnet"):
-        model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=args.param_classes)
+        # model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=args.param_classes)
+        model = EfficientNet.from_name('efficientnet-b3', num_classes=args.param_classes)
 
 
     torch.cuda.set_device(args.devices_id[0])  # fix bug for `ERROR: all tensors must be on devices[0]`

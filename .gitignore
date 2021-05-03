@@ -8358,3 +8358,11 @@ training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619056837.DE
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619056967.DESKTOP-FSVJU3I.10096.0
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619057295.DESKTOP-FSVJU3I.26392.0
 training/runs/ffd_resnet_wpose_axis_angle_abss/events.out.tfevents.1619066115.DESKTOP-FSVJU3I.22632.0
+training/runs/ffd_resnext_vertex_lm_no_pose_norm/events.out.tfevents.1619972484.DESKTOP-FSVJU3I.41996.0
+training/runs/ffd_resnext_vertex_lm_no_pose_norm/events.out.tfevents.1619973698.DESKTOP-FSVJU3I.38332.0
+training/runs/ffd_resnext_vertex_lm_no_pose_norm/events.out.tfevents.1619974467.DESKTOP-FSVJU3I.34352.0
+training/runs/ffd_resnext_vertex_lm_no_pose_norm/events.out.tfevents.1619975210.DESKTOP-FSVJU3I.20036.0
+training/runs/ffd_resnext_vertex_lm_no_pose_norm/events.out.tfevents.1619975684.DESKTOP-FSVJU3I.44000.0
+utils/__pycache__/ddfa.cpython-38.pyc
+utils/__pycache__/inference.cpython-38.pyc
+utils/__pycache__/params.cpython-38.pyc

@@ -276,12 +276,12 @@ reference_mesh = vert
 
 faces = tri_ # (76073, 3)
 
-
+# dump_to_ply(vert * 0.001, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_scaled_0.001.ply", transform=False)
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
-# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) # 490 control points
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
 dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis

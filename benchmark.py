@@ -31,6 +31,7 @@ from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_, deformed_ver
 import mobilenet_v1_ffd
 import mobilenet_v1
 import mobilenet_v1_ffd_lm
+from efficientnet_pytorch import EfficientNet
 
 # import bernstein_ffd.ffd_utils_patch
 
@@ -89,12 +90,18 @@ def extract_param(checkpoint_fp, root='', filelists=None, param_fp=None, arch='m
     map_location = {f'cuda:{i}': 'cuda:0' for i in range(8)}
     checkpoint = torch.load(checkpoint_fp, map_location=map_location)['state_dict']
 
-    if arch.startswith('mobilenet'):
-        # model = getattr(mobilenet_v1, arch)(num_classes=62)
-        model = getattr(mobilenet_v1_ffd, arch)(param_classes=param_classes)#, lm_classes=lm_classes)
-    elif arch.startswith('resnet'):
-        model = torchvision.models.resnet50(num_classes=param_classes)
-        # model = torchvision.models.resnet50(num_classes=param_classes)
+    if arch.startswith("mobilenet"):
+        if arch.endswith("v1"):
+            model = getattr(mobilenet_v1_ffd, arch)(param_classes=param_classes)
+        elif arch.endswith("v3"):
+            model = torchvision.models.mobilenet_v3_large(pretrained=False, num_classes=param_classes)
+    elif arch.startswith("resnet"):
+        model = torchvision.models.resnet50(pretrained=False, num_classes=param_classes)
+    elif arch.startswith("resnext"):
+        model = torchvision.models.resnext50_32x4d(pretrained=False, num_classes=param_classes)
+    elif arch.startswith("efficientnet"):
+        # model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=param_classes)
+        model = EfficientNet.from_name('efficientnet-b3', num_classes=param_classes)
 
     # if "module.fc1.weight" in checkpoint:
     #     checkpoint = OrderedDict([('module.fc.weight', v) if k == 'module.fc1.weight' else (k,v) for k, v in checkpoint.items()])
@@ -459,7 +466,8 @@ def render_face_mesh(verts):
 
 def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
-    parser.add_argument('--arch', default='resnet', type=str)
+    # parser.add_argument('--arch', default='mobilenet_v3', type=str)
+    parser.add_argument('--arch', default='efficientnet', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
     parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_wpose_axis_angle_abss/ffd_resnet_wpose_axis_angle_abss_checkpoint_epoch_41.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str)
@@ -495,42 +503,43 @@ def main():
     # benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
-    aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num+7, pose="axis_angle")
+    # aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num+7, pose="axis_angle")
 
-    # min_nme = 100
-    # min_index = 0
-    # min_1 = 100
-    # min_1_index = 0
-    # min_2 = 100
-    # min_2_index = 0
-    # min_3 = 100
-    # min_3_index = 0
-    # for i in range(1, 51):
-    #     # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
-    #     checkpoint = f"snapshot/ffd_resnet_no_pose_axis_angle_abss_lr/ffd_resnet_no_pose_axis_angle_abss_lr_checkpoint_epoch_{i}.pth.tar"
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-    #     print(i, checkpoint)
-    #     # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
-    #     mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+7, dim=2, rewhiten=False, pose='axis_angle')
-    #     if mean < min_nme:
-    #         min_nme = mean
-    #         min_index = i
-    #     if mean_nme_1 < min_1:
-    #         min_1 = mean_nme_1
-    #         min_1_index = i
-    #     if mean_nme_2 < min_2:
-    #         min_2 = mean_nme_2 
-    #         min_2_index = i
-    #     if mean_nme_3 < min_3:
-    #         min_3 = mean_nme_3
-    #         min_3_index = i
+    min_nme = 100
+    min_index = 0
+    min_1 = 100
+    min_1_index = 0
+    min_2 = 100
+    min_2_index = 0
+    min_3 = 100
+    min_3_index = 0
+    for i in range(1, 51):
+        # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
+        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_efficientnet_no_pose_axis_angle_abss/ffd_efficientnet_no_pose_axis_angle_abss_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/ffd_mobilenet_no_pose_axis_angle_abss/ffd_mobilenet_no_pose_axis_angle_abss_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+        print(i, checkpoint)
+        # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
+        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+7, dim=2, rewhiten=False, pose='axis_angle')
+        if mean < min_nme:
+            min_nme = mean
+            min_index = i
+        if mean_nme_1 < min_1:
+            min_1 = mean_nme_1
+            min_1_index = i
+        if mean_nme_2 < min_2:
+            min_2 = mean_nme_2 
+            min_2_index = i
+        if mean_nme_3 < min_3:
+            min_3 = mean_nme_3
+            min_3_index = i
 
-    # print("min mean: ", min_index, min_nme)
-    # print("min nme 1: ", min_1, min_1_index)
-    # print("min nme 2: ", min_2, min_2_index)
-    # print("min nme 3: ", min_3, min_3_index)
+    print("min mean: ", min_index, min_nme)
+    print("min nme 1: ", min_1, min_1_index)
+    print("min nme 2: ", min_2, min_2_index)
+    print("min nme 3: ", min_3, min_3_index)
 
 
 if __name__ == '__main__':
