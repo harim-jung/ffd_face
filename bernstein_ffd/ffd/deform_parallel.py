@@ -69,133 +69,6 @@ def N(i, p, u, U):
         return w1 * N(i, p - 1, u, U) + w2 * N(i + 1, p - 1, u, U)
 
 
-def N1(i, p, u, U):
-    if p == 0:
-
-        if U[i] <= u and u < U[i + 1]:
-            return 1.0
-        else:
-            return 0.0  # U[i] == U[i+1]
-    else:
-
-        if (U[i + p] - U[i]) == 0:  # the case of division by zero
-            w1 = 0.0
-        else:
-            w1 = (u - U[i]) / (U[i + p] - U[i])
-            # if (w1 < 0):
-            # print('w1: N1(i,p,u,U)= N1({0}, {1}, {2}, {3})'.format(i,p,u,U) )
-            # print("(u- U[{0}]) / (U[{1}] - U[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #          .format(i, i + p,  i,  u, U[i], U[i+p], U[i] )  )
-
-        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-            w2 = 0.0
-
-        else:
-            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
-            # if (w2 < 0):
-            # print('w2: N1(i,p,u,U)= N1({0}, {1}, {2}, {3})'.format(i, p, u, U))
-            # print(" (U[{0}] - u) / (U[{1}] - U[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #      .format(i+p+1,    i + p+1, i+1, U[i + p+1], u, U[i+p+1], U[i+1] ) )
-
-        # print("N1(i, p-1, u, U) = N1({0}, {1}, {2}, U) = {3}".format( i,p-1, u,  N1(i, p-1, u, U) ) )
-        # print("N1(i+1, p-1, u, U) = N1({0}, {1}, {2}, U) = {3}".format(i+1, p - 1, u, N1(i+1, p-1, u, U)  ))
-        assert N1(i, p - 1, u, U) >= 0, "N1(i, p-1, u, U) should be  non-negative"
-        assert N1(i + 1, p - 1, u, U) >= 0, "N1(i+1, p-1, u, V) should be non-negative"
-
-        # https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
-        # (1) On any span [ui, ui+1), at most 3+1 "degree 3" basis functions are non-zero, namely: Ni-3,3(u), Ni-2,3(u), Ni-1,3(u), and Ni,3(u)
-        # In general, On any span [ui, ui+1), at most p+1 degree p basis functions are non-zero, namely: Ni-p,p(u), Ni-p+1,p(u), Ni-p+2,p(u), ..., and Ni,p(u)
-        # (2) Basis function Ni,3(u) is is a composite curve of degree 3 polynominals with joining knotts in  [ui, ui+3+1).
-        # Or equivalently, Ni,3(u) is non-zero on 3+1 knot spans [ui, ui+1), [ui+1, ui+2), [ui+2,ui+3], [ui+3, ui+3+1).
-
-        return w1 * N1(i, p - 1, u, U) + w2 * N1(i + 1, p - 1, u, U)
-
-
-def N2(i, p, u, U):
-    if p == 0:
-        if U[i] <= u and u < U[i + 1]:
-            return 1.0
-        else:
-            return 0.0  # U[i] == U[i+1]
-    else:
-
-        if (U[i + p] - U[i]) == 0:  # the case of division by zero
-            w1 = 0.0
-        else:
-            w1 = (u - U[i]) / (U[i + p] - U[i])
-            # if (w1 < 0):
-            #   print('w1: N2(i,p,v,V)= N2({0}, {1}, {2}, {3})'.format(i, p, u, U))
-            #   print(" (v- V[{0}]) / (V[{1}] - V[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #         .format(i, i + p, i, u, U[i], U[i + p], U[i]))
-
-        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-            w2 = 0.0
-
-        else:
-            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
-            # if (w2 < 0):
-            #    print('w2: N2(i,p,v,V)= N2({0}, {1}, {2}, {3})'.format(i, p, u, U))
-            #    print(" (V[{0}] - v) / (V[{1}] - V[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #          .format(i + p + 1, i + p + 1, i + 1, U[i + p + 1], u, U[i + p + 1], U[i + 1]))
-
-        assert N2(i, p - 1, u, U) >= 0, "N2(i, p-1, u, U) should be non-negative"
-        assert N2(i + 1, p - 1, u, U) >= 0, "N2(i+1, p-1, u, V) should be non-negative"
-
-        return w1 * N2(i, p - 1, u, U) + w2 * N2(i + 1, p - 1, u, U)
-
-
-def N3(i, p, u, U):
-    if p == 0:
-        if U[i] <= u and u < U[i + 1]:
-            return 1.0
-        else:
-            return 0.0  # U[i] == U[i+1]
-    else:
-
-        if (U[i + p] - U[i]) == 0:  # the case of division by zero
-            w1 = 0.0
-        else:
-            w1 = (u - U[i]) / (U[i + p] - U[i])
-            # if (w1 < 0):
-            # print('w1: N3(i,p,w,W)= N3({0}, {1}, {2}, {3})'.format(i, p, u, U))
-            # print(" (w- W[{0}]) / (W[{1}] - W[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #       .format(i, i + p, i, u, U[i], U[i + p], U[i]))
-
-        if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-            w2 = 0.0
-
-        else:
-            w2 = (U[i + p + 1] - u) / (U[i + p + 1] - U[i + 1])
-            # if (w2 < 0):
-            # print('w2: N3(i,p,w,W)= N3({0}, {1}, {2}, {3})'.format(i, p, u, U))
-            # print(" (W[{0}] - w) / (W[{1}] - W[{2}]) = ( {3} - {4} )/ ( {5} - {6} )  < 0"
-            #      .format(i + p + 1, i + p + 1, i + 1, U[i + p + 1], u, U[i + p + 1], U[i + 1]))
-
-        assert N3(i, p - 1, u, U) >= 0, "N3(i, p-1, u, U) should be non-negative"
-        assert N3(i + 1, p - 1, u, U) >= 0, "N3(i+1, p-1, u, V) should be non-negative"
-
-        # N1, 3(u) is non - zero on [u1, u2), [u2, u3), [u3, u4) and [u4, u5).
-        # Or, equivalently, it is non - zero on[u1, u5).
-        # In general, Basis function Ni,p(u) is non-zero on [ui, ui+p+1). Or, equivalently, Ni,p(u) is non-zero on p+1 knot spans [ui, ui+1), [ui+1, ui+2), ..., [ui+p, ui+p+1).
-
-        return w1 * N3(i, p - 1, u, U) + w2 * N3(i + 1, p - 1, u, U)
-
-
-def fun(x, F, U, V, W, P, N):  # G = 1; x = [u,v,w]; F=[x,y,z]: (a+1) x (b+1) x (c+1)  are control points
-
-    u = x[0]
-    v = x[1]
-    w = x[2]
-
-    R = [0.0, 0.0, 0.0]
-
-    for i in range(P.shape[0]):  # i =0.... a
-        for j in range(P.shape[1]):  # j =0.... b
-            for k in range(P.shape[2]):  # k =0.... c
-
-                R += P[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
-
-    return R - F
 
 
 def within(u, U):
@@ -243,91 +116,6 @@ def dN(i, p, u, U):
     return w1 * N(i, p - 1, u, U) - w2 * N(i + 1, p - 1, u, U)
 
 
-def dN1(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N1(i, p - 1, u, U) - w2 * N1(i + 1, p - 1, u, U)
-
-
-def dN2(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N2(i, p - 1, u, U) - w2 * N2(i + 1, p - 1, u, U)
-
-
-def dN3(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N3(i, p - 1, u, U) - w2 * N3(i + 1, p - 1, u, U)
-
-
-# https://math.stackexchange.com/questions/1486833/how-to-deduce-the-recursive-derivative-formula-of-b-spline-basis
-# refer to https://dspace5.zcu.cz/bitstream/11025/852/1/Prochazkova.pdf for the recursive formula for the derivative of N
-def dN1f(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N1(i, p - 1, u, U) - w2 * N1(i + 1, p - 1, u, U)
-
-
-def dN2f(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N2(i, p - 1, u, U) - w2 * N2(i + 1, p - 1, u, U)
-
-
-def dN3f(i, p, u, U):
-    if (U[i + p] - U[i]) == 0:  # the case of division by zero
-        w1 = 0.0
-    else:
-        w1 = p / (U[i + p] - U[i])
-
-    if (U[i + p + 1] - U[i + 1]) == 0:  # the case of division by zero
-        w2 = 0.0
-    else:
-        w2 = p / (U[i + p + 1] - U[i + 1])
-
-    return w1 * N3(i, p - 1, u, U) - w2 * N3(i + 1, p - 1, u, U)
-
 
 def jacf(x, F, U, V, W, P, N):  # jacobain matrix 3 x 3
 
@@ -349,28 +137,6 @@ def jacf(x, F, U, V, W, P, N):  # jacobain matrix 3 x 3
                     J[:, 0] += dN(i, 3, u, U) * N(j, 3, v, V) * N(k, 3, w, W) * P[i, j, k, :]
                     J[:, 1] += N(i, 3, u, U) * dN(j, 3, v, V) * N(k, 3, w, W) * P[i, j, k, :]
                     J[:, 2] += N(i, 3, u, U) * N(j, 3, v, V) * dN(k, 3, w, W) * P[i, j, k, :]
-
-    return J
-
-
-def jac(x, F, U, V, W, P, N):  # jacobain matrix 3 x 3
-
-    u = x[0]
-    v = x[1]
-    w = x[2]
-    J = np.zeros(shape=(3, 3), dtype=np.double)
-
-    # derivative with respect to u
-    # dR(u,v,w)/du = sum_{i = 0 ^ {a}sum_{j = 0} ^ {b}sum_{k = 0} ^ {c}dN(i, 3, u, U) / du N(j, 3, v, V) N(k, 3, w, W) P_ijk
-
-    # print("shape of P=", P.shape)
-    for i in range(P.shape[0]):  # i =0.... a
-        for j in range(P.shape[1]):  # j =0.... b
-            for k in range(P.shape[2]):  # k =0.... c
-
-                J[:, 0] += dN1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) * P[i, j, k, :]
-                J[:, 1] += N1(i, 3, u, U) * dN2(j, 3, v, V) * N3(k, 3, w, W) * P[i, j, k, :]
-                J[:, 2] += N1(i, 3, u, U) * N1(j, 3, v, V) * dN3(k, 3, w, W) * P[i, j, k, :]
 
     return J
 
@@ -433,11 +199,11 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
     return uvw_
 
 
-def find_root_nurbs_ffd(uvw0, U, V, W, P_lattice, N, xyz_i, i):
+def find_root_nurbs_ffd(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
     # def find_root_nurbs_ffd( xyz_i,  i):
 
-    print("original xyz[{0}] = {1}".format(i, xyz_maximum))
-    print('initial guess uvw0[{0}= {1}'.format(i, uvw0[i]))
+    print("original xyz[{0}] = {1}".format(i, xyz_i))
+    print('initial guess uvw0[{0}]= {1}'.format(i, uvw0[i]))
     # print('xyz-guess [{0}]= {1}'.format(l, xyz_guess[l]) )
 
     F = xyz_i
@@ -466,7 +232,9 @@ def find_root_nurbs_ffd(uvw0, U, V, W, P_lattice, N, xyz_i, i):
         deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
         uvw0_new = uvw0[i] + deviation
 
-        uvw0_new_arr = np.clip(np.array([uvw0_new]), uvw_min, uvw_max) * 0.999
+        uvw0_new_arr = np.clip(np.array([uvw0_new]), uvw_min[i], uvw_max[i]) * 0.999
+
+        print("At i ={0}:  Retry with a new initial guess.".format(i, uvw0_new_arr ))
 
         sol = optimize.root(funf, uvw0_new_arr[0], args, method='hybr', jac=jacf, tol=None)
 
@@ -501,7 +269,8 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     uvw_max = np.array([U[-1], V[-1], W[-1]])
     # print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
     # print('xyz=', xyz)
-    global uvw = np.zeros(shape=xyz.shape, dtype=np.double)
+    global uvw
+    uvw = np.zeros(shape=xyz.shape, dtype=np.double)
     # The global variable uvw is used in find_root_nurbs_ffd()
 
     uvw0 = initial_guess_for_nonlinear_equations(xyz, U, V, W)
@@ -512,7 +281,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     #   and keywords.
     # """
 
-    parallel(partial(find_root_nurbs_ffd, uvw0, U, V, W, P_lattice, N),
+    parallel(partial(find_root_nurbs_ffd, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N),
              xyz)  # U, W, P_lattice, N are needed by find_root_nurbs_ffd(), how are they passed into it??
 
     return uvw
@@ -607,7 +376,8 @@ def uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N, uvw_l, l):
 
 # # parallel version
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
-    global xyz = np.zeros(shape=uvw_points.shape, dtype=np.double)
+    global xyz
+    xyz = np.zeros(shape=uvw_points.shape, dtype=np.double)
 
     parallel(partial(uvw_to_xyz_nurbs_each, U, V, W, P_lattice, N), uvw_points)
 
@@ -699,7 +469,8 @@ def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
-    global weights = np.zeros(shape=(uvw.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]))
+    global weights
+    weights = np.zeros(shape=(uvw.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]))
 
     parallel(partial(get_uvw_deformation_matrix_nurb_each_row, U, V, W, P_lattice, N), uvw)
     # print('uvw.shape =', uvw.shape)
@@ -715,6 +486,15 @@ def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):
 
 
 def get_deformation_matrix_nurbs(xyz, U, V, W, P_lattice, N):
+
+    #import pdb
+    # pdb.set_trace()
+    print('parallel version:::::::::::::::::::::::::::::::::::')
+
+    print('parallel version:::::::::::::::::::::::::::::::::::')
+
+    print('parallel version:::::::::::::::::::::::::::::::::::')
+
     uvw = xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N)  # parallel version
 
     b, p = get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N)  # parallel version
