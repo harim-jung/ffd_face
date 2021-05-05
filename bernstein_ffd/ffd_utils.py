@@ -262,6 +262,7 @@ for i, vt in enumerate(v):
 
 reference_mesh = vert
 
+uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_left_bottom.pkl', 'rb'))
 
 """Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
 # plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
@@ -280,11 +281,11 @@ faces = tri_ # (76073, 3)
 
 """find B and P"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
-# dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
+dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) # 490 control points
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
-dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
+# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 99, 4)) # 5000 control points # 7 pts between lips along y-axis & 4 pts along x-axis
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)

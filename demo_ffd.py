@@ -10,7 +10,7 @@ The pipeline of 3DDFA prediction: given one image, predict the 3d face vertices,
 
 import torch
 import torchvision.transforms as transforms
-import mobilenet_v1_ffd
+import models.mobilenet_v1_ffd as mobilenet_v1_ffd
 import numpy as np
 import cv2
 import time

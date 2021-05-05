@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import mobilenet_v1_2
+import models.mobilenet_v1_2
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 

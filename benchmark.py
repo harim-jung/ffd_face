@@ -28,9 +28,9 @@ get_axis_angle_from_rot_mat, get_axis_angle_from_rot_mat_batch, get_axis_angle_s
 from utils.params import *
 from utils.render_simdr import render
 from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_, deformed_vert_w_pose
-import mobilenet_v1_ffd
-import mobilenet_v1
-import mobilenet_v1_ffd_lm
+import models.mobilenet_v1_ffd as mobilenet_v1_ffd
+import models.mobilenet_v1
+import models.mobilenet_v1_ffd_lm
 from efficientnet_pytorch import EfficientNet
 
 # import bernstein_ffd.ffd_utils_patch
@@ -467,7 +467,7 @@ def render_face_mesh(verts):
 def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
     # parser.add_argument('--arch', default='mobilenet_v3', type=str)
-    parser.add_argument('--arch', default='efficientnet', type=str)
+    parser.add_argument('--arch', default='resnext', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
     parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_wpose_axis_angle_abss/ffd_resnet_wpose_axis_angle_abss_checkpoint_epoch_41.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str)
@@ -513,16 +513,16 @@ def main():
     min_2_index = 0
     min_3 = 100
     min_3_index = 0
-    for i in range(1, 51):
+    for i in range(23, 28):
         # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
         # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
-        checkpoint = f"snapshot/ffd_efficientnet_no_pose_axis_angle_abss/ffd_efficientnet_no_pose_axis_angle_abss_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/ffd_resnext_vertex_lm_no_pose_norm/ffd_resnext_vertex_lm_no_pose_norm_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_mobilenet_no_pose_axis_angle_abss/ffd_mobilenet_no_pose_axis_angle_abss_checkpoint_epoch_{i}.pth.tar"
         # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
         print(i, checkpoint)
         # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
-        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+7, dim=2, rewhiten=False, pose='axis_angle')
+        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
         if mean < min_nme:
             min_nme = mean
             min_index = i

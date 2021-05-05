@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import mobilenet_v1_ffd
+import models.mobilenet_v1_ffd as mobilenet_v1_ffd
 import torch.backends.cudnn as cudnn
 import torchvision
 
@@ -50,15 +50,15 @@ def parse_args():
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/ffd_resnext_vertex_lm_no_pose_norm', type=str)
-    parser.add_argument('--log-file', default='training/logs/ffd_resnext_vertex_lm_no_pose_norm_210503.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/ffd_resnext_vertex_lm_no_pose_norm_test2', type=str)
+    parser.add_argument('--log-file', default='training/logs/ffd_resnext_vertex_lm_no_pose_norm_test2_210503.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
     parser.add_argument('--dimensions', default='6, 99, 4', type=str)
     parser.add_argument('--param-classes', default=10512, type=int) # 10500 + 12
     parser.add_argument('--arch', default='resnext', type=str)
     parser.add_argument('--optimizer', default='adamw', type=str)
     parser.add_argument('--milestones', default='30, 40', type=str)
-    parser.add_argument('--test_initial', default='true', type=str2bool)
+    parser.add_argument('--test_initial', default='false', type=str2bool)
     parser.add_argument('--warmup', default=5, type=int)
     parser.add_argument('--param-fp-train',default='train.configs/param_all_full_norm.pkl', type=str) # todo - changed to normalized version
     parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
@@ -150,7 +150,7 @@ def train(train_loader, model, criterion, vertex_criterion, lm_criterion, optimi
         target = target.cuda(non_blocking=True)
         output = model(input)
 
-        output.retain_grad()
+        # output.retain_grad()
 
         pose_output = output[:, :12]
         deform_output = output[:, 12:]
@@ -474,6 +474,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/ffd_resnext_vertex_lm_no_pose_norm')
+    writer = SummaryWriter('training/runs/ffd_resnext_vertex_lm_no_pose_norm_test2')
     main()
     writer.close()

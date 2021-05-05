@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import mobilenet_v1_ffd
+import models.mobilenet_v1_ffd as mobilenet_v1_ffd
 import torch.backends.cudnn as cudnn
 import torchvision
 
@@ -26,7 +26,7 @@ from utils.io import mkdir
 from losses.deform_loss_flex import DeformVDCLoss, RegionVDCLoss, VertexOutput, MouthLoss, RegionLMLoss, SimpleVertex
 from losses.lm_loss import LMFittedLoss, LML1Loss
 from losses.wpdc_deform_loss import WPDCPoseLoss
-from simple_regression_model import SimpleRegressionNet
+from models.simple_regression_model import SimpleRegressionNet
 
 
 # global args (configuration)

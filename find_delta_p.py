@@ -98,9 +98,9 @@ def svd_solve(a, b):
 
 # HELEN_HELEN_3036412907_2_0_1.jpg
 delta_ps = np.zeros((len(train_dataset), (12+cp_num)))
-for i in range(0, len(train_dataset), 100):
+for i in range(0, len(train_dataset), 1000):
     start = time.time()
-    i = 410807
+    # i = 410807
     gt_param = train_dataset[i][1].numpy()
 
     p, offset, alpha_shp, alpha_exp = _parse_param(gt_param)
@@ -108,31 +108,31 @@ for i in range(0, len(train_dataset), 100):
     gt_vert = (u_ + w_shp_ @ alpha_shp + w_exp_ @ alpha_exp).reshape(3, -1, order='F')
     gt_transformed_vert = p @ gt_vert + offset
 
-    print(train_dataset.lines[i])
-    img = cv2.imread(root + train_dataset.lines[i])
-    render(img, [gt_transformed_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
-    dump_to_ply(gt_vert, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply", transform=False)
+    print(train_dataset.lines[i], ":", gt_transformed_vert[0, :].min(), gt_transformed_vert[0, :].max(), gt_transformed_vert[1, :].min(), gt_transformed_vert[1, :].max())
+    # img = cv2.imread(root + train_dataset.lines[i])
+    # render(img, [gt_transformed_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
+    # dump_to_ply(gt_vert, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply", transform=False)
 
-    # Ax = b
-    begin = time.time()
-    cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
-    delta_p = cp_estimated - control_points# 343 x 3
-    # print("lstsq took: ", time.time() - begin)
+    # # Ax = b
+    # begin = time.time()
+    # cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
+    # delta_p = cp_estimated - control_points# 343 x 3
+    # # print("lstsq took: ", time.time() - begin)
 
-    delta_p = delta_p.reshape(1, -1)
-    new_gt = np.concatenate((gt_param[:12].reshape(1, -1), delta_p), 1)
-    delta_ps[i] = new_gt
+    # delta_p = delta_p.reshape(1, -1)
+    # new_gt = np.concatenate((gt_param[:12].reshape(1, -1), delta_p), 1)
+    # delta_ps[i] = new_gt
     
-    """temp"""
-    pg, offsetg, delta_p = _parse_ffd_param(new_gt.T)
-    gt_vert = pg @ deformed_vert(delta_p, transform=False) + offsetg
+    # """temp"""
+    # pg, offsetg, delta_p = _parse_ffd_param(new_gt.T)
+    # gt_vert = pg @ deformed_vert(delta_p, transform=False) + offsetg
 
     # dump_to_ply(gt_vert, tri_.T, "samples/outputs/test_696.ply", transform=False)
     # if i > 0 and i % 10000 == 0:
     #     with open(f"train.configs/delta_p_non_rigid_train_{i}.pkl", "wb") as f:
     #         pickle.dump(delta_ps, f, protocol=4)
 
-    print(i, "/636252 ", time.time() - start)
+    # print(i, "/636252 ", time.time() - start)
 
 # with open(f"train.configs/delta_p_non_rigid_train.pkl", "wb") as f:
 #     pickle.dump(delta_ps, f, protocol=4)

@@ -1,6 +1,6 @@
 import argparse
 import torch
-import mobilenet_v1
+import models.mobilenet_v1
 from utils.ddfa import load_model
 
 arch_choices = ['mobilenet_2', 'mobilenet_1', 'mobilenet_075', 'mobilenet_05', 'mobilenet_025']
