@@ -185,7 +185,17 @@ def get_rot_mat_from_axis_angle_batch(r):
     # r -> N x 3
     N = r.shape[0]
     theta = torch.norm(r, dim=1).view(-1, 1) # N x 1
-    r_hat = r / theta # N x 3
+    
+    # change 0 to 1 for division
+    temp_theta = torch.zeros_like(theta)
+    for i, t in enumerate(theta):
+        if t == 0:
+            temp_theta[i] = 1
+        else:
+            temp_theta[i] = theta[i]
+    
+    # r_hat = r / theta # N x 3
+    r_hat = r / temp_theta # N x 3
 
     r_hat_x = torch.zeros((N, 3, 3)).cuda() # N x 3 x 3
     r_hat_x[:, 0, 1] = -r_hat[:, 2] 
@@ -258,8 +268,10 @@ def get_axis_angle_from_rot_mat(rot_mat):
     t = rot_mat[0,0] + rot_mat[1,1] + rot_mat[2,2] # the sum of the diagonal elements of the rotation matrix
     theta = np.arctan2(r, t-1)
 
+
     # Normalise the axis.
-    axis = axis / r
+    if r != 0:
+        axis = axis / r
 
     # multiply axis and angle
     axis_angle = axis * theta
