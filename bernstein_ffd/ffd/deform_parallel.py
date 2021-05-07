@@ -171,9 +171,9 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
     v_max_index = np.argmax(uvw_[:, 1])
     w_max_index = np.argmax(uvw_[:, 2])
 
-    print('u_max_index={0}: {1}'.format(u_max_index, uvw[u_max_index]))
-    print('v_max_index={0}: {1}'.format(v_max_index, uvw[v_max_index]))
-    print('w_max_index={0}: {1}'.format(w_max_index, uvw[w_max_index]))
+    print('u_max_index={0}: {1}'.format(u_max_index, uvw_[u_max_index]))
+    print('v_max_index={0}: {1}'.format(v_max_index, uvw_[v_max_index]))
+    print('w_max_index={0}: {1}'.format(w_max_index, uvw_[w_max_index]))
 
     print('xyz_range=', xyz_range)
     print('uvw_range=', uvw_range)

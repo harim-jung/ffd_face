@@ -23,7 +23,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -305,7 +304,7 @@
       <workItem from="1613360371820" duration="1557000" />
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
-      <workItem from="1620304941901" duration="16932000" />
+      <workItem from="1620304941901" duration="17952000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -356,7 +355,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620386213088</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620387373908</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1620387373908</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -414,27 +420,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/benchmark.py</url>
-          <line>105</line>
+          <line>110</line>
           <option name="timeStamp" value="186" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/benchmark.py</url>
-          <line>94</line>
+          <line>99</line>
           <option name="timeStamp" value="189" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/benchmark.py</url>
-          <line>92</line>
+          <line>97</line>
           <option name="timeStamp" value="190" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/benchmark.py</url>
-          <line>93</line>
+          <line>98</line>
           <option name="timeStamp" value="191" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/bernstein_ffd/ffd_utils.py</url>
-          <line>350</line>
+          <line>375</line>
           <option name="timeStamp" value="192" />
         </line-breakpoint>
       </breakpoints>
