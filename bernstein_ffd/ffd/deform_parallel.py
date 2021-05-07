@@ -204,7 +204,8 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
     print("original xyz[{0}] = {1}".format(i, xyz_i))
     print('initial guess uvw0[{0}]= {1}\n'.format(i, uvw0[i]))
-    # print('xyz-guess [{0}]= {1}'.format(l, xyz_guess[l]) )
+    xyz2 = uvw_to_xyz_nurbs_one( uvw0[i], U, V, W, P_lattice, N)
+    print('xyz-guess [{0}]= {1}'.format(i, xyz2) )
 
     F = xyz_i
 
@@ -220,6 +221,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
     # compute the error of the equations:
 
+    print('the first sol.x=', sol.x)
     xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
     error = np.linalg.norm(xyz2 - F)
 
@@ -281,7 +283,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     #   and keywords.
     # """
 
-    parallel(partial(find_root_nurbs_ffd_each, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N),
+    parallel( partial(find_root_nurbs_ffd_each, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N),
              xyz)  # U, W, P_lattice, N are needed by find_root_nurbs_ffd(), how are they passed into it??
 
     return uvw
