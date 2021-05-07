@@ -2,9 +2,9 @@
 
 import sys
 
-sys.path.append('F:\\Dropbox\\Anaconda\\envs\\ffd\\ffd_face')
-sys.path.append("F:\\Dropbox\\Anaconda\\envs\\ffd\\ffd_face\\bernstein_ffd\\ffd")
-sys.path.append('F:\\Dropbox\\Anaconda\\envs\\ffd\\ffd_face\\utils')
+sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face')
+sys.path.append("F:/Dropbox/Anaconda/envs/ffd_face/bernstein_ffd/ffd")
+sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face/utils')
 
 sys.path
 import os
@@ -462,7 +462,7 @@ landmarks = keypoints_
 #          sum_{i=0}^{nx}sum_{j=0}^{ny}sum_{k=0}^{nz} N_{i,3}(s) N_{j,3}(t) N_{k,3}(u)  p_{ijk}[2] )
 
 
-import pdb
+#import pdb
 
 # pdb.set_trace()
 # stu_origin, stu_axes = deform.get_stu_params(reference_mesh.T)
