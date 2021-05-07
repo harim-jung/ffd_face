@@ -202,6 +202,7 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
 def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
     # def find_root_nurbs_ffd( xyz_i,  i):
 
+    print('find_root_nurbs_ffd_each:')
     print("original xyz[{0}] = {1}".format(i, xyz_i))
     print('initial guess uvw0[{0}]= {1}\n'.format(i, uvw0[i]))
     xyz2 = uvw_to_xyz_nurbs_one( uvw0[i], U, V, W, P_lattice, N)
