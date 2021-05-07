@@ -203,7 +203,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
     # def find_root_nurbs_ffd( xyz_i,  i):
 
     print("original xyz[{0}] = {1}".format(i, xyz_i))
-    print('initial guess uvw0[{0}]= {1}'.format(i, uvw0[i]))
+    print('initial guess uvw0[{0}]= {1}\n'.format(i, uvw0[i]))
     # print('xyz-guess [{0}]= {1}'.format(l, xyz_guess[l]) )
 
     F = xyz_i
@@ -364,7 +364,9 @@ def uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N, uvw_l, l):
 
     xyz[l] = R
 
-def uvw_to_xyz_nurbs_one(U, V, W, P_lattice, N, uvw_l):
+ #xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
+
+def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
     # print( "the {0} th  uvw {1}=".format(l, uvw) )
     u = uvw_l[0]
     v = uvw_l[1]
