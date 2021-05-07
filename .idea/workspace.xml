@@ -22,20 +22,29 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <change beforePath="$PROJECT_DIR$/.idea/3DDFA-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/3DDFA-master.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.configs/new_reference_mesh.ply" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.train" beforeDir="false" afterPath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.train" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val" beforeDir="false" afterPath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.configs/train_aug_120x120.list.val.part" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/params.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_ nurbs_ffd_face_parallel.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_ nurbs_ffd_face_parallel.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -58,15 +67,16 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySupportGeventDebugging" value="true" />
@@ -87,7 +97,29 @@
       <recent name="D:\ai\3d face reconstruction\3DDFA_V1\old" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ffd_utils">
+  <component name="RunManager" selected="Python.test_nurbs_ffd_face">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="3DDFA-master" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="benchmark" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="3DDFA-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -154,28 +186,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ffd_utils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="3DDFA-master" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="F:\Dropbox\Anaconda\envs\ffd\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bernstein_ffd" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bernstein_ffd/ffd_utils.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="mobilenet_v1_ffd" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="3DDFA-master" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -190,6 +200,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/mobilenet_v1_ffd.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_nurbs_ffd_face" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="3DDFA-master" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="F:\Dropbox\Anaconda\envs\ffd_face\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bernstein_ffd" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -226,11 +258,11 @@
       <item itemvalue="Python.ffd_params (1)" />
       <item itemvalue="Python.train_ffd" />
       <item itemvalue="Python.mobilenet_v1_ffd" />
-      <item itemvalue="Python.ffd_utils" />
+      <item itemvalue="Python.test_nurbs_ffd_face" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ffd_utils" />
+        <item itemvalue="Python.test_nurbs_ffd_face" />
         <item itemvalue="Python.benchmark" />
         <item itemvalue="Python.train_ffd" />
         <item itemvalue="Python.mobilenet_v1_ffd" />
@@ -277,7 +309,51 @@
       <workItem from="1613360371820" duration="1557000" />
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
+      <workItem from="1620304941901" duration="15905000" />
     </task>
+    <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
+      <created>1620372934821</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1620372934822</updated>
+    </task>
+    <task id="LOCAL-00002" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620375213137</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1620375213137</updated>
+    </task>
+    <task id="LOCAL-00003" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620376195124</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1620376195124</updated>
+    </task>
+    <task id="LOCAL-00004" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620378904639</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1620378904639</updated>
+    </task>
+    <task id="LOCAL-00005" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620381223721</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1620381223721</updated>
+    </task>
+    <task id="LOCAL-00006" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620381407827</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1620381407827</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -294,6 +370,11 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="I am debugging the deform-parallel.py by Moon" />
+    <MESSAGE value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
+    <option name="LAST_COMMIT_MESSAGE" value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -361,5 +442,6 @@
     <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1618462597433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620385633337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
   </component>
 </project>
