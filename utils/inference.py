@@ -171,9 +171,9 @@ def _predict_vertices(param, roi_bbox, dense, transform=True):
     return vertex
 
 
-def rescale_w_roi(vert, roi_bbox): # called by rescale_w_roi(pred_vert, roi_boxs[i])
+def rescale_w_roi(vert, roi_bbox):
     vertex = vert.copy()
-    sx, sy, ex, ey = roi_bbox #s: start, e: end
+    sx, sy, ex, ey = roi_bbox
     scale_x = (ex - sx) / 120
     scale_y = (ey - sy) / 120
     vertex[0, :] = vertex[0, :] * scale_x + sx

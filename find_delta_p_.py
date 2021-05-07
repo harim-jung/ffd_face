@@ -78,7 +78,7 @@ print(np.where(file == -18477.48150828)[0])
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
@@ -109,7 +109,7 @@ print(np.where(file == -18477.48150828)[0])
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
@@ -138,7 +138,7 @@ print(np.where(file == -18477.48150828)[0])
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
@@ -166,7 +166,7 @@ print(np.where(file == -18477.48150828)[0])
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p

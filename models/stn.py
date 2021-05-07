@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.ddfa import get_axis_angle_from_rot_mat, get_rot_mat_from_axis_angle_batch
-from bernstein_ffd.ffd_utils import uv_map
+from bernstein_ffd.ffd_utils import sampled_uv_map, cp_num
 import os
 
 # import sys
@@ -21,7 +21,7 @@ import os
 # from ..utils.ddfa import DDFADataset, ToTensorGjz, NormalizeGjz
 
 class stnFFD(nn.Module):
-    def __init__(self, channel=3):
+    def __init__(self, channel=3, param_classes=cp_num):
         super(stnFFD, self).__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
@@ -39,7 +39,7 @@ class stnFFD(nn.Module):
             nn.ReLU(True)
         )
 
-        # Regressor for the 3 * 2 affine matrix
+        # Regressor for scale, axis angle, offset
         self.fc_loc = nn.Sequential(
             nn.Linear(10 * 26 * 26, 32),
             nn.ReLU(True),
@@ -51,11 +51,15 @@ class stnFFD(nn.Module):
         # s, axis_angle, offset
         self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 0, 0, 0], dtype=torch.float))
 
-    def pixel_coord(self, uv, img_size):
+        # resnet50 for delta P regression
+        resnet50 = torchvision.models.resnet50(pretrained=False, num_classes=param_classes)
+        self.resnet50 = torch.nn.Sequential(*(list(resnet50.children())))
+
+    def pixel_coord(self, uv, target_size):
         u, v = uv
         # pixel_x = u * 2 - 1
         # pixel_y = v * 2 - 1
-        pixel_coord = torch.tensor([u * img_size, v * img_size])
+        pixel_coord = torch.tensor([u * target_size, v * target_size])
         pixel_coord = torch.trunc(pixel_coord).int()
         
         return pixel_coord
@@ -69,7 +73,7 @@ class stnFFD(nn.Module):
 
         return xsNorm, ysNorm
 
-    def affine_grid(self, T_theta, target_size):
+    def affine_grid(self, T_theta, input_size):
         """
         # Generates a 2D flow field (sampling grid), given a batch of affine matrices theta.
         # grid specifies the sampling pixel locations normalized by the input spatial dimensions
@@ -79,15 +83,16 @@ class stnFFD(nn.Module):
             (xs ys) = Convert_to_normal_square( T_cam( x, y,z) ) # convert_to_normal_square() 는 (-1, -1) 에서 (1,1)까지 변화게 좌표변환.
             grid[(u,v)] = (xs, ys)
         """
-        grid = torch.zeros(target_size[0], target_size[2], target_size[3], 2).cuda() # torch.Size([N, 120, 120, 2])
-        img_size = target_size[2]
+        target_size = len(sampled_uv_map)
+        grid = torch.zeros(input_size[0], target_size, target_size, 2).cuda() # torch.Size([5, 8928, 8928, 2])
+        img_size = input_size[2]
         pixel_coords = []
-        for u, v in uv_map.keys():
-            x, y, z = uv_map[(u, v)]
+        for u, v in sampled_uv_map:
+            x, y, z = sampled_uv_map[(u, v)]
             xy_s = (T_theta.double() @ torch.tensor([x,y,z,1]).cuda())[:, :2]
             xsNorm, ysNorm = self.convert_to_normal_square(xy_s, img_size) # [-1, 1]^2
             
-            pixel_coord = self.pixel_coord((u,v), img_size)
+            pixel_coord = self.pixel_coord((u,v), target_size)
             pixel_x, pixel_y = pixel_coord[0].item(), pixel_coord[1].item()
             pixel_coords.append((pixel_x, pixel_y))
             grid[:, pixel_x, pixel_y] = torch.cat((xsNorm, ysNorm)).view(2, -1).T
@@ -115,27 +120,21 @@ class stnFFD(nn.Module):
         
         # torch.nn.functional.grid_sample(input, grid, mode='bilinear', padding_mode='zeros', align_corners=None)
         # For each output location output[n, :, h, w], the size-2 vector grid[n, h, w] specifies input pixel locations x and y, 
-        # which are used to interpolate the output value output[n, :, h, w]. 
-        # mode argument specifies nearest or bilinear interpolation method to sample the input pixels.
-        # grid specifies the sampling pixel locations normalized by the input spatial dimensions. 
+        # normalized by the input spatial dimensions, which are used to interpolate the output value output[n, :, h, w]. 
         # It should have most values in the range of [-1, 1]. 
         # Values x = -1, y = -1 is the left-top pixel of input, and values x = 1, y = 1 is the right-bottom pixel of input.
-        x = F.grid_sample(x, grid) # torch.Size([64, 1, 28, 28])
+        x = F.grid_sample(x, grid, padding_mode='zeros') # torch.Size([64, 1, 120, 120])
 
-        return x
+        return T_theta, x
 
     def forward(self, x):
         # transform the input
-        x = self.stn(x)
+        T_theta, aligned_x = self.stn(x) # torch.Size([5, 3, 8928, 8928])
 
         # Perform the usual forward pass
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+        delta_P = self.resnet50(aligned_x)
+
+        return torch.cat((T_theta.view(-1, 12, 1), delta_P), dim=1)
 
 
 def train(epoch):

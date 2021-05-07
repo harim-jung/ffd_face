@@ -45,7 +45,7 @@ val_dataset = DDFADataset(
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
@@ -58,7 +58,7 @@ val_dataset = DDFADataset(
 w_shp_ = _numpy_to_cuda(w_shp_)
 w_exp_ = _numpy_to_cuda(w_exp_)
 u_ = _numpy_to_cuda(u_)
-deform_matrix_ = _numpy_to_cuda(deform_matrix_).float()
+deform_matrix = _numpy_to_cuda(deform_matrix).float()
 control_points_ = _numpy_to_cuda(control_points_).float()
 # normal function to run on cpu                           
 delta_ps = np.zeros((636252, 1029)) #1470
@@ -76,7 +76,7 @@ for i in range(len(train_dataset)):
     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
     # Ax = b
-    cp_estimated = torch.lstsq(gt_vert.T, deform_matrix_)[0]
+    cp_estimated = torch.lstsq(gt_vert.T, deform_matrix)[0]
     delta_p = cp_estimated - control_points_ # 343 x 3
     delta_p = delta_p.reshape(1, -1)
     delta_ps[i] = delta_p
@@ -102,7 +102,7 @@ for i in range(len(val_dataset)):
     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
     # Ax = b
-    cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)
+    cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)
     delta_p = cp_estimated - control_points_ # 343 x 3
     delta_p = delta_p.reshape(1, -1)
     delta_ps[i] = delta_p
