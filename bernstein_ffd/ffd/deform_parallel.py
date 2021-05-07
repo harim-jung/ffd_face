@@ -251,7 +251,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
 
 # parallel version
-global uvw = 0
+uvw = 0
 def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
@@ -414,7 +414,7 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 # Thanks. ChrisP.
 
 # # parallel version
-global xyz = 0
+xyz = 0
 
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
 
@@ -498,7 +498,7 @@ def get_uvw_deformation_matrix_nurb_each_row(U, V, W, P_lattice, N, uvw_l, l):
 
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
 # #parallel version
-global weights = 0
+weights = 0
 def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     # v = util.mesh3d(
     #    *(np.arange(0, d+1, dtype=np.int32) for d in dims),
