@@ -22,12 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I am debugging the deform-parallel.py by Moon">
-      <change beforePath="$PROJECT_DIR$/.idea/3DDFA-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/3DDFA-master.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
-    </list>
+    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -296,7 +291,7 @@
       <workItem from="1613360371820" duration="1557000" />
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
-      <workItem from="1620304941901" duration="6935000" />
+      <workItem from="1620304941901" duration="7643000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -305,7 +300,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620372934822</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620375213137</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1620375213137</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -325,7 +327,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="I am debugging the deform-parallel.py by Moon" />
-    <option name="LAST_COMMIT_MESSAGE" value="I am debugging the deform-parallel.py by Moon" />
+    <MESSAGE value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
+    <option name="LAST_COMMIT_MESSAGE" value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
