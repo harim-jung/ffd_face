@@ -222,22 +222,23 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
     # compute the error of the equations:
 
-    print('the first sol.x=', sol.x)
+    #print('the first sol.x=', sol.x)
     xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
     error = np.linalg.norm(xyz2 - F)
 
     print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format(i, sol.x, xyz_i, xyz2,
                                                                                                   error, sol.message))
-
+    n = 0 # The number of trials for new initial guess
     while (error > 1.0):
-        print("At i ={0}: The error = {1} is greater than 1.0. Retry with a new initial guess.".format(i, error))
+        n += 1
+        print("At i ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(i, n, error))
 
         deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
         uvw0_new = uvw0[i] + deviation
 
         uvw0_new_arr = np.clip( uvw0_new, uvw_min, uvw_max) * 0.999
 
-        print("At i ={0}:  Retry with a new initial guess.".format(i, uvw0_new_arr ))
+        print("At i ={0}:  Retry with a new initial guess = {1}.".format(i, uvw0_new_arr ))
 
         sol = optimize.root(funf, uvw0_new_arr, args, method='hybr', jac=jacf, tol=None)
 
@@ -250,6 +251,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
 
 # parallel version
+global uvw = 0
 def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
@@ -272,7 +274,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     uvw_max = np.array([U[-1], V[-1], W[-1]])
     # print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
     # print('xyz=', xyz)
-    global uvw
+
     uvw = np.zeros(shape=xyz.shape, dtype=np.double)
     # The global variable uvw is used in find_root_nurbs_ffd()
 
@@ -412,8 +414,10 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 # Thanks. ChrisP.
 
 # # parallel version
+global xyz = 0
+
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
-    global xyz
+
     xyz = np.zeros(shape=uvw_points.shape, dtype=np.double)
 
     parallel(partial(uvw_to_xyz_nurbs_each, U, V, W, P_lattice, N), uvw_points)
@@ -494,6 +498,7 @@ def get_uvw_deformation_matrix_nurb_each_row(U, V, W, P_lattice, N, uvw_l, l):
 
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
 # #parallel version
+global weights = 0
 def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     # v = util.mesh3d(
     #    *(np.arange(0, d+1, dtype=np.int32) for d in dims),
@@ -506,7 +511,7 @@ def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
-    global weights
+
     weights = np.zeros(shape=(uvw.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]))
 
     parallel(partial(get_uvw_deformation_matrix_nurb_each_row, U, V, W, P_lattice, N), uvw)

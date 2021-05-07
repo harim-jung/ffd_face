@@ -23,13 +23,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <change beforePath="$PROJECT_DIR$/.idea/3DDFA-master.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/3DDFA-master.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_ nurbs_ffd_face_parallel.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_ nurbs_ffd_face_parallel.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -200,7 +215,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="F:\Dropbox\Anaconda\python.exe" />
+      <option name="SDK_HOME" value="F:\Dropbox\Anaconda\envs\ffd_face\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bernstein_ffd" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -294,7 +309,7 @@
       <workItem from="1613360371820" duration="1557000" />
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
-      <workItem from="1620304941901" duration="11026000" />
+      <workItem from="1620304941901" duration="15905000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -324,7 +339,21 @@
       <option name="project" value="LOCAL" />
       <updated>1620378904639</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620381223721</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1620381223721</updated>
+    </task>
+    <task id="LOCAL-00006" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620381407827</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1620381407827</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -413,6 +442,6 @@
     <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1618462597433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620307746584" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620385633337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
   </component>
 </project>

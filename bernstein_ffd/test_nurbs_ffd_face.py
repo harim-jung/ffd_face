@@ -1,4 +1,4 @@
-#pip install plyfile
+
 
 import sys
 
@@ -8,6 +8,9 @@ sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face/utils')
 
 sys.path
 import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 import numpy as np
 import torch
 from utils.params import *
