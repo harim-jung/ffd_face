@@ -198,7 +198,8 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
 
     return uvw_
 
-global uvw
+# There is no need to use global keyword outside a function.
+uvw = None
 def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
     # def find_root_nurbs_ffd( xyz_i,  i):
 
@@ -247,6 +248,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
     print("At i ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(i, error))
 
+    global uvw
     uvw[i] = sol.x  # uvw[] is a global variable
 
 
@@ -274,6 +276,10 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     uvw_max = np.array([U[-1], V[-1], W[-1]])
     # print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
     # print('xyz=', xyz)
+
+    global uvw
+    # If a variable is assigned a value anywhere within the function’s body,
+    # it’s assumed to be a local unless explicitly declared as global.
 
     uvw = np.zeros(shape=xyz.shape, dtype=np.double) # global variable set
     # The global variable uvw is used in find_root_nurbs_ffd()
@@ -414,10 +420,11 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 # Thanks. ChrisP.
 
 # # parallel version
-global xyz
+xyz = None
 
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
 
+    global xyz
     xyz = np.zeros(shape=uvw_points.shape, dtype=np.double)
 
     parallel(partial(uvw_to_xyz_nurbs_each, U, V, W, P_lattice, N), uvw_points)
@@ -498,7 +505,7 @@ def get_uvw_deformation_matrix_nurb_each_row(U, V, W, P_lattice, N, uvw_l, l):
 
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
 # #parallel version
-global weights
+weights = None
 def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     # v = util.mesh3d(
     #    *(np.arange(0, d+1, dtype=np.int32) for d in dims),
@@ -511,6 +518,7 @@ def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
+    global weights
 
     weights = np.zeros(shape=(uvw.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]))
 
