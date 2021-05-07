@@ -476,9 +476,9 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     for l in range( xyz.shape[0] ): # l=0..67
 
-        print("original xyz[{0}] = {1}".format(l, xyz[l]) )
-        print('initial guess uvw0[{0}= {1}'.format(l,uvw0[l]) )
-        print('xyz-guess [{0}]= {1}'.format(l, xyz_guess[l]) )
+        # print("original xyz[{0}] = {1}".format(l, xyz[l]) )
+        # print('initial guess uvw0[{0}= {1}'.format(l,uvw0[l]) )
+        # print('xyz-guess [{0}]= {1}'.format(l, xyz_guess[l]) )
 
         F = xyz[l]
 
@@ -501,11 +501,11 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
         xyz2 = uvw_to_xyz_nurbs( np.array( [sol.x] ), U, V, W, P_lattice, N)
         error = np.linalg.norm( xyz2 - np.array([F]) )
 
-        print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format( l, sol.x, xyz[l], xyz2, error, sol.message) )
+        # print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format( l, sol.x, xyz[l], xyz2, error, sol.message) )
 
         while  ( error > 1.0):
 
-               print("At l ={0}: The error = {1} is greater than 1.0. Retry with a new initial guess.".format(l, error) )
+            #    print("At l ={0}: The error = {1} is greater than 1.0. Retry with a new initial guess.".format(l, error) )
 
                deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
                uvw0_new = uvw0[l] + deviation
@@ -517,7 +517,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
                xyz2 = uvw_to_xyz_nurbs(np.array([sol.x]), U, V, W, P_lattice, N)
                error = np.linalg.norm(xyz2 - np.array([F]))
 
-        print("At l ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(l, error))
+        # print("At l ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(l, error))
 
         uvw[l] = sol.x
 
@@ -721,11 +721,11 @@ def get_deformation_matrix_nurbs(xyz,  U, V, W, P_lattice, N):
 
     xyz2 = uvw_to_xyz_nurbs(uvw, U, V, W, P_lattice, N)
 
-    for i in range(xyz.shape[0]):
-         print('landmark uvw {0}: uvw = {1}'.format( i, uvw[i]) )
-         print('the landmark {0}:  origin xyz={1}'.format( i, xyz[i]) )
-         print('the landmark {0}:  nurbs ffd xyz (sum)={1}\n'.format(i, xyz2[i]) )
-         print('b@p [{0}]  = xyz = {1}\n'.format(i, (b@p) [ i] ), )
+    # for i in range(xyz.shape[0]):
+    #      print('landmark uvw {0}: uvw = {1}'.format( i, uvw[i]) )
+    #      print('the landmark {0}:  origin xyz={1}'.format( i, xyz[i]) )
+    #      print('the landmark {0}:  nurbs ffd xyz (sum)={1}\n'.format(i, xyz2[i]) )
+    #      print('b@p [{0}]  = xyz = {1}\n'.format(i, (b@p) [ i] ), )
 
 
     return b, p

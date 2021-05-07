@@ -93,8 +93,8 @@ class LMFittedLoss_(nn.Module):
         self.w_shp_lp = _to_tensor(w_shp_base_lp)
         self.w_exp_lp = _to_tensor(w_exp_base_lp)
 
-        self.deform_matrix = _to_tensor(deform_matrix_)
-        self.control_points = _to_tensor(control_points_)
+        self.deform_matrix = _to_tensor(deform_matrix)
+        self.control_points = _to_tensor(control_points)
 
 
     def reconstruct_lm(self, param, batch, z_shift=True):
@@ -117,7 +117,7 @@ class LMFittedLoss_(nn.Module):
 
 
     def deformed_lm(self, param, batch):
-        deform = param.view(batch, cp_num_//3, -1) # reshape to 3d
+        deform = param.view(batch, cp_num//3, -1) # reshape to 3d
         deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
 
         lms = deformed_vert[:, keypoints_, :] # Nx68x3

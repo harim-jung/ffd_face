@@ -114,6 +114,29 @@ def deformed_vert_w_pose(params, transform=False, rewhiten=True, pose='rot_mat')
     return deformed_vert.astype(np.float32)
 
 
+def deformed_vert_w_pose_nurbs(params, transform=False, rewhiten=True, pose='rot_mat'):
+    if rewhiten:
+        params[:12] = params[:12] * param_full_std[:12] + param_full_mean[:12]
+    
+    if pose == 'rot_mat':
+        p_ = params[:12].reshape(3, -1)
+        p = p_[:, :3]
+        offset = p_[:, -1].reshape(3, 1)
+        deform = params[12:].reshape(nurbs_cp_num//3, -1)
+    elif pose == 'axis_angle':
+        s = np.abs(params[0])
+        axis_angle = params[1:4]
+        offset = params[4:7].reshape(3,1)
+        r = get_rot_mat_from_axis_angle_np(axis_angle)
+        p = s * r
+        deform = params[7:].reshape(nurbs_cp_num//3, -1)
+
+    deformed_vert = p @ (nurbs_deform_matrix @ (nurbs_control_points + deform)).T + offset
+    if transform:
+        deformed_vert[1, :] = std_size + 1 - deformed_vert[1, :]
+    return deformed_vert.astype(np.float32)
+
+
 def chamfer_distance_without_batch(p1, p2, debug=False):
 
     '''
@@ -262,7 +285,9 @@ for i, vt in enumerate(v):
 
 reference_mesh = vert
 
+# 8928 points
 uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_left_bottom.pkl', 'rb'))
+sampled_uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_sampled.pkl', 'rb'))
 
 """Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
 # plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
@@ -274,12 +299,15 @@ uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uv
 
 # reference_mesh = vert
 
-
 faces = tri_ # (76073, 3)
 
 # dump_to_ply(vert * 0.001, tri_.T, "train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_scaled_0.001.ply", transform=False)
 
-"""find B and P"""
+
+"""
+Bernstein FFD
+find B and P
+"""
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
 dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) # 490 control points
@@ -287,18 +315,15 @@ dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3))
 # dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 99, 4)) # 5000 control points # 7 pts between lips along y-axis & 4 pts along x-axis
+# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 19, 4)) # 700 control points # 2 pts between lips along y-axis & 3 pts along x-axis
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]
 
-
-# dic_ = test_face_ffd(reference_mesh.T, faces, n=19) 
-# dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) 
-dic_ = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
-deform_matrix_ = dic_["b"] #(38365, 216)
-control_points_ = dic_["p"] #(216, 3)
-cp_num_ = control_points_.reshape(-1).shape[0]
-
+"""NURBS FFD"""
+nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix.pkl', 'rb')) # (35709, 343)
+nurbs_control_points = np.load(open('train.configs/nurbs_control_points.pkl', 'rb')) # (343, 3)
+nurbs_cp_num = nurbs_control_points.reshape(-1).shape[0]
 
 
 # coord_range = reference_mesh[:, mouth_index]
@@ -324,10 +349,10 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 #         # if cp[1] == lower:
 #         #     lower_ind.append(i)
 # print(cps)
-# print(upper_ind)
-# print(lower_ind)
+# # print(upper_ind)
+# # print(lower_ind)
 
-# # reference_mesh = (deform_matrix_ @ control_points_).T.astype(np.float32)
+# # reference_mesh = (deform_matrix @ control_points_).T.astype(np.float32)
 # # dump_to_ply(reference_mesh, tri_.T, f"samples/outputs/reference_mesh.ply", transform=False)
 
 # # upper_vert = [5132, 5133, 5134, 5135, 5256, 5257, 5258, 5259, 5260, 5261, 5262, 5263, 5264, 5384, 5385, 5386, 5387, 5388, 5389, 5390, 5391, 5392, 5393, 5512, 5513, 5514, 5515, 5516, 5517, 5518, 5519, 5520, 5521, 5522, 5640, 5641, 5642, 5643, 5644, 5645, 5646, 5647, 5648, 5649, 5650, 5651, 5768, 5769, 5770, 5771, 5772, 5773, 5774, 5775, 5776, 5777, 5778, 5779, 5780, 5896, 5897, 5898, 5899, 5900, 5901, 5902, 5903, 5904, 5905, 5906, 5907, 5908, 5909, 6024, 6025, 6026, 6027, 6028, 6029, 6030, 6031, 6032, 6033, 6034, 6035, 6036, 6037, 6152, 6153, 6154, 6155, 6156, 6157, 6158, 6159, 6160, 6161, 6162, 6163, 6279, 6280, 6281, 6282, 6283, 6284, 6285, 6286, 6287, 6288, 6289, 6290, 6291, 6405, 6406, 6407, 6408, 6409, 6410, 6411, 6412, 6413, 6414, 6415, 6416, 6528, 6529, 6530, 6531, 6532, 6533, 6534, 6535, 6536, 6537, 6538, 6539, 6650, 6651, 6652, 6653, 6654, 6655, 6656, 6657, 6658, 6659, 6660, 6661, 6772, 6773, 6774, 6775, 6776, 6777, 6778, 6779, 6780, 6781, 6782, 6783, 6784, 6894, 6895, 6896, 6897, 6898, 6899, 6900, 6901, 6902, 6903, 6904, 6905, 6906, 7015, 7016, 7017, 7018, 7019, 7020, 7021, 7022, 7023, 7024, 7025, 7026, 7027, 7135, 7136, 7137, 7138, 7139, 7140, 7141, 7142, 7143, 7144, 7145, 7146, 7147, 7255, 7256, 7257, 7258, 7259, 7260, 7261, 7262, 7263, 7264, 7265, 7266, 7267, 7375, 7376, 7377, 7378, 7379, 7380, 7381, 7382, 7383, 7384, 7385, 7386, 7387, 7495, 7496, 7497, 7498, 7499, 7500, 7501, 7502, 7503, 7504, 7505, 7506, 7507, 7615, 7616, 7617, 7618, 7619, 7620, 7621, 7622, 7623, 7624, 7625, 7626, 7627, 7735, 7736, 7737, 7738, 7739, 7740, 7741, 7742, 7743, 7744, 7745, 7746, 7747, 7855, 7856, 7857, 7858, 7859, 7860, 7861, 7862, 7863, 7864, 7865, 7866, 7867, 7975, 7976, 7977, 7978, 7979, 7980, 7981, 7982, 7983, 7984, 7985, 7986, 7987, 8095, 8096, 8097, 8098, 8099, 8100, 8101, 8102, 8103, 8104, 8105, 8106, 8107, 8215, 8216, 8217, 8218, 8219, 8220, 8221, 8222, 8223, 8224, 8225, 8226, 8227, 8335, 8336, 8337, 8338, 8339, 8340, 8341, 8342, 8343, 8344, 8345, 8346, 8347, 8455, 8456, 8457, 8458, 8459, 8460, 8461, 8462, 8463, 8464, 8465, 8466, 8467, 8575, 8576, 8577, 8578, 8579, 8580, 8581, 8582, 8583, 8584, 8585, 8586, 8587, 8695, 8696, 8697, 8698, 8699, 8700, 8701, 8702, 8703, 8704, 8705, 8706, 8707, 8815, 8816, 8817, 8818, 8819, 8820, 8821, 8822, 8823, 8824, 8825, 8826, 8827, 8935, 8936, 8937, 8938, 8939, 8940, 8941, 8942, 8943, 8944, 8945, 8946, 8947, 9055, 9056, 9057, 9058, 9059, 9060, 9061, 9062, 9063, 9064, 9065, 9066, 9067, 9175, 9176, 9177, 9178, 9179, 9180, 9181, 9182, 9183, 9184, 9185, 9186, 9187, 9295, 9296, 9297, 9298, 9299, 9300, 9301, 9302, 9303, 9304, 9305, 9306, 9307, 9415, 9416, 9417, 9418, 9419, 9420, 9421, 9422, 9423, 9424, 9425, 9426, 9427, 9535, 9536, 9537, 9538, 9539, 9540, 9541, 9542, 9543, 9544, 9545, 9546, 9547, 9655, 9656, 9657, 9658, 9659, 9660, 9661, 9662, 9663, 9664, 9665, 9666, 9667, 9775, 9776, 9777, 9778, 9779, 9780, 9781, 9782, 9783, 9784, 9785, 9786, 9787, 9896, 9897, 9898, 9899, 9900, 9901, 9902, 9903, 9904, 9905, 9906, 9907, 9908, 10018, 10019, 10020, 10021, 10022, 10023, 10024, 10025, 10026, 10027, 10028, 10029, 10030, 10141, 10142, 10143, 10144, 10145, 10146, 10147, 10148, 10149, 10150, 10151, 10152, 10153, 10267, 10268, 10269, 10270, 10271, 10272, 10273, 10274, 10275, 10276, 10277, 10394, 10395, 10396, 10397, 10398, 10399, 10400, 10401, 10402, 10403, 10404, 10523, 10524, 10525, 10526, 10527, 10528, 10529, 10530, 10531, 10532, 10533, 10534, 10535, 10653, 10654, 10655, 10656, 10657, 10658, 10659, 10660, 10661, 10662, 10663, 10664, 10783, 10784, 10785, 10786, 10787, 10788, 10789, 10790, 10791, 10792, 10793, 10913, 10914, 10915, 10916, 10917, 10918, 10919, 10920, 10921, 10922, 11043, 11044, 11045, 11046, 11047, 11048, 11049, 11050, 11051, 11173, 11174, 11175, 11176, 11177, 11178, 11179, 11180]
@@ -344,7 +369,7 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 #     # deform_ = np.random.uniform(low=20, high=30, size=(18180,))
 #     # d = np.append(deform, deform_)
 #     # np.random.shuffle(d)
-#     # deform = d.reshape(cp_num_//3, -1)
+#     # deform = d.reshape(cp_num//3, -1)
 
 #     deform = np.zeros((12120, 3))
 
@@ -363,9 +388,9 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 #     #     if i not in cps:
 #     #         deform[i] = np.zeros(3)
 
-#     deformed_vert = np.zeros((deform_matrix_.shape[0], 3))
+#     deformed_vert = np.zeros((deform_matrix.shape[0], 3))
 #     # new_cp = control_points_ + deform
-#     for i in range(deform_matrix_.shape[0]):
+#     for i in range(deform_matrix.shape[0]):
 #         deform = np.append(np.random.uniform(low=-10, high=10, size=(12120,2)), np.zeros((12120,1)), axis=1)
 #         # np.random.uniform(low=-10, high=10, size=(12120,2))
 
@@ -381,11 +406,11 @@ cp_num_ = control_points_.reshape(-1).shape[0]
 #             # control_points_[upper_ind] = 0
 #             deform[upper_ind] = 0
 
-#         deform_ = deform_matrix_[i] @ (control_points_ + deform)
+#         deform_ = deform_matrix[i] @ (control_points_ + deform)
 #         deformed_vert[i] = deform_
 
 #     deformed_vert = deformed_vert.T.astype(np.float32)
-#     # deformed_vert = (deform_matrix_ @ (control_points_ + deform)).T.astype(np.float32)
+#     # deformed_vert = (deform_matrix @ (control_points_ + deform)).T.astype(np.float32)
     
 #     # img_ori = cv2.imread('samples/inputs/image00066.jpg')
 #     # wfp = 'samples/outputs/test_render.jpg'

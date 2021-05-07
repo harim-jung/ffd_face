@@ -277,7 +277,7 @@ class VertexOutputwoZoffset(nn.Module):
 
 
 class VertexOutputRMwoZoffset(nn.Module):
-    def __init__(self):
+    def __init__(self, nurbs=False):
         super(VertexOutputRMwoZoffset, self).__init__()
 
         # 300w-lp full params
@@ -288,8 +288,15 @@ class VertexOutputRMwoZoffset(nn.Module):
         self.w_shp = _to_tensor(w_shp_).double()
         self.w_exp = _to_tensor(w_exp_).double()
 
-        self.deform_matrix = _to_tensor(deform_matrix).double()
-        self.control_points = _to_tensor(control_points).double()
+        if nurbs:
+            self.deform_matrix = _to_tensor(nurbs_deform_matrix).double()
+            self.control_points = _to_tensor(nurbs_control_points).double()
+            self.cp_num = nurbs_cp_num
+        else:
+            self.deform_matrix = _to_tensor(deform_matrix).double()
+            self.control_points = _to_tensor(control_points).double()
+            self.cp_num = cp_num
+
     
     def reconstruct_mesh(self, gt_param, pg, offsetg, alpha_shpg, alpha_expg, batch):
         # parse param
@@ -320,7 +327,7 @@ class VertexOutputRMwoZoffset(nn.Module):
         new_offset = torch.cat((offset[:, :2], offsetg_z), 1)
 
         deform_param = param[:, 12:]
-        deform = deform_param.view(batch, cp_num//3, -1).double() # reshape to 3d
+        deform = deform_param.view(batch, self.cp_num//3, -1).double() # reshape to 3d
         deformed_vert = p @ (self.deform_matrix @ (self.control_points + deform)).permute(0, 2, 1) + new_offset
 
         return deformed_vert.permute(0, 2, 1).type(torch.float32)

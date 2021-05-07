@@ -140,8 +140,8 @@ with open("train.configs/param_all_val_new.pkl", "wb") as f:
 
 #     gt_vert = reconstruct_vertex(gt_param, dense=True, transform=False)
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)
-#     delta_p = cp_estimated - control_points_
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)
+#     delta_p = cp_estimated - control_points
 #     delta_ps.append(delta_p)
 
 

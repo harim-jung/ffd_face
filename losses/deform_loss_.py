@@ -22,8 +22,8 @@ class DeformVDCLoss(nn.Module):
         self.w_shp = _to_tensor(w_shp_c)# .double()
         self.w_exp = _to_tensor(w_exp_c)# .double()
 
-        self.deform_matrix = _to_tensor(deform_matrix_)
-        self.control_points = _to_tensor(control_points_)
+        self.deform_matrix = _to_tensor(deform_matrix)
+        self.control_points = _to_tensor(control_points)
     
     def reconstruct_mesh(self, param, batch):
         # param = param * self.param_std + self.param_mean
@@ -40,7 +40,7 @@ class DeformVDCLoss(nn.Module):
 
 
     def deform_mesh(self, param, batch):
-        deform = param.view(batch, cp_num_//3, -1) # reshape to 3d
+        deform = param.view(batch, cp_num//3, -1) # reshape to 3d
         deformed_vert = (self.deform_matrix @ (self.control_points + deform)).type(torch.float32)
 
         return deformed_vert

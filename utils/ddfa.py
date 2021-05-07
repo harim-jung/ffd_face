@@ -10,7 +10,7 @@ import cv2
 import argparse
 from .io import _numpy_to_tensor, _load_cpu, _load_gpu
 from .params import *
-from math import cos, sin, sqrt
+from math import cos, sin, sqrt, hypot
 # from bernstein_ffd.ffd_utils import deform_matrix, control_points
 # from scipy.spatial.transform import Rotation as R
 
@@ -490,6 +490,69 @@ def load_model(model, pretrained_path, load_to_cpu):
     model.load_state_dict(pretrained_dict)#, strict=False)
 
     return model
+
+
+def sample_uv_map(uv_map):
+    sampled_by_x = sorted(list(uv_map.keys()))[0:len(uv_map.keys()):2] # 17855
+    sampled_by_y = sorted(sampled_by_x, key=lambda x: x[1])[0:len(sampled_by_x):2] # 8928
+    new_uv_map = {}
+    for uv in sampled_by_y:
+        new_uv_map[uv] = uv_map[uv]
+
+    f = open("HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_sampled.pkl", 'wb')
+    pickle.dump(new_uv_map, f)
+    f.close()
+
+def adjust_range_uv_map(uv_map):
+    v_min = np.array(list(uv_map.keys()))[:, 1].min()
+    v_max = np.array(list(uv_map.keys()))[:, 1].max()
+    new_uv_map = {}
+    for uv in uv_map.keys():
+        new_v = (uv[1] - v_min)/(v_max-v_min)
+        new_uv_map[(uv[0], new_v)] = uv_map[uv]
+    
+    f = open("HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_full.pkl", 'wb')
+    pickle.dump(new_uv_map, f)
+    f.close()
+
+
+def get_neighbor_uvs(ori_uv_map, new_uv, r):
+    new_u, new_v = new_uv
+    neighbor_uvs = {}
+    for old_u, old_v in ori_uv_map.keys():
+        d = hypot(new_u - old_u, new_v - old_v)
+        if d <= r:
+            neighbor_uvs[(old_u, old_v)] = d
+    
+    print(new_uv, neighbor_uvs)
+    return neighbor_uvs
+
+def uniform_resample_uv_map(ori_uv_map):
+    uniform_coord = np.linspace(0,1,120)
+    r = 1 / 120 * 8 
+    uv_pairs = {}
+    for new_u in uniform_coord:
+        for new_v in uniform_coord:
+            new_uv = (new_u, new_v)
+            neighbor_uvs = get_neighbor_uvs(ori_uv_map, (new_u,new_v), r)
+            
+    
+            # if len(neighbor_uvs) >= 5:
+                # find weight according to distance
+                # calculate 
+                # new_xyz(uv_i) = summation(w_i * xyz(uv_i))
+                
+            # else:
+                # what to do?
+                
+            uv_pairs[(new_u, new_v)] = neighbor_uvs
+
+    for new_u in uniform_coord:
+        for new_v in uniform_coord:
+            new_uv = (new_u, new_v)
+
+
+    return uv_pairs
 
 
 class AverageMeter(object):

@@ -24,17 +24,20 @@ from utils.inference import _predict_vertices, dump_rendered_img, dump_to_ply, r
 from utils.io import _load
 from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, LpDataset, reconstruct_vertex, reconstruct_vertex_full, \
 get_rot_mat_from_axis_angle, get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_angle_batch, \
-get_axis_angle_from_rot_mat, get_axis_angle_from_rot_mat_batch, get_axis_angle_s_t_from_rot_mat_batch
+get_axis_angle_from_rot_mat, get_axis_angle_from_rot_mat_batch, get_axis_angle_s_t_from_rot_mat_batch, _parse_param, \
+adjust_range_uv_map
 from utils.params import *
 from utils.render_simdr import render
-from bernstein_ffd.ffd_utils import deformed_vert, cp_num, cp_num_, deformed_vert_w_pose
+from bernstein_ffd.ffd_utils import deformed_vert, cp_num, deformed_vert_w_pose, deformed_vert_w_pose_nurbs, uv_map
 import models.mobilenet_v1_ffd as mobilenet_v1_ffd
 import models.mobilenet_v1
 import models.mobilenet_v1_ffd_lm
 from efficientnet_pytorch import EfficientNet
+from utils.ddfa import uniform_resample_uv_map
 
 # import bernstein_ffd.ffd_utils_patch
 
+# new_uv_map = uniform_resample_uv_map(uv_map)
 
 # root = '../Datasets/AFLW2000/Data/'
 # aflw_gt = LpDataset('test_configs/aflw_gt.txt', root)
@@ -77,6 +80,8 @@ roi_boxs = _load('test_configs/AFLW2000-3D_crop.roi_box.npy')
 # root_lp = '../Datasets/train_aug_120x120/'
 # filelist_lp = open('train.configs/train_aug_120x120.list.val.part', "r").read().split("\n")
 
+aflw_root = '../Datasets/AFLW2000/Data/'
+aflw_gt_params = LpDataset('test_configs/aflw_gt.txt', aflw_root)
 
 def remove_prefix(state_dict, prefix):
     ''' Old style model is stored with all names of parameters sharing common prefix 'module.' '''
@@ -89,7 +94,7 @@ def extract_param(checkpoint_fp, root='', filelists=None, param_fp=None, arch='m
                   batch_size=128, num_workers=4, cpu=False):
     map_location = {f'cuda:{i}': 'cuda:0' for i in range(8)}
     checkpoint = torch.load(checkpoint_fp, map_location=map_location)['state_dict']
-
+ 
     if arch.startswith("mobilenet"):
         if arch.endswith("v1"):
             model = getattr(mobilenet_v1_ffd, arch)(param_classes=param_classes)
@@ -294,15 +299,16 @@ def reconstruct_face_mesh(params, pose=None):
     for i in range(params.shape[0]):
         img_ori = cv2.imread(root + filelist[i])
 
+        gt_param = aflw_gt_params[i][1]
         gt_vert = aflw_meshes[i]
         # transform y axis (original gt mesh is on the mesh coordinate system, not image coordinate)
         gt_vert[1] = img_ori.shape[0] + 1 - gt_vert[1]
         pred_param = params[i]
 
         if pose is None:
-            pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
+            pred_vert = deformed_vert(pred_param.copy(), transform=True) # 3 x 38365
         else:
-            pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=False, pose=pose) # 3 x 38365
+            pred_vert = deformed_vert_w_pose(pred_param.copy(), transform=True, rewhiten=True, pose=pose) # 3 x 38365
         # pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=False, pose='axis_angle') # 3 x 38365
         # pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=True, pose='rot_mat') # 3 x 38365
         # pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
@@ -322,13 +328,16 @@ def reconstruct_face_mesh(params, pose=None):
         # contour loss
         print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
 
-        # pose
-        s = np.abs(pred_param[0])
-        axis_angle = pred_param[1:4]
-        offset = pred_param[4:7]
-        # r = get_rot_mat_from_axis_angle_np(axis_angle)
-        # p = s * r
-        print("Pose: ", s, axis_angle, offset)
+        # # pose
+        # pg, offsetg, alpha_shpg, alpha_expg = _parse_param(gt_param.numpy())
+
+        # pred_param[:12] = pred_param[:12] * param_full_std[:12] + param_full_mean[:12]
+        # p_ = pred_param[:12].reshape(3, -1)
+        # p = p_[:, :3]
+        # offset = p_[:, -1].reshape(3, 1)
+
+        # print("rotation: ", (p - pg).mean())
+        # print("offset: ", (offset[:2] - offsetg[:2]).mean())
 
         # reflip y axis
         pred_vert[1, :] = img_ori.shape[0] + 1 - pred_vert[1, :]
@@ -467,9 +476,10 @@ def render_face_mesh(verts):
 def main():
     parser = argparse.ArgumentParser(description='3DDFA Benchmark')
     # parser.add_argument('--arch', default='mobilenet_v3', type=str)
-    parser.add_argument('--arch', default='resnext', type=str)
+    parser.add_argument('--arch', default='resnet', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_wpose_axis_angle_abss/ffd_resnet_wpose_axis_angle_abss_checkpoint_epoch_41.pth.tar', type=str)
+    # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr_0.37/ffd_resnet_vertex_lm_no_pose_norm_lr_0.37_checkpoint_epoch_23.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr/ffd_resnet_vertex_lm_no_pose_norm_lr_checkpoint_epoch_49.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
@@ -503,43 +513,43 @@ def main():
     # benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
-    # aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num+7, pose="axis_angle")
+    aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num+12, pose="rot_mat")
 
-    min_nme = 100
-    min_index = 0
-    min_1 = 100
-    min_1_index = 0
-    min_2 = 100
-    min_2_index = 0
-    min_3 = 100
-    min_3_index = 0
-    for i in range(23, 28):
-        # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
-        checkpoint = f"snapshot/ffd_resnext_vertex_lm_no_pose_norm/ffd_resnext_vertex_lm_no_pose_norm_checkpoint_epoch_{i}.pth.tar"
-        # checkpoint = f"snapshot/ffd_mobilenet_no_pose_axis_angle_abss/ffd_mobilenet_no_pose_axis_angle_abss_checkpoint_epoch_{i}.pth.tar"
-        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-        print(i, checkpoint)
-        # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
-        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
-        if mean < min_nme:
-            min_nme = mean
-            min_index = i
-        if mean_nme_1 < min_1:
-            min_1 = mean_nme_1
-            min_1_index = i
-        if mean_nme_2 < min_2:
-            min_2 = mean_nme_2 
-            min_2_index = i
-        if mean_nme_3 < min_3:
-            min_3 = mean_nme_3
-            min_3_index = i
+    # min_nme = 100
+    # min_index = 0
+    # min_1 = 100
+    # min_1_index = 0
+    # min_2 = 100
+    # min_2_index = 0
+    # min_3 = 100
+    # min_3_index = 0
+    # for i in range(1, 51):
+    #     # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
+    #     # checkpoint = f"snapshot/ffd_resnext_vertex_lm_no_pose_norm/ffd_resnext_vertex_lm_no_pose_norm_checkpoint_epoch_{i}.pth.tar"
+    #     checkpoint = f"snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr_0.73/ffd_resnet_vertex_lm_no_pose_norm_lr_0.73_checkpoint_epoch_{i}.pth.tar"
+    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+    #     print(i, checkpoint)
+    #     # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
+    #     mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
+    #     if mean < min_nme:
+    #         min_nme = mean
+    #         min_index = i
+    #     if mean_nme_1 < min_1:
+    #         min_1 = mean_nme_1
+    #         min_1_index = i
+    #     if mean_nme_2 < min_2:
+    #         min_2 = mean_nme_2 
+    #         min_2_index = i
+    #     if mean_nme_3 < min_3:
+    #         min_3 = mean_nme_3
+    #         min_3_index = i
 
-    print("min mean: ", min_index, min_nme)
-    print("min nme 1: ", min_1, min_1_index)
-    print("min nme 2: ", min_2, min_2_index)
-    print("min nme 3: ", min_3, min_3_index)
+    # print("min mean: ", min_index, min_nme)
+    # print("min nme 1: ", min_1, min_1_index)
+    # print("min nme 2: ", min_2, min_2_index)
+    # print("min nme 3: ", min_3, min_3_index)
 
 
 if __name__ == '__main__':

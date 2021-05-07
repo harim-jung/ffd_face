@@ -85,7 +85,7 @@ for i in range(0,len(train_dataset),1000):
     render(img, [gt_vert.astype(np.float32)], tri_, alpha=1, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
     # Ax = b
-    # cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+    # cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
     # delta_p = cp_estimated - control_points_ # 343 x 3
     # delta_p = delta_p.reshape(1, -1)
     # delta_ps[i] = delta_p
@@ -109,7 +109,7 @@ for i in range(0,len(train_dataset),1000):
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
@@ -153,7 +153,7 @@ def svd_solve(a, b):
 #     delta_p_z = svd_solve(deform_matrix, (gt_vert[2].T - deform_matrix @ control_points[:, 2]))
 #     print("")
 #     # Ax = b
-#     # cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)[0]
+#     # cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)[0]
 #     # delta_p = cp_estimated - control_points_ # 343 x 3
 #     # delta_p = delta_p.reshape(1, -1)
 #     # delta_ps[i] = delta_p
@@ -180,7 +180,7 @@ def svd_solve(a, b):
 #     # render(img, [gt_vert.astype(np.float32)], tri_, alpha=0.8, show_flag=True, wfp=None, with_bg_flag=True, transform=True)
 
 #     # Ax = b
-#     cp_estimated = np.linalg.lstsq(deform_matrix_, gt_vert.T)
+#     cp_estimated = np.linalg.lstsq(deform_matrix, gt_vert.T)
 #     delta_p = cp_estimated - control_points_ # 343 x 3
 #     delta_p = delta_p.reshape(1, -1)
 #     delta_ps[i] = delta_p
