@@ -199,7 +199,7 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
     return uvw_
 
 
-def find_root_nurbs_ffd(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
+def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
     # def find_root_nurbs_ffd( xyz_i,  i):
 
     print("original xyz[{0}] = {1}".format(i, xyz_i))
@@ -220,8 +220,8 @@ def find_root_nurbs_ffd(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i
 
     # compute the error of the equations:
 
-    xyz2 = uvw_to_xyz_nurbs(np.array([sol.x]), U, V, W, P_lattice, N)
-    error = np.linalg.norm(xyz2 - np.array([F]))
+    xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
+    error = np.linalg.norm(xyz2 - F)
 
     print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format(i, sol.x, xyz_i, xyz2,
                                                                                                   error, sol.message))
@@ -232,14 +232,14 @@ def find_root_nurbs_ffd(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i
         deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
         uvw0_new = uvw0[i] + deviation
 
-        uvw0_new_arr = np.clip(np.array([uvw0_new]), uvw_min[i], uvw_max[i]) * 0.999
+        uvw0_new_arr = np.clip( uvw0_new, uvw_min, uvw_max) * 0.999
 
         print("At i ={0}:  Retry with a new initial guess.".format(i, uvw0_new_arr ))
 
-        sol = optimize.root(funf, uvw0_new_arr[0], args, method='hybr', jac=jacf, tol=None)
+        sol = optimize.root(funf, uvw0_new_arr, args, method='hybr', jac=jacf, tol=None)
 
-        xyz2 = uvw_to_xyz_nurbs(np.array([sol.x]), U, V, W, P_lattice, N)
-        error = np.linalg.norm(xyz2 - np.array([F]))
+        xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
+        error = np.linalg.norm(xyz2 - F)
 
     print("At i ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(i, error))
 
@@ -281,7 +281,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     #   and keywords.
     # """
 
-    parallel(partial(find_root_nurbs_ffd, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N),
+    parallel(partial(find_root_nurbs_ffd_each, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N),
              xyz)  # U, W, P_lattice, N are needed by find_root_nurbs_ffd(), how are they passed into it??
 
     return uvw
@@ -337,7 +337,7 @@ def uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N, uvw_l, l):
     v = uvw_l[1]
     w = uvw_l[2]
 
-    R = 0.0
+    R = np.array([0.0,0.0,0.0])
 
     for i in range(P_lattice.shape[0]):  # i =0.... a
         for j in range(P_lattice.shape[1]):  # j =0.... b
@@ -364,6 +364,38 @@ def uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N, uvw_l, l):
 
     xyz[l] = R
 
+def uvw_to_xyz_nurbs_one(U, V, W, P_lattice, N, uvw_l):
+    # print( "the {0} th  uvw {1}=".format(l, uvw) )
+    u = uvw_l[0]
+    v = uvw_l[1]
+    w = uvw_l[2]
+
+    R = np.array( [0.0, 0.0,0.0])
+
+    for i in range(P_lattice.shape[0]):  # i =0.... a
+        for j in range(P_lattice.shape[1]):  # j =0.... b
+            for k in range(P_lattice.shape[2]):  # k =0.... c
+
+                # print("N(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N(i, 3, u, U) ) )
+                # print("N(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N(j, 3, v, V) ) )
+                # print("N(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N(k, 3, w, W) ) )
+
+                # https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
+
+                assert N(i, 3, u, U) >= 0, "N1(i, 3, u, U) should be non-negative"
+                assert N(j, 3, v, V) >= 0, "N2(j, 3, v, V) should be non-negative"
+                assert N(k, 3, w, W) >= 0, "N2(k, 3, w, W) should be non-negative"
+
+                if within(u, U[i:(i + 3 + 1) + 1]) and within(v, V[j:(j + 3 + 1) + 1]) and within(w,
+                                                                                                  W[k:(k + 3 + 1) + 1]):
+                    # Local Support -- Ni,p(u) is a non-zero polynomial on [ui,ui+p+1)
+                    R += P_lattice[i, j, k] * N(i, 3, u, U) * N(j, 3, v, V) * N(k, 3, w, W)  # Use cubic basis functions
+                    # R += P_lattice[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
+                    # print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
+
+    # print("final  xyz[{0}] = R = {1}".format(l, R))
+
+    return  R
 
 # The code looks like this:
 # parallel(partial(resize_one, path=p, size=size), il.items)
