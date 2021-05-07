@@ -161,7 +161,7 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
     # print('xyz[l]=xyz[{0}={1}'.format(l, xyz[l]) )
     uvw_[:] = (xyz[:] - xyz_minimum) / xyz_range * uvw_range  # uvm: 68 x 3
 
-    print('uvw=', uvw)
+    print('uvw=', uvw_)
 
     u_min_index = np.argmin(uvw_[:, 0])
     v_min_index = np.argmin(uvw_[:, 1])
@@ -198,7 +198,7 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
 
     return uvw_
 
-
+global uvw
 def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz_i, i):
     # def find_root_nurbs_ffd( xyz_i,  i):
 
@@ -251,7 +251,7 @@ def find_root_nurbs_ffd_each(uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N, xyz
 
 
 # parallel version
-uvw = 0
+
 def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
@@ -275,7 +275,7 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     # print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
     # print('xyz=', xyz)
 
-    uvw = np.zeros(shape=xyz.shape, dtype=np.double)
+    uvw = np.zeros(shape=xyz.shape, dtype=np.double) # global variable set
     # The global variable uvw is used in find_root_nurbs_ffd()
 
     uvw0 = initial_guess_for_nonlinear_equations(xyz, U, V, W)
@@ -414,7 +414,7 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 # Thanks. ChrisP.
 
 # # parallel version
-xyz = 0
+global xyz
 
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
 
@@ -498,7 +498,7 @@ def get_uvw_deformation_matrix_nurb_each_row(U, V, W, P_lattice, N, uvw_l, l):
 
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
 # #parallel version
-weights = 0
+global weights
 def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
     # v = util.mesh3d(
     #    *(np.arange(0, d+1, dtype=np.int32) for d in dims),
