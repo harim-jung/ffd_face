@@ -23,10 +23,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +73,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySupportGeventDebugging" value="true" />
@@ -308,7 +307,7 @@
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
       <workItem from="1620304941901" duration="49607000" />
-      <workItem from="1620454484385" duration="242000" />
+      <workItem from="1620454484385" duration="1285000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -394,7 +393,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620428437977</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620455084017</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1620455084017</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -413,6 +419,9 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/.." />
+    </ignored-roots>
     <MESSAGE value="I am debugging the deform-parallel.py by Moon" />
     <MESSAGE value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
     <option name="LAST_COMMIT_MESSAGE" value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />

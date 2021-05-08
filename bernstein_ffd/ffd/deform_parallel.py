@@ -493,8 +493,7 @@ class Get_uvw_deformation_matrix_nurb_each_row(object):
         self.P_lattice = P_lattice
         self.N = N
 
-        self.weights_par = np.array( np.zeros(shape= weights_par_shape, dtype=np.double),
-                                       dtype = np.double)
+        self.weights_par = np.array( np.zeros(shape= weights_par_shape, dtype = np.double), dtype=np.double )
 
     def __call__(self, uvw_l, l):
 
