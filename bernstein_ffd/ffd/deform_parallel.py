@@ -262,7 +262,7 @@ class Find_root_nurbs_ffd_each(object):
         print('SUCCESS: find_root_nurbs_ffd_each: l ={0}, n={1}: uvw_par[{2}] ={3}, error = {4}'.format(l,n, l, sol.x, error))
         print("xyz's:  l={0}, n ={1}:  original xyz[{2}] ={3}: computed xyz[{4}] ={5}\n".format(l, n, l, xyz_l, l, xyz2) )
 
-        return sol.x
+        return [l,sol.x]
 
 
 # parallel version
@@ -327,9 +327,6 @@ class Uvw_to_xyz_nurbs_each(object):
         self.P_lattice = P_lattice
         self.N = N
 
-        #self.xyz_par = np.array( np.zeros( shape = xyz_par_shape, dtype = np.double) )
-
-
 
     def __call__(self, uvw_l, l):
         # print( "the {0} th  uvw {1}=".format(l, uvw) )
@@ -362,10 +359,9 @@ class Uvw_to_xyz_nurbs_each(object):
                     # R += P_lattice[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
                     # print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
 
-        print("computed  xyz[{0}] ( uvw_l = {1} ) = {2}".format(l, uvw_l,  R))
+        #print("computed  xyz[{0}] ( uvw_l = {1} ) = {2}".format(l, uvw_l,  R))
 
-        #self.xyz_par[l] = R
-        return R
+        return [l,R]
 
 
 # xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
@@ -399,8 +395,6 @@ def uvw_to_xyz_nurbs_one(uvw_l, U, V, W, P_lattice, N):
                     # R += P_lattice[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
                     # print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
 
-    # print("final  xyz[{0}] = R = {1}".format(l, R))
-
     return R
 
 
@@ -419,10 +413,15 @@ def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
 
     uvw_to_xyz_nurbs_each = Uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N)
     
-    xyz_par_list = parallel(uvw_to_xyz_nurbs_each, uvw_points)
+    xyz_par_list = parallel(uvw_to_xyz_nurbs_each, uvw_points) # [ [l,xyz] ]
     # parallel() returns results = [func(o,i) for i,o in progress_bar(enumerate(arr), total=len(arr), leave=leave)]
 
-    return np.array( xyz_par_list )
+    xyz_par_array = np.empty( shape = uvw_points.shape, dtype =np.double )
+    for i in range( uvw_points.shape[0]):
+        l = xyz_par_list[i]
+        xyz_par_array[l] = xyz_par_list[i]
+
+    return xyz_par_array
 
 
 def stu_to_xyz(stu_points, stu_origin, stu_axes):
@@ -496,6 +495,9 @@ class Get_uvw_deformation_matrix_nurb_each_row(object):
         v = uvw_l[1]
         w = uvw_l[2]
 
+        self.weights_par_row = np.zeros(shape=(P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2],),
+                                        dtype=np.double)
+
         for i in range(self.P_lattice.shape[0]):  # i=0...a
             for j in range(self.P_lattice.shape[1]):  # j=0...b
                 for k in range(self.P_lattice.shape[2]):  # k = 0...c
@@ -515,7 +517,7 @@ class Get_uvw_deformation_matrix_nurb_each_row(object):
                             = self.N(i, 3, u, self.U) * self.N(j, 3, v, self.V) * self.N(k, 3, w, self.W)
 
 
-        return self.weights_par_row
+        return [l,self.weights_par_row]
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
 # #parallel version
 
@@ -531,7 +533,7 @@ def get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N):
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
-    weights_par_shape = (uvw_par.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2])
+
 
     get_uvw_deformation_matrix_nurb_each_row = Get_uvw_deformation_matrix_nurb_each_row( U, V, W, P_lattice,
                                                                                         N)
@@ -541,7 +543,16 @@ def get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N):
     # for l in range(uvw.shape[0]):
 
     p = np.reshape(P_lattice, (-1, 3))  # N x 3
-    return np.array( weights_par_list), p  # weights: M x N
+
+    weights_par_shape = (uvw_par.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2])
+    weights_par_array = np.empty(shape=  weights_par_shape,  dtype=np.double)
+
+    for i in range(uvw_par):
+        l = weights_par_list[i]
+        weights_par_array[l] = weights_par_list[i]
+
+
+    return  weights_par_array, p  # weights: M x N
 
 
 def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):

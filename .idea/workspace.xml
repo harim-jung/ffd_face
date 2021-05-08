@@ -306,7 +306,7 @@
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
       <workItem from="1620304941901" duration="49607000" />
-      <workItem from="1620454484385" duration="12334000" />
+      <workItem from="1620454484385" duration="15599000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -413,7 +413,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620475346323</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="I changed the deform-parallel.py so that the problem of inmutable ndarray has been solved">
+      <created>1620482353333</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1620482353333</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
