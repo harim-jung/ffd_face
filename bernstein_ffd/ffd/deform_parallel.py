@@ -69,8 +69,6 @@ def N(i, p, u, U):
         return w1 * N(i, p - 1, u, U) + w2 * N(i + 1, p - 1, u, U)
 
 
-
-
 def within(u, U):
     if (u >= U[0] and u < U[-1]):
         return True;
@@ -114,7 +112,6 @@ def dN(i, p, u, U):
         w2 = p / (U[i + p + 1] - U[i + 1])
 
     return w1 * N(i, p - 1, u, U) - w2 * N(i + 1, p - 1, u, U)
-
 
 
 def jacf(x, F, U, V, W, P, N):  # jacobain matrix 3 x 3
@@ -199,71 +196,76 @@ def initial_guess_for_nonlinear_equations(xyz, U, V, W):
     return uvw_
 
 
-#Find_root_nurbs_ffd_each(uvw_par, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N)
-class Find_root_nurbs_ffd_each( object ):
-    def __init__(self, uvw_par, uvw0, uvw_min, uvw_max,  U, V, W, P_lattice, N):
-            self.uwv_par = uvw_par
-            self.uvw0 = uvw0
-            self.uvw_min = uvw_min
-            self.uvw_max = uvw_max
-            self.U = U
-            self.V = V
-            self.W = W
-            self.P_lattice = P_lattice
-            self.N = N
+# Find_root_nurbs_ffd_each(uvw_par, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N)
+#uvw_par = np.zeros(shape=xyz.shape, dtype=np.double)  # global variable set
+class Find_root_nurbs_ffd_each(object):
+    def __init__(self, xyz_shape, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N):
+
+        self.xyz_shape = xyz_shape
+        self.uvw0 = uvw0
+        self.uvw_min = uvw_min
+        self.uvw_max = uvw_max
+        self.U = U
+        self.V = V
+        self.W = W
+        self.P_lattice = P_lattice
+        self.N = N
+
+        self.uvw_par = np.array(shape = xyz_shape, dtype = np.double)
 
     def __call__(self, xyz_l, l):
-
         # def find_root_nurbs_ffd( xyz_i,  i):
 
-            print('find_root_nurbs_ffd_each:')
-            print("original xyz[{0}] = {1}".format(l, xyz_l))
-            print('initial guess uvw0[{0}]= {1}\n'.format(l, self.uvw0[l]))
-            xyz2 = uvw_to_xyz_nurbs_one( self.uvw0[l], self.U, self.V, self.W, self.P_lattice, self.N)
-            print('xyz-guess [{0}]= {1}'.format(l, xyz2) )
+        print('find_root_nurbs_ffd_each:')
+        print("original xyz[{0}] = {1}".format(l, xyz_l))
+        print('initial guess uvw0[{0}]= {1}\n'.format(l, self.uvw0[l]))
+        xyz2 = uvw_to_xyz_nurbs_one(self.uvw0[l], self.U, self.V, self.W, self.P_lattice, self.N)
+        print('xyz-guess [{0}]= {1}'.format(l, xyz2))
 
-            F = xyz_l
+        F = xyz_l
 
-            args = (self.F, self.U, self.V, self.W, self.P_lattice, self.N)  # How are these variables bound? By "parallel" function?
+        args = (
+        F, self.U, self.V, self.W, self.P_lattice, self.N)  # How are these variables bound? By "parallel" function?
 
-            sol = optimize.root(funf, self.uvw0[i], args, method='hybr', jac=jacf, tol=None)
+        sol = optimize.root(funf, self.uvw0[l], args, method='hybr', jac=jacf, tol=None)
 
-            # x, info, ier, mesg = optimize.fsolve(fun, x0, args, fprime=jac)
-            # uvw_, info, ier, mesg = optimize.fsolve(fun, uvw0[l], args, fprime=jac, full_output = 1 )
-            # options = {'maxfev': 1000}
+        # x, info, ier, mesg = optimize.fsolve(fun, x0, args, fprime=jac)
+        # uvw_, info, ier, mesg = optimize.fsolve(fun, uvw0[l], args, fprime=jac, full_output = 1 )
+        # options = {'maxfev': 1000}
 
-            # sol = optimize.root(fun, x0, args, method='hybr') # options=options)
+        # sol = optimize.root(fun, x0, args, method='hybr') # options=options)
 
-            # compute the error of the equations:
+        # compute the error of the equations:
+
+        xyz2 = uvw_to_xyz_nurbs_one(sol.x, self.U, self.V, self.W, self.P_lattice, self.N)
+        error = np.linalg.norm(xyz2 - F)
+
+        n = 0  # The number of trials for new initial guess
 
 
-            xyz2 = uvw_to_xyz_nurbs_one( sol.x, self.U, self.V, self.W, self.P_lattice, self.N)
+
+        while (error > 1.0):
+            n += 1
+            print("l ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(l, n,
+                                                                                                                  error))
+
+            deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
+            uvw0_new = self.uvw0[l] + deviation
+
+            uvw0_new_arr = np.clip(uvw0_new, self.uvw_min, self.uvw_max) * 0.999
+
+            print("l ={0}, n ={1}:  Retry with a new initial guess = {2}.".format(l, n, uvw0_new_arr))
+
+            sol = optimize.root(funf, uvw0_new_arr, args, method='hybr', jac=jacf, tol=None)
+
+            xyz2 = uvw_to_xyz_nurbs_one(sol.x, self.U, self.V, self.W, self.P_lattice, self.N)
             error = np.linalg.norm(xyz2 - F)
 
-            print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format(l, sol.x, xyz_l, xyz2,
-                                                                                                  error, sol.message))
-            n = 0 # The number of trials for new initial guess
-            while (error > 1.0):
-                n += 1
-                print("At l ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(i, n, error))
+        #print("At l ={0}, n={1}: The  error = {2} is less than 1.0, and succeeds.\n".format(l, n, error))
 
-                deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
-                uvw0_new = self.uvw0[l] + deviation
-
-                uvw0_new_arr = np.clip( uvw0_new, self.uvw_min, self.uvw_max) * 0.999
-
-                print("At l ={0}:  Retry with a new initial guess = {1}.".format(i, uvw0_new_arr ))
-
-                sol = optimize.root(funf, uvw0_new_arr, args, method='hybr', jac=jacf, tol=None)
-
-                xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
-                error = np.linalg.norm(xyz2 - F)
-
-            print("At l ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(l, error))
-
-
-            self.uvw_par[l] = sol.x  # uvw[] is a global variable
-            print('find_root_nurbs_ffd_each: uvw_par[{0}]={1}'.format(l, self.uvw_par[l]))
+        self.uvw_par[l] = sol.x
+        print('SUCCESS: find_root_nurbs_ffd_each: l ={0}, n={1}: uvw_par[{2}]={3}, error = {4}'.format(l,n, l, self.uvw_par[l], error))
+        print("xyz's:  l={0}, n ={1}:  original xyz={2}: computed xyz={3}\n".format(l, n,  xyz_l, xyz2) )
 
 
 # parallel version
@@ -291,11 +293,11 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     # print('xyz.shape=', xyz.shape) #xyz.shape= (35709, 3)
     # print('xyz=', xyz)
 
-    #global uvw_par
+    # global uvw_par
     # If a variable is assigned a value anywhere within the function’s body,
     # it’s assumed to be a local unless explicitly declared as global.
 
-    uvw_par = np.zeros(shape=xyz.shape, dtype=np.double) # global variable set
+    #uvw_par = np.zeros(shape=xyz.shape, dtype=np.double)  # global variable set
     # The global variable uvw is used in find_root_nurbs_ffd()
 
     uvw0 = initial_guess_for_nonlinear_equations(xyz, U, V, W)
@@ -306,71 +308,79 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
     #   and keywords.
     # """
 
-    find_root_nurbs_ffd_each = Find_root_nurbs_ffd_each(uvw_par, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N)
+    #find_root_nurbs_ffd_each = Find_root_nurbs_ffd_each(uvw_par, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N)
+    find_root_nurbs_ffd_each = Find_root_nurbs_ffd_each(xyz.shape, uvw0, uvw_min, uvw_max, U, V, W, P_lattice, N)
 
-    parallel( find_root_nurbs_ffd_each,  xyz)  # U, W, P_lattice, N are needed by find_root_nurbs_ffd(), how are they passed into it??
+    parallel(find_root_nurbs_ffd_each,
+             xyz)  # U, W, P_lattice, N are needed by find_root_nurbs_ffd(), how are they passed into it??
 
+    print('find_root_nurbs_ffd_each=', find_root_nurbs_ffd_each)
 
+    print('find_root_nurbs_ffd_each.uvw_par=', find_root_nurbs_ffd_each.uvw_par)
     for l in range(xyz.shape[0]):
-         print('xyz_to_uvw_nurbs: landmark uvw {0}: uvw = {1}'.format(l, find_root_nurbs_ffd_each.uvw_par[l]))
+        print('xyz_to_uvw_nurbs: landmark uvw {0}: uvw = {1}'.format(l, find_root_nurbs_ffd_each.uvw_par[l]))
     return find_root_nurbs_ffd_each.uvw_par
 
 
-#Uvw_to_xyz_nurbs_each (xyz_par,  U, V, W, P_lattice, N)
+# Uvw_to_xyz_nurbs_each (xyz_par,  U, V, W, P_lattice, N)
 class Uvw_to_xyz_nurbs_each(object):
 
-    def __init__(self, xyz_par, U, V, W, P_lattice, N):
+    def __init__(self, xyz_par_shape, U, V, W, P_lattice, N):
 
-        self.xyz_par = xyz_par
+
         self.U = U
         self.V = V
         self.W = W
         self.P_lattice = P_lattice
         self.N = N
 
+        self.xyz_par = np.array( shape = xyz_par_shape, dtype = np.double)
 
     def __call__(self, uvw_l, l):
-    # print( "the {0} th  uvw {1}=".format(l, uvw) )
+        # print( "the {0} th  uvw {1}=".format(l, uvw) )
         u = uvw_l[0]
         v = uvw_l[1]
         w = uvw_l[2]
 
-        R = np.array([0.0,0.0,0.0])
+        R = np.array([0.0, 0.0, 0.0])
 
         for i in range(self.P_lattice.shape[0]):  # i =0.... a
             for j in range(self.P_lattice.shape[1]):  # j =0.... b
                 for k in range(self.P_lattice.shape[2]):  # k =0.... c
 
-                # print("N(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N(i, 3, u, U) ) )
-                # print("N(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N(j, 3, v, V) ) )
-                # print("N(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N(k, 3, w, W) ) )
+                    # print("N(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N(i, 3, u, U) ) )
+                    # print("N(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N(j, 3, v, V) ) )
+                    # print("N(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N(k, 3, w, W) ) )
 
-                # https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
+                    # https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
 
-                    assert self.N(i, 3, u, U) >= 0, "N1(i, 3, u, U) should be non-negative"
-                    assert self.N(j, 3, v, V) >= 0, "N2(j, 3, v, V) should be non-negative"
-                    assert self.N(k, 3, w, W) >= 0, "N2(k, 3, w, W) should be non-negative"
+                    assert self.N(i, 3, u, self.U) >= 0, "N1(i, 3, u, U) should be non-negative"
+                    assert self.N(j, 3, v, self.V) >= 0, "N2(j, 3, v, V) should be non-negative"
+                    assert self.N(k, 3, w, self.W) >= 0, "N2(k, 3, w, W) should be non-negative"
 
-                    if within(u, U[i:(i + 3 + 1) + 1]) and within(v, V[j:(j + 3 + 1) + 1]) and within(w,
-                                                                                                  W[k:(k + 3 + 1) + 1]):
-                    # Local Support -- Ni,p(u) is a non-zero polynomial on [ui,ui+p+1)
-                        R += self.P_lattice[i, j, k] * self.N(i, 3, u, self.U) * self.N(j, 3, v, self.V) * self.N(k, 3, w, self.W)  # Use cubic basis functions
+                    if within(u, self.U[i:(i + 3 + 1) + 1]) and within(v, self.V[j:(j + 3 + 1) + 1])\
+                               and within(w, self.W[k:(k + 3 + 1) + 1]):
+                        # Local Support -- Ni,p(u) is a non-zero polynomial on [ui,ui+p+1)
+                        R += self.P_lattice[i, j, k] * self.N(i, 3, u, self.U) * self.N(j, 3, v, self.V) * self.N(k, 3,
+                                                                                                                  w,
+                                                                                                                  self.W)  # Use cubic basis functions
                     # R += P_lattice[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
                     # print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
 
-    # print("final  xyz[{0}] = R = {1}".format(l, R))
+        print("computed  xyz[{0}] ( uvw_l = {1} ) = {2}".format(l, uvw_l,  R))
 
         self.xyz_par[l] = R
 
- #xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
 
-def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
+# xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
+
+def uvw_to_xyz_nurbs_one(uvw_l, U, V, W, P_lattice, N):
     # print( "the {0} th  uvw {1}=".format(l, uvw) )
     u = uvw_l[0]
     v = uvw_l[1]
     w = uvw_l[2]
 
-    R = np.array( [0.0, 0.0,0.0])
+    R = np.array([0.0, 0.0, 0.0])
 
     for i in range(P_lattice.shape[0]):  # i =0.... a
         for j in range(P_lattice.shape[1]):  # j =0.... b
@@ -395,7 +405,8 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 
     # print("final  xyz[{0}] = R = {1}".format(l, R))
 
-    return  R
+    return R
+
 
 # The code looks like this:
 # parallel(partial(resize_one, path=p, size=size), il.items)
@@ -409,12 +420,11 @@ def uvw_to_xyz_nurbs_one( uvw_l, U, V, W, P_lattice, N):
 # # parallel version
 # xyz_par = uvw_to_xyz_nurbs(uvw_par, U, V, W, P_lattice, N)  # parallel version
 def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
-
-    #global xyz_par
-    xyz_par = np.zeros(shape=uvw_points.shape, dtype=np.double)
-
-    uvw_to_xyz_nurbs_each = Uvw_to_xyz_nurbs_each (xyz_par,  U, V, W, P_lattice, N)
-    parallel( uvw_to_xyz_nurbs_each, uvw_points)
+    # global xyz_par
+    #xyz_par = np.zeros(shape=uvw_points.shape, dtype=np.double)
+    xyz_par_shape = uvw_points.shape
+    uvw_to_xyz_nurbs_each = Uvw_to_xyz_nurbs_each(xyz_par_shape, U, V, W, P_lattice, N)
+    parallel(uvw_to_xyz_nurbs_each, uvw_points)
 
     # parallel( func, arr ) ==> [func,o,i) for i,o in enumerate(arr)]
 
@@ -471,37 +481,44 @@ def get_stu_deformation_matrix(stu, dims):
     b = np.prod(weights, axis=-1)
     return b
 
-#Get_uvw_deformation_matrix_nurb_each_row(weights_par, U, V, W, P_lattice, N)
-class Get_uvw_deformation_matrix_nurb_each_row (object):
 
-    def __init__(self, weights_par, U, V, W, P_lattice, N):
-        self.weights_par = weights_par
+# Get_uvw_deformation_matrix_nurb_each_row(weights_par, U, V, W, P_lattice, N)
+class Get_uvw_deformation_matrix_nurb_each_row(object):
+
+    def __init__(self, weights_par_shape, U, V, W, P_lattice, N):
+
         self.U = U
         self.V = V
         self.W = W
         self.P_lattice = P_lattice
         self.N = N
 
-    def __call__(self self, uvw_l, l):
+        self.weights_par = np.array( np.zeros(shape= weights_par_shape, dtype=np.double),
+                                       dtype = np.double)
+
+    def __call__(self, uvw_l, l):
 
         u = uvw_l[0]
         v = uvw_l[1]
         w = uvw_l[2]
 
-
         for i in range(self.P_lattice.shape[0]):  # i=0...a
             for j in range(self.P_lattice.shape[1]):  # j=0...b
                 for k in range(self.P_lattice.shape[2]):  # k = 0...c
 
-                # print("N1(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N1(i, 3, u, U) ) )
-                # print("N2(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N2(j, 3, v, V) ) )
-                # print("N3(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N3(k, 3, w, W) ) )
-                # print("N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)= {0}".format( N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) ) )
+                    # print("N1(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N1(i, 3, u, U) ) )
+                    # print("N2(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N2(j, 3, v, V) ) )
+                    # print("N3(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N3(k, 3, w, W) ) )
+                    # print("N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)= {0}".format( N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) ) )
 
-                 if within(u, self.U[i:(i + 3 + 1) + 1]) and within(v, self.V[j:(j + 3 + 1) + 1]) and within(w,
-                                                                                                  self.W[k:(k + 3 + 1) + 1]):
-                    self.weights_par[l, i * (self.P_lattice.shape[1] * self.P_lattice.shape[2]) + j * self.P_lattice.shape[2] + k] \
-                        = self.N(i, 3, u, self.U) * self.N(j, 3, v, self.V) * self.N(k, 3, w, self.W)
+                    if within(u, self.U[i:(i + 3 + 1) + 1]) and within(v, self.V[j:(j + 3 + 1) + 1]) and within(w,
+                                                                                                                self.W[
+                                                                                                                k:(
+                                                                                                                          k + 3 + 1) + 1]):
+                        self.weights_par[
+                            l, i * (self.P_lattice.shape[1] * self.P_lattice.shape[2]) + j * self.P_lattice.shape[
+                                2] + k] \
+                            = self.N(i, 3, u, self.U) * self.N(j, 3, v, self.V) * self.N(k, 3, w, self.W)
 
 
 # return get_uvw_deformation_matrix_nurbs(uvw,  U, V, W,P_lattice, N)
@@ -519,18 +536,17 @@ def get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N):
     #    v=v,
     #    stu=np.expand_dims(stu, axis=-2))
 
+    weights_par_shape = (uvw_par.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2])
 
-    weights_par = np.zeros(shape=(uvw_par.shape[0], P_lattice.shape[0] * P_lattice.shape[1] * P_lattice.shape[2]))
+    get_uvw_deformation_matrix_nurb_each_row = Get_uvw_deformation_matrix_nurb_each_row(weights_par_shape, U, V, W, P_lattice,
+                                                                                        N)
 
-    get_uvw_deformation_matrix_nurb_each_row = Get_uvw_deformation_matrix_nurb_each_row(weights_par, U, V, W, P_lattice, N)
-
-    parallel( get_uvw_deformation_matrix_nurb_each_row, uvw_par)
+    parallel(get_uvw_deformation_matrix_nurb_each_row, uvw_par)
     # print('uvw.shape =', uvw.shape)
     # for l in range(uvw.shape[0]):
 
     p = np.reshape(P_lattice, (-1, 3))  # N x 3
     return get_uvw_deformation_matrix_nurb_each_row.weights_par, p  # weights: M x N
-
 
 
 def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):
@@ -539,8 +555,7 @@ def get_deformation_matrix(xyz, dims, stu_origin, stu_axes):
 
 
 def get_deformation_matrix_nurbs(xyz, U, V, W, P_lattice, N):
-
-    #import pdb
+    # import pdb
     # pdb.set_trace()
     print('parallel version:::::::::::::::::::::::::::::::::::')
 
@@ -550,9 +565,11 @@ def get_deformation_matrix_nurbs(xyz, U, V, W, P_lattice, N):
 
     uvw_par = xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N)  # parallel version
 
-    b, p = get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N)  # parallel version
 
     xyz_par = uvw_to_xyz_nurbs(uvw_par, U, V, W, P_lattice, N)  # parallel version
+
+    b, p = get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N)  # parallel version
+
 
     for i in range(xyz.shape[0]):
         print('landmark uvw {0}: uvw = {1}'.format(i, uvw_par[i]))
@@ -594,5 +611,3 @@ def get_stu_params(vertices):
     # stu_axes = np.diag(maximum - minimum)
     stu_axes = maximum - minimum
     return stu_origin, stu_axes
-
-

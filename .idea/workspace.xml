@@ -24,7 +24,9 @@
   <component name="ChangeListManager">
     <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/test_nurbs_ffd_face.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -305,7 +307,8 @@
       <workItem from="1613360371820" duration="1557000" />
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
-      <workItem from="1620304941901" duration="32600000" />
+      <workItem from="1620304941901" duration="49607000" />
+      <workItem from="1620454484385" duration="242000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -384,7 +387,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620392956396</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+      <created>1620428437977</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1620428437977</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -473,6 +483,6 @@
     <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1618462597433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620385633337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620452633472" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
   </component>
 </project>

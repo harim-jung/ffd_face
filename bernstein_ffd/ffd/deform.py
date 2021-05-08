@@ -444,6 +444,40 @@ def initial_guess_for_nonlinear_equations(xyz, U,V,W):
 
     return uvw
 
+def uvw_to_xyz_nurbs_one(uvw_l, U, V, W, P_lattice, N):
+    # print( "the {0} th  uvw {1}=".format(l, uvw) )
+    u = uvw_l[0]
+    v = uvw_l[1]
+    w = uvw_l[2]
+
+    R = np.array([0.0, 0.0, 0.0])
+
+    for i in range(P_lattice.shape[0]):  # i =0.... a
+        for j in range(P_lattice.shape[1]):  # j =0.... b
+            for k in range(P_lattice.shape[2]):  # k =0.... c
+
+                # print("N(i, 3, u, U)= N({0}, 3, {1},U)= {2}".format(i,u, N(i, 3, u, U) ) )
+                # print("N(j, 3, v, V)= N({0}, 3, {1},V)= {2}".format(j, v, N(j, 3, v, V) ) )
+                # print("N(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N(k, 3, w, W) ) )
+
+                # https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-property.html
+
+                assert N(i, 3, u, U) >= 0, "N1(i, 3, u, U) should be non-negative"
+                assert N(j, 3, v, V) >= 0, "N2(j, 3, v, V) should be non-negative"
+                assert N(k, 3, w, W) >= 0, "N2(k, 3, w, W) should be non-negative"
+
+                if within(u, U[i:(i + 3 + 1) + 1]) and within(v, V[j:(j + 3 + 1) + 1]) and within(w,
+                                                                                                  W[k:(k + 3 + 1) + 1]):
+                    # Local Support -- Ni,p(u) is a non-zero polynomial on [ui,ui+p+1)
+                    R += P_lattice[i, j, k] * N(i, 3, u, U) * N(j, 3, v, V) * N(k, 3, w, W)  # Use cubic basis functions
+                    # R += P_lattice[i, j, k] * N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)  # Use cubic basis functions
+                    # print("intermediate xyz[{0}] = R ={1} ".format(l, R) )
+
+    # print("final  xyz[{0}] = R = {1}".format(l, R))
+
+    return R
+
+
 def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     # define nurbs surface: we use the notation used in paper https://asmedigitalcollection.asme.org/computingengineering/article-abstract/8/2/024001/465778/Freeform-Deformation-Versus-B-Spline?redirectedFrom=fulltext
@@ -498,26 +532,32 @@ def xyz_to_uvw_nurbs(xyz, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
         #compute the error of the equations:
 
-        xyz2 = uvw_to_xyz_nurbs( np.array( [sol.x] ), U, V, W, P_lattice, N)
-        error = np.linalg.norm( xyz2 - np.array([F]) )
+        xyz2 = uvw_to_xyz_nurbs_one( sol.x, U, V, W, P_lattice, N)
+        error = np.linalg.norm( xyz2 - F )
 
-        # print("root finding result: l={0}: uvw={1}: xyz={2}: xyz2={3}, error = {4}, msg={5}\n".format( l, sol.x, xyz[l], xyz2, error, sol.message) )
+        n = 0
+
 
         while  ( error > 1.0):
 
-            #    print("At l ={0}: The error = {1} is greater than 1.0. Retry with a new initial guess.".format(l, error) )
+               print("l ={0}: n = {1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(l,n,  error) )
 
+               n += 1
                deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
                uvw0_new = uvw0[l] + deviation
 
-               uvw0_new_arr = np.clip(np.array([uvw0_new]), uvw_min, uvw_max) * 0.999
+               uvw0_new_arr = np.clip(uvw0_new, uvw_min, uvw_max) * 0.999
 
-               sol = optimize.root(funf, uvw0_new_arr[0], args, method='hybr', jac=jacf, tol=None)
+               sol = optimize.root(funf, uvw0_new_arr, args, method='hybr', jac=jacf, tol=None)
 
-               xyz2 = uvw_to_xyz_nurbs(np.array([sol.x]), U, V, W, P_lattice, N)
-               error = np.linalg.norm(xyz2 - np.array([F]))
+               #xyz2 = uvw_to_xyz_nurbs(np.array([sol.x]), U, V, W, P_lattice, N)
 
-        # print("At l ={0}: The  error = {1} is less than 1.0, and succeeds.\n".format(l, error))
+               xyz2 = uvw_to_xyz_nurbs_one(sol.x, U, V, W, P_lattice, N)
+
+               error = np.linalg.norm(xyz2 - F)
+
+        print("SUCCESS: l ={0}: n ={1}: uvw[{2}], The  error = {3} is less than 1.0, and succeeds.\n".format(l, n, sol.x, error))
+        print("xyz's: l={0}: n ={1}: original xyz={2}: computed xyz={3}\n".format(l,n, xyz[l],   xyz2 ) )
 
         uvw[l] = sol.x
 
@@ -700,8 +740,11 @@ def get_uvw_deformation_matrix_nurbs(uvw, U, V, W, P_lattice, N):
                     #print("N3(k, 3, w, W)= N({0}, 3, {1},W)= {2}".format(k, w, N3(k, 3, w, W) ) )
                     #print("N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)= {0}".format( N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W) ) )
 
-                    weights[ l, i * (P_lattice.shape[1] * P_lattice.shape[2]) + j * P_lattice.shape[2] + k]\
-                        = N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)
+                    if within(u, U[i:(i + 3 + 1) + 1]) and within(v, V[j:(j + 3 + 1) + 1]) and within(w, W[k:(
+                                                                                                                     k + 3 + 1) + 1]):
+
+                        weights[ l, i * (P_lattice.shape[1] * P_lattice.shape[2]) + j * P_lattice.shape[2] + k]\
+                                 = N1(i, 3, u, U) * N2(j, 3, v, V) * N3(k, 3, w, W)
 
     p =  np.reshape(P_lattice, (-1, 3) ) # N x 3
     return weights, p # weights: M x N
@@ -721,11 +764,11 @@ def get_deformation_matrix_nurbs(xyz,  U, V, W, P_lattice, N):
 
     xyz2 = uvw_to_xyz_nurbs(uvw, U, V, W, P_lattice, N)
 
-    # for i in range(xyz.shape[0]):
-    #      print('landmark uvw {0}: uvw = {1}'.format( i, uvw[i]) )
-    #      print('the landmark {0}:  origin xyz={1}'.format( i, xyz[i]) )
-    #      print('the landmark {0}:  nurbs ffd xyz (sum)={1}\n'.format(i, xyz2[i]) )
-    #      print('b@p [{0}]  = xyz = {1}\n'.format(i, (b@p) [ i] ), )
+    for i in range(xyz.shape[0]):
+          print('landmark uvw {0}: uvw = {1}'.format( i, uvw[i]) )
+          print('the landmark {0}:  origin xyz={1}'.format( i, xyz[i]) )
+          print('the landmark {0}:  nurbs ffd xyz (sum)={1}\n'.format(i, xyz2[i]) )
+          print('b@p [{0}]  = xyz = {1}\n'.format(i, (b@p) [ i] ), )
 
 
     return b, p

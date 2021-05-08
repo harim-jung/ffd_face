@@ -487,9 +487,9 @@ q = a + p + 1
 r = b + m + 1
 s = c + n + 1
 
-U = np.zeros(shape=(q + 1,), dtype=np.float)
-V = np.zeros(shape=(r + 1,), dtype=np.float)
-W = np.zeros(shape=(s + 1,), dtype=np.float)
+U = np.zeros(shape=(q + 1,), dtype=np.double)
+V = np.zeros(shape=(r + 1,), dtype=np.double)
+W = np.zeros(shape=(s + 1,), dtype=np.double)
 
 for i in range(q + 1):  # 0,1,2,....q: the u knot index
 
@@ -559,7 +559,7 @@ reconstructed_vertices = deform_matrix @ control_points
 # deform_matrix: M x N
 # P_lattice:  n1 x n2 x n3 x 3
 
-mesh = np.zeros( shape=( deform_matrix.shape[0], 3), dtype=np.float)
+mesh = np.zeros( shape=( deform_matrix.shape[0], 3), dtype=np.double)
 
 for l in range( deform_matrix.shape[0]):
   for i in range(P_lattice.shape[0]):  # i=0...a
