@@ -218,7 +218,7 @@ class Find_root_nurbs_ffd_each(object):
         print("original xyz[{0}] = {1}".format(l, xyz_l))
         print('initial guess uvw0[{0}]= {1}\n'.format(l, self.uvw0[l]))
         xyz2 = uvw_to_xyz_nurbs_one(self.uvw0[l], self.U, self.V, self.W, self.P_lattice, self.N)
-        print('xyz-guess [{0}]= {1}'.format(l, xyz2))
+        #print('xyz-guess [{0}]= {1}'.format(l, xyz2))
 
         F = xyz_l
 
@@ -246,7 +246,7 @@ class Find_root_nurbs_ffd_each(object):
             n += 1
             print("l ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(l, n,
                                                                                                                   error))
-
+            print("xyz's:  l={0}, n ={1}:  original xyz={2}: computed xyz={3}\n".format(l, n, xyz_l, xyz2))
             deviation = np.random.uniform(low=-1.0, high=1.0, size=(3,))
             uvw0_new = self.uvw0[l] + deviation
 
@@ -259,8 +259,8 @@ class Find_root_nurbs_ffd_each(object):
             xyz2 = uvw_to_xyz_nurbs_one(sol.x, self.U, self.V, self.W, self.P_lattice, self.N)
             error = np.linalg.norm(xyz2 - F)
 
-        print('SUCCESS: find_root_nurbs_ffd_each: l ={0}, n={1}: uvw_par={2}, error = {3}'.format(l,n, sol.x, error))
-        print("xyz's:  l={0}, n ={1}:  original xyz={2}: computed xyz={3}\n".format(l, n,  xyz_l, xyz2) )
+        print('SUCCESS: find_root_nurbs_ffd_each: l ={0}, n={1}: uvw_par[{2}] ={3}, error = {4}'.format(l,n, l, sol.x, error))
+        print("xyz's:  l={0}, n ={1}:  original xyz[{2}] ={3}: computed xyz[{4}] ={5}\n".format(l, n, l, xyz_l, l, xyz2) )
 
         return sol.x
 

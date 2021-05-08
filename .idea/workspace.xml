@@ -22,7 +22,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one">
+    <list default="true" id="cf844002-5afb-40e8-9d83-cd66dbe3a2d2" name="Default Changelist" comment="I changed the deform-parallel.py so that the problem of inmutable ndarray has been solved">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/bernstein_ffd/ffd/deform_parallel.py" afterDir="false" />
     </list>
@@ -306,7 +306,7 @@
       <workItem from="1618462077557" duration="3930000" />
       <workItem from="1618544939762" duration="609000" />
       <workItem from="1620304941901" duration="49607000" />
-      <workItem from="1620454484385" duration="9798000" />
+      <workItem from="1620454484385" duration="12334000" />
     </task>
     <task id="LOCAL-00001" summary="I am debugging the deform-parallel.py by Moon">
       <created>1620372934821</created>
@@ -406,7 +406,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620458588368</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="I changed the deform-parallel.py so that the problem of inmutable ndarray has been solved">
+      <created>1620475346323</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1620475346323</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -430,7 +437,8 @@
     </ignored-roots>
     <MESSAGE value="I am debugging the deform-parallel.py by Moon" />
     <MESSAGE value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
-    <option name="LAST_COMMIT_MESSAGE" value="I changed the deform-parallel.py by Moon: added uvw_to_xyz_nurbs_one" />
+    <MESSAGE value="I changed the deform-parallel.py so that the problem of inmutable ndarray has been solved" />
+    <option name="LAST_COMMIT_MESSAGE" value="I changed the deform-parallel.py so that the problem of inmutable ndarray has been solved" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -498,6 +506,6 @@
     <SUITE FILE_PATH="coverage/ffd_fitting_py$benchmark.coverage" NAME="benchmark Coverage Results" MODIFIED="1613360540378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$ffd_utils.coverage" NAME="ffd_utils Coverage Results" MODIFIED="1618462597433" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
     <SUITE FILE_PATH="coverage/ffd_fitting_py$train_ffd.coverage" NAME="train_ffd Coverage Results" MODIFIED="1613207655175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620452633472" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
+    <SUITE FILE_PATH="coverage/ffd_fitting_py$test_nurbs_ffd_face.coverage" NAME="test_nurbs_ffd_face Coverage Results" MODIFIED="1620478105354" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bernstein_ffd" />
   </component>
 </project>
