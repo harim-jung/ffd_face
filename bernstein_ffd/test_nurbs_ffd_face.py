@@ -1,10 +1,8 @@
-
-
 import sys
 
-sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face')
-sys.path.append("F:/Dropbox/Anaconda/envs/ffd_face/bernstein_ffd/ffd")
-sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face/utils')
+# sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face')
+# sys.path.append("F:/Dropbox/Anaconda/envs/ffd_face/bernstein_ffd/ffd")
+# sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face/utils')
 
 sys.path
 import os
@@ -26,7 +24,7 @@ import cv2
 from plyfile import PlyData, PlyElement
 from utils.params import keypoints_
 
-from ffd import bernstein, deform, util
+from bernstein_ffd.ffd import bernstein, deform, util
 
 
 def test_face_ffd_nurbs(vertices, faces, U, V, W, P_lattice, sample_indices=None):
@@ -271,7 +269,7 @@ def chamfer_distance_with_batch(p1, p2, debug=False):
 
 
 """Augmented LP reference mesh (only rigid part wo pose) (HELEN_HELEN_3036412907_2_0_1_wo_pose.ply)"""
-plydata = PlyData.read('../train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply')
+plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose.ply')
 v = plydata['vertex']
 
 vert = np.zeros((3, 35709))

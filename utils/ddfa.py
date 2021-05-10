@@ -11,7 +11,8 @@ import argparse
 from .io import _numpy_to_tensor, _load_cpu, _load_gpu
 from .params import *
 from math import cos, sin, sqrt, hypot
-# from bernstein_ffd.ffd_utils import deform_matrix, control_points
+# from bernstein_ffd.ffd_utils import uv_map, face_contour, reference_mesh
+
 # from scipy.spatial.transform import Rotation as R
 
 def _parse_ffd_param(params):
@@ -515,6 +516,16 @@ def adjust_range_uv_map(uv_map):
     pickle.dump(new_uv_map, f)
     f.close()
 
+def find_boundary_uvs(uv_map, face_contour, reference_mesh):
+    boundary_verts = np.round(reference_mesh[:, face_contour], decimals=6)
+    excluded_uvs = []
+    for uv in uv_map.keys():
+        for x in boundary_verts[:2, :][0]:
+            for y in boundary_verts[:2, :][1]:
+                if uv_map[uv] == [x, y]:
+                    excluded_uvs.append(uv)
+
+    return excluded_uvs
 
 def get_neighbor_uvs(ori_uv_map, new_uv, r):
     new_u, new_v = new_uv
@@ -547,9 +558,9 @@ def uniform_resample_uv_map(ori_uv_map):
                 
             uv_pairs[(new_u, new_v)] = neighbor_uvs
 
-    for new_u in uniform_coord:
-        for new_v in uniform_coord:
-            new_uv = (new_u, new_v)
+    # for new_u in uniform_coord:
+    #     for new_v in uniform_coord:
+    #         new_uv = (new_u, new_v)
 
 
     return uv_pairs

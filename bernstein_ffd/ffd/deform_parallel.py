@@ -10,7 +10,7 @@ import sys
 print('sys.path in deform_parallel=',sys.path)
 
 #sys.path.append('F:/Dropbox/Anaconda/envs/fastai2/fastai') # Under fastai folder, fastai package exits
-sys.path.append('F:/Dropbox/Anaconda/envs/fastai2/fastcore') # Under fastcore folder, fastcore package exists
+# sys.path.append('F:/Dropbox/Anaconda/envs/fastai2/fastcore') # Under fastcore folder, fastcore package exists
 
 from fastcore.parallel import parallel
 
@@ -250,7 +250,8 @@ class Find_root_nurbs_ffd_each(object):
 
 
 
-        while (error > 1.0):
+        while (error > 0.01):
+        # while (error > 1.0):
             n += 1
             #print("l ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(l, n, error))
             #print("xyz's:  l={0}, n ={1}:  original xyz={2}: computed xyz={3}\n".format(l, n, xyz_l, xyz2))
@@ -318,7 +319,7 @@ def xyz_to_uvw_nurbs(xyzs, U, V, W, P_lattice, N):  # xyz: vertices of a mesh
 
     xyz_par = [ (l, xyz_l) for l, xyz_l in enumerate(xyzs)]
 
-    uvw_par_L = parallel( find_root_nurbs_ffd_each,  xyz_par, n_workers = 0)  # https://pymotw.com/3/concurrent.futures/: regardless of the order of execution of concurrent tasks, map() always returns the values in order based on the inputs.
+    uvw_par_L = parallel( find_root_nurbs_ffd_each,  xyz_par)  # https://pymotw.com/3/concurrent.futures/: regardless of the order of execution of concurrent tasks, map() always returns the values in order based on the inputs.
 
     return np.array( uvw_par_L)
     #uvw_par_array  = np.empty( shape = xyz.shape, dtype = np.double)
@@ -429,7 +430,7 @@ def uvw_to_xyz_nurbs(uvw_points, U, V, W, P_lattice, N):
 
     uvw_to_xyz_nurbs_each = Uvw_to_xyz_nurbs_each(U, V, W, P_lattice, N)
     
-    xyz_par_L = parallel(uvw_to_xyz_nurbs_each, uvw_points, n_workers = 0) # [ [l,xyz] ]
+    xyz_par_L = parallel(uvw_to_xyz_nurbs_each, uvw_points) # [ [l,xyz] ]
     return np.array( xyz_par_L)
     # parallel() returns results = [func(o,i) for i,o in progress_bar(enumerate(arr), total=len(arr), leave=leave)]
 
@@ -479,10 +480,9 @@ def get_stu_control_points_nurbs(dims, STU_axes):
 #    return grid
 
 def get_stu_control_points_nurbs_nonuniform(dims, STU_axes, control_points_dist):
-    x = [STU_axes[0] * i for i in list( control_points_dist[0] ) ]
-    y = [STU_axes[1] * i for i in list(control_points_dist[1])]
-    z = [STU_axes[2] * i for i in list(control_points_dist[2])]
-
+    x = np.array([STU_axes[0] * i for i in list( control_points_dist[0])])
+    y = np.array([STU_axes[1] * i for i in list(control_points_dist[1])])
+    z = np.array([STU_axes[2] * i for i in list(control_points_dist[2])])
     stu_lattice = util.mesh3d(
         x, y, z, dtype=np.double)  # stu_lattice : shape = 6 x 6 x 6 x3
 
@@ -589,7 +589,7 @@ def get_uvw_deformation_matrix_nurbs(uvw_par, U, V, W, P_lattice, N):
     get_uvw_deformation_matrix_nurb_each_row = Get_uvw_deformation_matrix_nurb_each_row( U, V, W, P_lattice,
                                                                                         N)
 
-    weights_par_L = parallel(get_uvw_deformation_matrix_nurb_each_row, uvw_par, n_workers = 0)
+    weights_par_L = parallel(get_uvw_deformation_matrix_nurb_each_row, uvw_par)
 
     # print('uvw.shape =', uvw.shape)
     # for l in range(uvw.shape[0]):

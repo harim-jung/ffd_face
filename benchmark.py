@@ -25,18 +25,19 @@ from utils.io import _load
 from utils.ddfa import ToTensorGjz, NormalizeGjz, DDFATestDataset, DDFADataset, LpDataset, reconstruct_vertex, reconstruct_vertex_full, \
 get_rot_mat_from_axis_angle, get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_angle_batch, \
 get_axis_angle_from_rot_mat, get_axis_angle_from_rot_mat_batch, get_axis_angle_s_t_from_rot_mat_batch, _parse_param, \
-adjust_range_uv_map
+adjust_range_uv_map, find_boundary_uvs, uniform_resample_uv_map
 from utils.params import *
 from utils.render_simdr import render
-from bernstein_ffd.ffd_utils import deformed_vert, cp_num, deformed_vert_w_pose, deformed_vert_w_pose_nurbs, uv_map
+from bernstein_ffd.ffd_utils import deformed_vert, cp_num, deformed_vert_w_pose, deformed_vert_w_pose_nurbs, \
+uv_map, face_contour, reference_mesh, nurbs_cp_num
 import models.mobilenet_v1_ffd as mobilenet_v1_ffd
 import models.mobilenet_v1
 import models.mobilenet_v1_ffd_lm
 from efficientnet_pytorch import EfficientNet
-from utils.ddfa import uniform_resample_uv_map
 
 # import bernstein_ffd.ffd_utils_patch
 
+# new_uv_map = find_boundary_uvs(uv_map, face_contour, reference_mesh)
 # new_uv_map = uniform_resample_uv_map(uv_map)
 
 # root = '../Datasets/AFLW2000/Data/'
@@ -267,7 +268,7 @@ def benchmark_aflw2000_ffd(params, dense=False, dim=2, rewhiten=False, pose="axi
         if pose is None:
             pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
         else:
-            pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=rewhiten, pose=pose) # 3 x 38365
+            pred_vert = deformed_vert_w_pose_nurbs(pred_param, transform=True, rewhiten=rewhiten, pose=pose) # 3 x 38365
 
         if dense:
             outputs.append(pred_vert)
@@ -308,8 +309,8 @@ def reconstruct_face_mesh(params, pose=None):
         if pose is None:
             pred_vert = deformed_vert(pred_param.copy(), transform=True) # 3 x 38365
         else:
-            pred_vert = deformed_vert_w_pose(pred_param.copy(), transform=True, rewhiten=True, pose=pose) # 3 x 38365
-        # pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=False, pose='axis_angle') # 3 x 38365
+            # pred_vert = deformed_vert_w_pose(pred_param.copy(), transform=True, rewhiten=True, pose=pose) # 3 x 38365
+            pred_vert = deformed_vert_w_pose_nurbs(pred_param.copy(), transform=True, rewhiten=True, pose=pose) # 3 x 38365
         # pred_vert = deformed_vert_w_pose(pred_param, transform=True, rewhiten=True, pose='rot_mat') # 3 x 38365
         # pred_vert = deformed_vert(pred_param, transform=True) # 3 x 38365
         
@@ -318,15 +319,15 @@ def reconstruct_face_mesh(params, pose=None):
         dis = pred_vert[:2,:] - gt_vert[:2,:]
         print(i, filelist[i])
         # mouth loss
-        print("mouth: ", np.mean(np.abs(dis[:, [*upper_mouth, *lower_mouth]])))
+        print("mouth: ", np.mean(dis[:, [*upper_mouth, *lower_mouth]] ** 2))
         # eye loss
-        print("eyes: ", np.mean(np.abs(dis[:, [*left_eye, *right_eye]])))
+        print("eyes: ", np.mean(dis[:, [*left_eye, *right_eye]] ** 2))
         # nose loss
-        print("nose: ", np.mean(np.abs(dis[:, [*lower_nose, *upper_nose]])))
+        print("nose: ", np.mean(dis[:, [*lower_nose, *upper_nose]] ** 2))
         # brow loss
-        print("brow: ", np.mean(np.abs(dis[:, [*left_brow, *right_brow]])))
+        print("brow: ", np.mean(dis[:, [*left_brow, *right_brow]] ** 2))
         # contour loss
-        print("contour: ", np.mean(np.abs(dis[:, contour_boundary])))
+        print("contour: ", np.mean(dis[:, contour_boundary] ** 2))
 
         # # pose
         # pg, offsetg, alpha_shpg, alpha_expg = _parse_param(gt_param.numpy())
@@ -479,7 +480,7 @@ def main():
     parser.add_argument('--arch', default='resnet', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/phase2_wpdc_lm_vdc_all_checkpoint_epoch_19.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr_0.37/ffd_resnet_vertex_lm_no_pose_norm_lr_0.37_checkpoint_epoch_23.pth.tar', type=str)
-    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr/ffd_resnet_vertex_lm_no_pose_norm_lr_checkpoint_epoch_49.pth.tar', type=str)
+    parser.add_argument('-c', '--checkpoint-fp', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_checkpoint_epoch_45.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str)
     # parser.add_argument('-c', '--checkpoint-fp', default='snapshot/ffd_mb_v2/ffd_mb_v2_checkpoint_epoch_37.pth.tar', type=str)
     args = parser.parse_args()
@@ -513,43 +514,44 @@ def main():
     # benchmark_pipeline_ffd(args.arch, args.checkpoint_fp, dense=False, param_classes=cp_num, dim=2, rewhiten=True)
 
     # lp_mesh(args.arch, args.checkpoint_fp)
-    aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=cp_num+12, pose="rot_mat")
+    aflw2000_mesh(args.arch, args.checkpoint_fp, param_classes=nurbs_cp_num+12, pose="rot_mat")
 
-    # min_nme = 100
-    # min_index = 0
-    # min_1 = 100
-    # min_1_index = 0
-    # min_2 = 100
-    # min_2_index = 0
-    # min_3 = 100
-    # min_3_index = 0
-    # for i in range(1, 51):
-    #     # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
-    #     # checkpoint = f"snapshot/ffd_resnext_vertex_lm_no_pose_norm/ffd_resnext_vertex_lm_no_pose_norm_checkpoint_epoch_{i}.pth.tar"
-    #     checkpoint = f"snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr_0.73/ffd_resnet_vertex_lm_no_pose_norm_lr_0.73_checkpoint_epoch_{i}.pth.tar"
-    #     # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
-    #     print(i, checkpoint)
-    #     # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
-    #     mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
-    #     if mean < min_nme:
-    #         min_nme = mean
-    #         min_index = i
-    #     if mean_nme_1 < min_1:
-    #         min_1 = mean_nme_1
-    #         min_1_index = i
-    #     if mean_nme_2 < min_2:
-    #         min_2 = mean_nme_2 
-    #         min_2_index = i
-    #     if mean_nme_3 < min_3:
-    #         min_3 = mean_nme_3
-    #         min_3_index = i
+    min_nme = 100
+    min_index = 0
+    min_1 = 100
+    min_1_index = 0
+    min_2 = 100
+    min_2_index = 0
+    min_3 = 100
+    min_3_index = 0
+    for i in range(37, 51):
+        # checkpoint = f"snapshot/ffd_resnet_lm_19/ffd_resnet_lm_19_checkpoint_epoch_{i}.pth.tar"            
+        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_5000/ffd_resnet_region_lm_0.46_5000_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/ffd_resnet_region_lm_0.46_10500/ffd_resnet_region_lm_0.46_10500_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/ffd_resnext_vertex_lm_no_pose_norm/ffd_resnext_vertex_lm_no_pose_norm_checkpoint_epoch_{i}.pth.tar"
+        checkpoint = f"snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_checkpoint_epoch_{i}.pth.tar"
+        # checkpoint = f"snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_checkpoint_epoch_{i}.pth.tar"
+        print(i, checkpoint)
+        # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num, dim=2, rewhiten=True, pose=None)
+        mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=nurbs_cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
+        # mean_nme_1, mean_nme_2, mean_nme_3, mean, std = benchmark_pipeline_ffd(args.arch, checkpoint, param_classes=cp_num+12, dim=2, rewhiten=True, pose='rot_mat')
+        if mean < min_nme:
+            min_nme = mean
+            min_index = i
+        if mean_nme_1 < min_1:
+            min_1 = mean_nme_1
+            min_1_index = i
+        if mean_nme_2 < min_2:
+            min_2 = mean_nme_2 
+            min_2_index = i
+        if mean_nme_3 < min_3:
+            min_3 = mean_nme_3
+            min_3_index = i
 
-    # print("min mean: ", min_index, min_nme)
-    # print("min nme 1: ", min_1, min_1_index)
-    # print("min nme 2: ", min_2, min_2_index)
-    # print("min nme 3: ", min_3, min_3_index)
+    print("min mean: ", min_index, min_nme)
+    print("min nme 1: ", min_1, min_1_index)
+    print("min nme 2: ", min_2, min_2_index)
+    print("min nme 3: ", min_3, min_3_index)
 
 
 if __name__ == '__main__':

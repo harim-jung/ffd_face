@@ -285,9 +285,13 @@ for i, vt in enumerate(v):
 
 reference_mesh = vert
 
+
 # 8928 points
-uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_left_bottom.pkl', 'rb'))
+# uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_left_bottom.pkl', 'rb'))
+uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_full.pkl', 'rb'))
 sampled_uv_map = pickle.load(open('train.configs/HELEN_HELEN_3036412907_2_0_1_wo_pose_uvmap_sampled.pkl', 'rb'))
+face_contour = [16237, 16238, 16239, 16240, 16241, 16242, 16243, 16244, 16245, 16246, 16247, 16248, 16249, 16250, 16251, 16252, 16253, 16254, 16255, 16256, 16257, 16269, 16270, 16271, 16272, 16273, 16274, 16275, 16276, 16277, 16278, 16279, 16280, 16281, 16307, 16308, 16309, 16310, 16311, 16312, 16346, 16347, 16348, 16349, 16386, 16387, 16388, 16389, 16390, 16391, 16392, 16393, 16394, 16395, 16396, 16397, 16398, 16399, 16400, 16440, 16441, 16442, 16443, 16444, 16445, 16446, 16456, 16457, 16458, 16459, 16460, 16461, 16462, 16463, 16464, 16465, 16510, 16511, 16512, 16513, 16514, 16515, 16539, 16540, 16541, 16542, 16543, 16544, 16545, 16546, 16547, 16548, 16596, 16597, 16598, 16599, 16600, 16601, 16602, 16638, 16639, 16640, 16641, 16642, 16643, 16644, 16645, 16646, 16647, 16648, 16649, 16650, 16651, 16751, 16752, 16753, 16754, 16755, 16756, 16757, 16758, 16759, 16760, 16761, 16762, 16763, 16764, 16765, 16766, 16767, 16768, 16769, 16770, 16886, 16887, 16888, 16889, 16890, 16891, 16892, 27204, 27205, 27206, 27207, 27208, 27209, 27210, 27211, 27212, 27322, 27323, 27324, 27325, 27326, 27327, 27328, 27329, 27330, 27331, 27332, 27333, 27334, 27335, 27336, 27337, 27338, 27339, 27340, 27392, 27393, 27394, 27395, 27396, 27434, 27435, 27436, 27437, 27438, 27439, 27440, 27441, 27442, 27443, 27444, 27445, 27446, 27447, 27496, 27497, 27498, 27499, 27500, 27526, 27527, 27528, 27529, 27530, 27531, 27532, 27533, 27534, 27535, 27581, 27582, 27583, 27584, 27585, 27597, 27598, 27599, 27600, 27601, 27602, 27603, 27604, 27605, 27606, 27607, 27608, 27651, 27652, 27653, 27654, 27655, 27656, 27657, 27658, 27659, 27660, 27661, 27662, 27663, 27664, 27665, 27666, 27667, 27705, 27706, 27707, 27708, 27743, 27744, 27745, 27775, 27776, 27777, 27778, 27779, 27780, 27781, 27782, 27783, 27801, 27802, 27803, 27804, 27805, 27806, 27807, 27808, 27809, 27810, 27811, 27812, 27813, 27821, 27822, 27823, 27824, 27825, 27826, 27827, 27828, 27829, 27830, 27831, 27832, 27873, 27914, 27955, 27996, 28037, 28077, 28117, 28157, 28158, 28197, 28236, 28275, 28314, 28353, 28391, 28429, 28467, 28504, 28541, 28578, 28615, 28652, 28688, 28723, 28758, 28793, 28827, 28861, 28895, 28928, 28961, 28994, 29026, 29058, 29090, 29121, 29152, 29183, 29213, 29243, 29273, 29302, 29331, 29360, 29388, 29416, 29444, 29472, 29500, 29527, 29554, 29581, 29608, 29635, 29662, 29689, 29715, 29741, 29767, 29793, 29819, 29845, 29871, 29897, 29923, 29949, 29975, 30001, 30027, 30053, 30079, 30105, 30131, 30158, 30185, 30212, 30239, 30266, 30293, 30320, 30348, 30376, 30404, 30432, 30460, 30489, 30518, 30547, 30577, 30607, 30637, 30668, 30699, 30730, 30762, 30794, 30826, 30859, 30892, 30925, 30959, 30993, 31027, 31062, 31097, 31132, 31167, 31202, 31238, 31274, 31310, 31346, 31382, 31419, 31456, 31493, 31530, 31531, 31568, 31606, 31644, 31645, 31683, 31722, 31761, 31762, 31801, 31841, 31881, 31882, 31922, 32010, 32058, 32105, 32152, 32199, 32245, 32246, 32292, 32338, 32383, 32427, 32470, 32512, 32553, 32593, 32594, 32634, 32674, 32713, 32714, 32753, 32792, 32830, 32867, 32868, 32905, 32942, 32978, 33013, 33047, 33080, 33110, 33111, 33112, 33141, 33142, 33170, 33171, 33198, 33199, 33226, 33253, 33279, 33304, 33328, 33329, 33353, 33377, 33400, 33422, 33444, 33466, 33487, 33508, 33529, 33549, 33568, 33586, 33604, 33622, 33639, 33656, 33673, 33689, 33704, 33719, 33734, 33749, 33764, 33779, 33794, 33809, 33824, 33839, 33854, 33869, 33884, 33899, 33914, 33929, 33944, 33959, 33974, 33990, 34007, 34024, 34041, 34059, 34078, 34097, 34116, 34136, 34157, 34178, 34199, 34221, 34244, 34267, 34290, 34314, 34339, 34364, 34389, 34390, 34416, 34417, 34444, 34472, 34501, 34531, 34562, 34594, 34627, 34661, 34696, 34732, 34768, 34804, 34805, 34842, 34880, 34918, 34956, 34957, 34996, 35036, 35077, 35118, 35159, 35160, 35202, 35203, 35246, 35290, 35335, 35381, 35427, 35473, 35520, 35567, 35614, 35661, 35708]
+
 
 """Augmented LP reference mesh (HELEN_HELEN_3036412907_2_0_1.ply)"""
 # plydata = PlyData.read('train.configs/HELEN_HELEN_3036412907_2_0_1.ply')
@@ -321,9 +325,81 @@ control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]
 
 """NURBS FFD"""
-nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix.pkl', 'rb')) # (35709, 343)
-nurbs_control_points = np.load(open('train.configs/nurbs_control_points.pkl', 'rb')) # (343, 3)
+# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix.pkl', 'rb')) # (35709, 343)
+# nurbs_control_points = np.load(open('train.configs/nurbs_control_points.pkl', 'rb')) # (343, 3)
+
+nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_6_19_4.pkl', 'rb')) # (35709, 700)
+nurbs_control_points = np.load(open('train.configs/nurbs_control_points_6_19_4.pkl', 'rb')) # (700, 3)
+
+# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_8_21_4.pkl', 'rb')) # (35709, 990)
+# nurbs_control_points = np.load(open('train.configs/nurbs_control_points_8_21_4.pkl', 'rb')) # (990, 3)
+
+# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_16_23_4.pkl', 'rb')) # (35709, 990)
+# nurbs_control_points = np.load(open('train.configs/nurbs_control_points_16_23_4.pkl', 'rb')) # (990, 3)
 nurbs_cp_num = nurbs_control_points.reshape(-1).shape[0]
+
+# mouth index
+mouth_left = 5910
+mouth_right = 10534
+mouth_top = 8344
+mouth_bottom = 8348
+
+mouth_outer_left = 5132
+mouth_outer_right = 11565
+mouth_outer_top = 8094
+mouth_outer_bottom = 8236
+
+min_ver_x = reference_mesh[0].min()
+x_min = 0
+x_max = reference_mesh[0].max() - min_ver_x
+
+min_ver_y = reference_mesh[1].min()
+y_min = 0
+y_max = reference_mesh[1].max() - min_ver_y
+
+mouthl_outer = reference_mesh[0, mouth_outer_left] - min_ver_x
+mouthr_outer = reference_mesh[0, mouth_outer_right] - min_ver_x
+mouthl_outer_ratio = mouthl_outer / x_max
+mouthr_outer_ratio = mouthr_outer / x_max
+moutht_outer = reference_mesh[1, mouth_outer_top] - min_ver_y
+mouthb_outer = reference_mesh[1, mouth_outer_bottom] - min_ver_y
+moutht_outer_ratio = moutht_outer / y_max
+mouthb_outer_ratio = mouthb_outer / y_max
+# np.round(np.linspace(mouthl_outer_ratio,mouthr_outer_ratio,5), decimals=2)
+# np.round(np.linspace(moutht_outer_ratio, mouthb_outer_ratio, 15), decimals=2)
+
+# mouthl = reference_mesh[0, mouth_left] - min_ver_x
+# mouthr = reference_mesh[0, mouth_right] - min_ver_x
+# mouthl_ratio = mouthl / x_max
+# mouthr_ratio = mouthr / x_max
+# moutht = reference_mesh[1, mouth_top] - min_ver_y
+# mouthb = reference_mesh[1, mouth_bottom] - min_ver_y
+# moutht_ratio = moutht / y_max
+# mouthb_ratio = mouthb / y_max
+
+left_eye_left = 1960
+left_eye_right = 6466
+left_eye_top = 4402
+left_eye_bottom = 4416
+right_eye_left = 9832
+right_eye_right = 14195
+
+left_eyel = reference_mesh[0, left_eye_left] - min_ver_x
+left_eyer = reference_mesh[0, left_eye_right] - min_ver_x
+left_eyel_ratio = left_eyel / x_max
+left_eyer_ratio = left_eyer / x_max
+left_eyet = reference_mesh[1, left_eye_top] - min_ver_y
+left_eyeb = reference_mesh[1, left_eye_bottom] - min_ver_y
+left_eyet_ratio = left_eyet / y_max
+left_eyeb_ratio = left_eyeb / y_max
+right_eyel = reference_mesh[0, right_eye_left] - min_ver_x
+right_eyer = reference_mesh[0, right_eye_right] - min_ver_x
+right_eyel_ratio = right_eyel / x_max
+right_eyer_ratio = right_eyer / x_max
+
+# np.round(np.linspace(left_eyel_ratio,left_eyer_ratio,5), decimals=2)
+# np.round(np.linspace(right_eyel_ratio,right_eyer_ratio,5), decimals=2)
+# np.round(np.linspace(left_eyeb_ratio, left_eyet_ratio, 3), decimals=2)
 
 
 # coord_range = reference_mesh[:, mouth_index]
