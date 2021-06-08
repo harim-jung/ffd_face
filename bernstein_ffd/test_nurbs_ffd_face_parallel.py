@@ -10,8 +10,6 @@ import sys
 # sys.path.append('F:\\Dropbox\\Anaconda\\envs\\ffd_face\\bernstein_ffd\\ffd') #Add subfolder ffd  which contains deform_parallel.py module, under the current folder, which is ffd_face/bernstein_ffd
 # sys.path.append('F:\\Dropbox\\Anaconda\\envs\\ffd_face\\fastai\\fastcore') #".." refers to the parent of the current folder, which is bernstein_ffd
 
-print(sys.path)
-
 # sys.path.append('../utils')
 
 from utils.params import *
@@ -26,7 +24,7 @@ from utils.ddfa import get_rot_mat_from_axis_angle_np, get_rot_mat_from_axis_ang
 import cv2
 from plyfile import PlyData, PlyElement
 from utils.params import keypoints_
-
+from bernstein_ffd.ffd_utils import *
 from bernstein_ffd.ffd import bernstein, deform, util, deform_parallel
 
 
@@ -46,6 +44,17 @@ def _calculate_ffd_nurbs(vertices, faces, U, V, W, P_lattice, sample_indices):
         xyz = vertices[sample_indices]
 
     return deform_parallel.get_reference_ffd_param_nurbs(xyz, U, V, W, P_lattice)
+
+def get_control_points_dist_dim(d_lower, d_middle, d_upper, axis="x", middle="mouth_large"):
+    if axis=="x":
+        middle_ratio = np.round(np.linspace(eval(f"{middle}_l_ratio"), eval(f"{middle}_r_ratio"), d_middle), decimals=2)
+    elif axis=="y":
+        middle_ratio = np.round(np.linspace(eval(f"{middle}_b_ratio"), eval(f"{middle}_t_ratio"), d_middle), decimals=2)
+
+    lower_ratio = np.round(np.linspace(0, middle_ratio.min(), d_lower+1), decimals=2)
+    upper_ratio = np.round(np.linspace(middle_ratio.max(), 1, d_upper+1), decimals=2)
+
+    return np.unique(np.concatenate((lower_ratio, middle_ratio, upper_ratio)))
 
 
 # def get_reference_ffd_param(vertices, dims, stu_origin=None, stu_axes=None):

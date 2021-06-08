@@ -313,13 +313,13 @@ Bernstein FFD
 find B and P
 """
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 9, 9)) 
-dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
+# dic = test_face_ffd(reference_mesh.T, faces, n=(3, 6, 3)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 9, 6)) # 490 control points
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 6, 6)) 
 # dic = test_face_ffd(reference_mesh.T, faces, n=(4, 199, 4)) # 5000 control points # 13 pts between lips along the y-axis # 1 pt along x-axis
 # dic = test_face_ffd(reference_mesh.T, faces, n=(6, 99, 4)) # 3500 control points # 7 pts between lips along y-axis & 3 pts along x-axis
 # dic = test_face_ffd(reference_mesh.T, faces, n=(9, 99, 4)) # 5000 control points # 7 pts between lips along y-axis & 4 pts along x-axis
-# dic = test_face_ffd(reference_mesh.T, faces, n=(6, 19, 4)) # 700 control points # 2 pts between lips along y-axis & 3 pts along x-axis
+dic = test_face_ffd(reference_mesh.T, faces, n=(6, 19, 4)) # 700 control points # 2 pts between lips along y-axis & 3 pts along x-axis
 deform_matrix = dic["b"] #(38365, 216)
 control_points = dic["p"] #(216, 3)
 cp_num = control_points.reshape(-1).shape[0]
@@ -334,21 +334,15 @@ nurbs_control_points = np.load(open('train.configs/nurbs_control_points_6_19_4.p
 # nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_8_21_4.pkl', 'rb')) # (35709, 990)
 # nurbs_control_points = np.load(open('train.configs/nurbs_control_points_8_21_4.pkl', 'rb')) # (990, 3)
 
-# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_16_23_4.pkl', 'rb')) # (35709, 990)
-# nurbs_control_points = np.load(open('train.configs/nurbs_control_points_16_23_4.pkl', 'rb')) # (990, 3)
+# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_16_23_4.pkl', 'rb')) # (35709, 2040)
+# nurbs_control_points = np.load(open('train.configs/nurbs_control_points_16_23_4.pkl', 'rb')) # (2040, 3)
+
+# nurbs_deform_matrix = np.load(open('train.configs/nurbs_deform_matrix_8_11_6.pkl', 'rb')) # (35709, 756)
+# nurbs_control_points = np.load(open('train.configs/nurbs_control_points_8_11_6.pkl', 'rb')) # (756, 3)
 nurbs_cp_num = nurbs_control_points.reshape(-1).shape[0]
 
+
 # mouth index
-mouth_left = 5910
-mouth_right = 10534
-mouth_top = 8344
-mouth_bottom = 8348
-
-mouth_outer_left = 5132
-mouth_outer_right = 11565
-mouth_outer_top = 8094
-mouth_outer_bottom = 8236
-
 min_ver_x = reference_mesh[0].min()
 x_min = 0
 x_max = reference_mesh[0].max() - min_ver_x
@@ -357,25 +351,35 @@ min_ver_y = reference_mesh[1].min()
 y_min = 0
 y_max = reference_mesh[1].max() - min_ver_y
 
-mouthl_outer = reference_mesh[0, mouth_outer_left] - min_ver_x
-mouthr_outer = reference_mesh[0, mouth_outer_right] - min_ver_x
-mouthl_outer_ratio = mouthl_outer / x_max
-mouthr_outer_ratio = mouthr_outer / x_max
-moutht_outer = reference_mesh[1, mouth_outer_top] - min_ver_y
-mouthb_outer = reference_mesh[1, mouth_outer_bottom] - min_ver_y
-moutht_outer_ratio = moutht_outer / y_max
-mouthb_outer_ratio = mouthb_outer / y_max
+mouth_outer_left = 5132
+mouth_outer_right = 11565
+mouth_outer_top = 8094
+mouth_outer_bottom = 8236
+
+mouth_outer_l = reference_mesh[0, mouth_outer_left] - min_ver_x
+mouth_outer_r = reference_mesh[0, mouth_outer_right] - min_ver_x
+mouth_outer_l_ratio = mouth_outer_l / x_max
+mouth_outer_r_ratio = mouth_outer_r / x_max
+mouth_outer_t = reference_mesh[1, mouth_outer_top] - min_ver_y
+mouth_outer_b = reference_mesh[1, mouth_outer_bottom] - min_ver_y
+mouth_outer_t_ratio = mouth_outer_t / y_max
+mouth_outer_b_ratio = mouth_outer_b / y_max
 # np.round(np.linspace(mouthl_outer_ratio,mouthr_outer_ratio,5), decimals=2)
 # np.round(np.linspace(moutht_outer_ratio, mouthb_outer_ratio, 15), decimals=2)
 
-# mouthl = reference_mesh[0, mouth_left] - min_ver_x
-# mouthr = reference_mesh[0, mouth_right] - min_ver_x
-# mouthl_ratio = mouthl / x_max
-# mouthr_ratio = mouthr / x_max
-# moutht = reference_mesh[1, mouth_top] - min_ver_y
-# mouthb = reference_mesh[1, mouth_bottom] - min_ver_y
-# moutht_ratio = moutht / y_max
-# mouthb_ratio = mouthb / y_max
+mouth_large_left = 4228
+mouth_large_right = 12079
+mouth_large_top = 8211
+mouth_large_bottom = 8242
+
+mouth_large_l = reference_mesh[0, mouth_large_left] - min_ver_x
+mouth_large_r = reference_mesh[0, mouth_large_right] - min_ver_x
+mouth_large_l_ratio = mouth_large_l / x_max
+mouth_large_r_ratio = mouth_large_r / x_max
+mouth_large_t = reference_mesh[1, mouth_large_top] - min_ver_y
+mouth_large_b = reference_mesh[1, mouth_large_bottom] - min_ver_y
+mouth_large_t_ratio = mouth_large_t / y_max
+mouth_large_b_ratio = mouth_large_b / y_max
 
 left_eye_left = 1960
 left_eye_right = 6466
@@ -384,18 +388,18 @@ left_eye_bottom = 4416
 right_eye_left = 9832
 right_eye_right = 14195
 
-left_eyel = reference_mesh[0, left_eye_left] - min_ver_x
-left_eyer = reference_mesh[0, left_eye_right] - min_ver_x
-left_eyel_ratio = left_eyel / x_max
-left_eyer_ratio = left_eyer / x_max
-left_eyet = reference_mesh[1, left_eye_top] - min_ver_y
-left_eyeb = reference_mesh[1, left_eye_bottom] - min_ver_y
-left_eyet_ratio = left_eyet / y_max
-left_eyeb_ratio = left_eyeb / y_max
-right_eyel = reference_mesh[0, right_eye_left] - min_ver_x
-right_eyer = reference_mesh[0, right_eye_right] - min_ver_x
-right_eyel_ratio = right_eyel / x_max
-right_eyer_ratio = right_eyer / x_max
+left_eye_l = reference_mesh[0, left_eye_left] - min_ver_x
+left_eye_r = reference_mesh[0, left_eye_right] - min_ver_x
+left_eye_l_ratio = left_eye_l / x_max
+left_eye_r_ratio = left_eye_r / x_max
+eye_t = reference_mesh[1, left_eye_top] - min_ver_y
+eye_b = reference_mesh[1, left_eye_bottom] - min_ver_y
+eye_t_ratio = eye_t / y_max
+eye_b_ratio = eye_b / y_max
+right_eye_l = reference_mesh[0, right_eye_left] - min_ver_x
+right_eye_r = reference_mesh[0, right_eye_right] - min_ver_x
+right_eye_l_ratio = right_eye_l / x_max
+right_eye_r_ratio = right_eye_r / x_max
 
 # np.round(np.linspace(left_eyel_ratio,left_eyer_ratio,5), decimals=2)
 # np.round(np.linspace(right_eyel_ratio,right_eyer_ratio,5), decimals=2)

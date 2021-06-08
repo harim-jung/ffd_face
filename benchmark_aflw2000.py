@@ -10,6 +10,7 @@ There is no obvious difference between these two splits.
 
 
 import os.path as osp
+import os
 import numpy as np
 import cv2
 from math import sqrt
@@ -121,12 +122,20 @@ def ana(nme_list):
 
     return mean_nme_1, mean_nme_2, mean_nme_3, mean, std
 
-def ana_sampled(nme_list, save_folder="ffd_resnet_region_lm_0.46"):
+def ana_sampled(nme_list, save_folder="ffd_resnet_vertex_lm_no_pose_norm_lr_0.37", filenames=[]):
     yaw_list_abs = np.abs(yaws_list)
-    # ind_yaw_1 = np.load("test_configs/AFLW2000-3D.small-pose-3.427.npy")
-    # ind_yaw_2 = np.load("test_configs/AFLW2000-3D.med-pose-3.427.npy")
-    # ind_yaw_3 = np.load("test_configs/AFLW2000-3D.large-pose-3.427.npy")
-    ind_yaw_1, ind_yaw_2, ind_yaw_3 = divide_yaws()
+    # ind_yaw_1 = np.load(f"test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/{filenames[0]}")
+    # ind_yaw_2 = np.load(f"test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/{filenames[1]}")
+    # ind_yaw_3 = np.load(f"test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/{filenames[2]}")
+    # ind_yaw_1 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/AFLW2000-3D.small-pose-3.530.npy")
+    ind_yaw_1 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test_2/AFLW2000-3D.small-pose-2.596.npy")
+    ind_yaw_2 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test_2/AFLW2000-3D.med-pose-3.440.npy")
+    ind_yaw_3 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test_2/AFLW2000-3D.large-pose-4.502.npy")
+    # ind_yaw_1 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test/AFLW2000-3D.small-pose-2.549.npy")
+    # ind_yaw_2 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test/AFLW2000-3D.med-pose-3.430.npy")
+    # ind_yaw_3 = np.load("test_configs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_test/AFLW2000-3D.large-pose-4.527.npy")
+
+    # ind_yaw_1, ind_yaw_2, ind_yaw_3 = divide_yaws()
 
     nme_1 = nme_list[ind_yaw_1]
     nme_2 = nme_list[ind_yaw_2]
@@ -146,21 +155,21 @@ def ana_sampled(nme_list, save_folder="ffd_resnet_region_lm_0.46"):
     mean = np.mean(mean_all)
     std = np.std(mean_all)
 
-    s1 = '[ 0, 30]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_1, std_nme_1)
-    s2 = '[30, 60]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_2, std_nme_2)
-    s3 = '[60, 90]\tMean: \x1b[32m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_3, std_nme_3)
+    if not osp.isdir(f"test_configs/{save_folder}"): 
+        os.mkdir(f"test_configs/{save_folder}")
+
+    s1 = '[ 0, 30]\tMean: {:.3f}, Std: {:.3f}'.format(mean_nme_1, std_nme_1)
+    s2 = '[30, 60]\tMean: {:.3f}, Std: {:.3f}'.format(mean_nme_2, std_nme_2)
+    s3 = '[60, 90]\tMean: {:.3f}, Std: {:.3f}'.format(mean_nme_3, std_nme_3)
     # s4 = '[ALL]\tMean: \x1b[31m{:.3f}\x1b[0m, Std: {:.3f}'.format(mean_nme_all, std_nme_all)
-    s5 = '[ 0, 90]\tMean: \x1b[31m{:.3f}\x1b[0m, Std: \x1b[31m{:.3f}\x1b[0m'.format(mean, std)
+    s5 = '[ 0, 90]\tMean: {:.3f}, Std: {:.3f}'.format(mean, std)
 
     s = '\n'.join([s1, s2, s3, s5])#, s4])
     print(s)
 
-    np.save(f"test_configs/{save_folder}/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
-    np.save(f"test_configs/{save_folder}/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
-    np.save(f"test_configs/{save_folder}/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
-    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.small-pose-{mean:.3f}.npy", ind_yaw_1)    
-    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.med-pose-{mean:.3f}.npy", ind_yaw_2)    
-    # np.save(f"test_configs/ffd_resnet_region_lm_0.46_5000/AFLW2000-3D.large-pose-{mean:.3f}.npy", ind_yaw_3)    
+    # np.save(f"test_configs/{save_folder}/AFLW2000-3D.small-pose-{mean_nme_1:.3f}.npy", ind_yaw_1)    
+    # np.save(f"test_configs/{save_folder}/AFLW2000-3D.med-pose-{mean_nme_2:.3f}.npy", ind_yaw_2)    
+    # np.save(f"test_configs/{save_folder}/AFLW2000-3D.large-pose-{mean_nme_3:.3f}.npy", ind_yaw_3)      
     return mean_nme_1, mean_nme_2, mean_nme_3, mean, std
 
 
@@ -204,10 +213,8 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
         # z_diff = pts68_fit[2, 0] - pts68_gt[2, 0]
         # pts68_fit[2, :] -= z_diff
 
-
-        # wfp = f'samples/outputs/aflw_lms_region_lm_0.46/{filelist[i]}'
+        # wfp = f'samples/outputs/aflw/{filelist[i]}'
         # draw_landmarks(root + filelist[i], pts68_fit[:2, :],  pts68_gt[:2, :], style='simple', wfp=wfp, show_flag=False)
-
 
         # build bbox
         minx, maxx = np.min(pts68_gt[0, :]), np.max(pts68_gt[0, :])
@@ -238,7 +245,7 @@ def calc_nme_lm(pts68_fit_all, all=True, dim=2):
         nme_list.append(nme)
 
     nme_list = np.array(nme_list, dtype=np.float32)
-    print("L1 Loss ", np.array(l1_list, dtype=np.float32).mean())
+    # print("L1 Loss ", np.array(l1_list, dtype=np.float32).mean())
     return nme_list
 
  
@@ -264,7 +271,7 @@ def calc_nme_mesh(vert, dim=3):
         llength = sqrt((maxx - minx) * (maxy - miny))
 
         dis = vert_fit - vert_gt
-        print(i, dis[2].mean())
+        # print(i, dis[2].mean())
         # temp
         # print(i, filelist[i])
         # # mouth loss

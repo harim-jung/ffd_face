@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import math
 
 import sys
-print('sys.path in deform_parallel=',sys.path)
+# print('sys.path in deform_parallel=',sys.path)
 
 #sys.path.append('F:/Dropbox/Anaconda/envs/fastai2/fastai') # Under fastai folder, fastai package exits
 # sys.path.append('F:/Dropbox/Anaconda/envs/fastai2/fastcore') # Under fastcore folder, fastcore package exists
@@ -250,8 +250,8 @@ class Find_root_nurbs_ffd_each(object):
 
 
 
-        while (error > 0.01):
-        # while (error > 1.0):
+        # while (error > 0.1):
+        while (error > 1.0):
             n += 1
             #print("l ={0}, n={1}: The error = {2} is greater than 1.0. Retry with a new initial guess.".format(l, n, error))
             #print("xyz's:  l={0}, n ={1}:  original xyz={2}: computed xyz={3}\n".format(l, n, xyz_l, xyz2))

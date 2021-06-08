@@ -101,6 +101,40 @@ def parse_args():
     # parser.add_argument('--weights', default='0.37, 0.09, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06, 0.07', type=str)
     # # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
 
+    # parser = argparse.ArgumentParser(description='FFD')
+    # parser.add_argument('-j', '--workers', default=8, type=int)
+    # parser.add_argument('--epochs', default=50, type=int)
+    # parser.add_argument('--start-epoch', default=1, type=int)
+    # parser.add_argument('--batch-size', default=128, type=int) # 128 for v2
+    # parser.add_argument('--val-batch-size', default=128, type=int)
+    # parser.add_argument('--base-lr', '--learning-rate', default=0.0005, type=float)
+    # # parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
+    # parser.add_argument('--weight-decay', '--wd', default=0.0005, type=float)
+    # parser.add_argument('--print-freq', '-p', default=500, type=int)
+    # parser.add_argument('--resume', default='', type=str, metavar='PATH')
+    # # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--devices-id', default='3', type=str)
+    # parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
+    # parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
+    # parser.add_argument('--root', default='../Datasets/train_aug_120x120')
+    # parser.add_argument('--snapshot', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_2040', type=str)
+    # parser.add_argument('--log-file', default='training/logs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_2040_210509.log', type=str)
+    # parser.add_argument('--log-mode', default='w', type=str)
+    # parser.add_argument('--dimensions', default='16, 23, 4', type=str)
+    # parser.add_argument('--param-classes', default=6132, type=int) # 6120+12
+    # parser.add_argument('--arch', default='resnet', type=str)
+    # parser.add_argument('--optimizer', default='adamw', type=str)
+    # # parser.add_argument('--milestones', default='30, 40', type=str)
+    # # parser.add_argument('--warmup', default=5, type=int)
+    # parser.add_argument('--test_initial', default='false', type=str2bool)
+    # parser.add_argument('--param-fp-train',default='train.configs/param_all_full_norm.pkl', type=str) # todo - changed to normalized version
+    # parser.add_argument('--param-fp-val', default='train.configs/param_all_val_full_norm.pkl', type=str)
+    # parser.add_argument('--source_mesh', default='HELEN_HELEN_3036412907_2_0_1_wo_pose.ply', type=str)
+    # parser.add_argument('--loss', default='vdc_lm_mse', type=str)
+    # parser.add_argument('--comment', default='rot mat normalized pose, no pose param loss, wo z offset, fixed lr, nurbs ffd', type=str)
+    # # parser.add_argument('--weights', default='0.37, 0.09, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06, 0.07', type=str)
+    # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
+
     parser = argparse.ArgumentParser(description='FFD')
     parser.add_argument('-j', '--workers', default=8, type=int)
     parser.add_argument('--epochs', default=50, type=int)
@@ -113,15 +147,15 @@ def parse_args():
     parser.add_argument('--print-freq', '-p', default=500, type=int)
     parser.add_argument('--resume', default='', type=str, metavar='PATH')
     # parser.add_argument('--resume', default='snapshot/ffd_resnet_region/ffd_resnet_region_checkpoint_epoch_33.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--devices-id', default='3', type=str)
+    parser.add_argument('--devices-id', default='2', type=str)
     parser.add_argument('--filelists-train', default='train.configs/train_aug_120x120.list.train', type=str)
     parser.add_argument('--filelists-val', default='train.configs/train_aug_120x120.list.val', type=str)
     parser.add_argument('--root', default='../Datasets/train_aug_120x120')
-    parser.add_argument('--snapshot', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_2040', type=str)
-    parser.add_argument('--log-file', default='training/logs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_2040_210509.log', type=str)
+    parser.add_argument('--snapshot', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_756_0.37', type=str)
+    parser.add_argument('--log-file', default='training/logs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_756_0.37_210511.log', type=str)
     parser.add_argument('--log-mode', default='w', type=str)
-    parser.add_argument('--dimensions', default='16, 23, 4', type=str)
-    parser.add_argument('--param-classes', default=6132, type=int) # 6120+12
+    parser.add_argument('--dimensions', default='8, 11, 6', type=str)
+    parser.add_argument('--param-classes', default=2280, type=int) # 2268+12
     parser.add_argument('--arch', default='resnet', type=str)
     parser.add_argument('--optimizer', default='adamw', type=str)
     # parser.add_argument('--milestones', default='30, 40', type=str)
@@ -132,8 +166,9 @@ def parse_args():
     parser.add_argument('--source_mesh', default='HELEN_HELEN_3036412907_2_0_1_wo_pose.ply', type=str)
     parser.add_argument('--loss', default='vdc_lm_mse', type=str)
     parser.add_argument('--comment', default='rot mat normalized pose, no pose param loss, wo z offset, fixed lr, nurbs ffd', type=str)
-    # parser.add_argument('--weights', default='0.37, 0.09, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06, 0.07', type=str)
-    parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
+    parser.add_argument('--weights', default='0.37, 0.09, 0.09, 0.06, 0.06, 0.07, 0.07, 0.06, 0.06, 0.07', type=str)
+    # parser.add_argument('--weights', default='0.46, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06', type=str)
+
 
     # parser = argparse.ArgumentParser(description='FFD')
     # parser.add_argument('-j', '--workers', default=8, type=int)
@@ -628,6 +663,6 @@ def main():
 
 
 if __name__ == '__main__':
-    writer = SummaryWriter('training/runs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_2040')
+    writer = SummaryWriter('training/runs/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_756_0.37')
     main()
     writer.close()

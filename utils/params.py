@@ -14,8 +14,9 @@ from scipy.io import loadmat
 def make_abs_path(d):
     return osp.join(osp.dirname(osp.realpath(__file__)), d)
 
-print (__file__)
-print ( osp.dirname(osp.realpath(__file__)) )
+# print (__file__)
+# print ( osp.dirname(osp.realpath(__file__)) )
+
 """includes neck and ears (40, 10 dim)"""
 d = make_abs_path('../train.configs')
 # 68 landmarks

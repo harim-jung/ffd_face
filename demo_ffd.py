@@ -27,7 +27,7 @@ from retina_face.data.config import cfg_mnet
 from retina_face.layers.functions.prior_box import PriorBox
 from retina_face.utils.box_utils import decode, decode_landm
 from retina_face.utils.nms.py_cpu_nms import py_cpu_nms
-from bernstein_ffd.ffd_utils import deformed_vert, cp_num, deformed_vert_w_pose_nurbs, nurbs_cp_num
+from bernstein_ffd.ffd_utils import deformed_vert, cp_num, deformed_vert_w_pose_nurbs, nurbs_cp_num, deformed_vert_w_pose
 import argparse
 import torch.backends.cudnn as cudnn
 
@@ -116,16 +116,16 @@ if __name__ == '__main__':
     parser.add_argument('--vis_thres', default=0.6, type=float, help='visualization_threshold')
 
     # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_checkpoint_epoch_7.pth.tar', type=str, metavar='PATH')
-    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_lm_adamw/ffd_resnet_lm_adamw_checkpoint_epoch_10.pth.tar', type=str, metavar='PATH')
-    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_region_lm_0.46_mse_1000_checkpoint_epoch_37.pth.tar', type=str, metavar='PATH')
-    parser.add_argument('--recon-checkpoint', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_checkpoint_epoch_45.pth.tar', type=str, metavar='PATH')
+    parser.add_argument('--recon-checkpoint', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_756_0.37_checkpoint_epoch_30.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--recon-checkpoint', default='snapshot/ffd_resnet_vertex_lm_no_pose_norm_lr_0.37_checkpoint_epoch_23.pth.tar', type=str, metavar='PATH')
+    # parser.add_argument('--recon-checkpoint', default='snapshot/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700_checkpoint_epoch_45.pth.tar', type=str, metavar='PATH')
 
     parser.add_argument('--recon-model', default='resnet', type=str)
     # parser.add_argument('--param-classes', default=1470, type=int)
     # parser.add_argument('--param-classes', default=1029, type=int)
     parser.add_argument('--param-classes', default=nurbs_cp_num+12, type=int)
     parser.add_argument('--dump_lm_img', default='false', type=str2bool, help='whether write out the visualization image')
-    parser.add_argument('--dump_ply', default='true', type=str2bool)
+    parser.add_argument('--dump_ply', default='false', type=str2bool)
     parser.add_argument('--dump_vert_img', default='true', type=str2bool)
     parser.add_argument('--show_flag', default='false', type=str2bool, help='whether show the visualization result')
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
     # for img_fp in args.files:
     d = '../Datasets/CelebA/Img/img_align_celeba_png.7z/img_align_celeba_png/'
-    save = '../Datasets/CelebA/results/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_700/'
+    save = '../Datasets/CelebA/results/nurbs_ffd_resnet_vertex_lm_no_pose_norm_lr_756_0.37/'
     # d = '../Datasets/300W_LP/Data/'
     # save = '../Datasets/300W_LP/results_ffd/'
     for (dirpath, dirnames, filenames) in walk(d):
@@ -204,7 +204,7 @@ if __name__ == '__main__':
                     wfp = save + img_fp.split("/")[-1]
                     # dense face 3d vertices
                     if args.dump_ply or args.dump_vert_img or args.dump_lm_img:
-                        # vertices = deformed_vert(param, transform=True, face=True)
+                        # vertices = deformed_vert_w_pose(param.copy(), transform=True, rewhiten=True, pose='rot_mat')
                         vertices = deformed_vert_w_pose_nurbs(param.copy(), transform=True, rewhiten=True, pose='rot_mat')
                         vertices = rescale_w_roi(vertices, roi_box)
                         vertices[1, :] = img_ori.shape[0] + 1 - vertices[1, :]

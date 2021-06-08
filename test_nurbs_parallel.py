@@ -1,6 +1,6 @@
 import numpy as np
 from bernstein_ffd.test_nurbs_ffd_face_parallel import *
-import bernstein_ffd.ffd.deform_parallel as deform_parallel
+# import bernstein_ffd.ffd.deform_parallel as deform_parallel
 
 
 """reference meshes"""
@@ -60,9 +60,9 @@ landmarks = keypoints_
 # stu_origin, stu_axes = deform.get_stu_params(reference_mesh.T)
 
 # import pdb; pdb.set_trace()
-a = 16  # a+1 is the number of contol points in the x direction
-b = 23
-c = 4
+a = 8  # a+1 is the number of contol points in the x direction
+b = 11
+c = 6
 
 # define U,V,W, and P
 
@@ -127,13 +127,31 @@ stu_origin, stu_axes = deform_parallel.get_stu_params(reference_mesh.T)#[landmar
 # )
 
 # 8, 21, 4 (considering lips)
+# control_points_dist = np.array(
+#     [
+#     [0, 0.14, 0.29, 0.4 , 0.52, 0.63, 0.75, 0.87, 1],
+#     [0, 0.1, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.5, 0.65, 0.8, 0.9, 1],
+#     [1.0/c * i for i in range(c+1)]
+#     ]
+# )
+
+# 8, 11, 6 (considering lips)
+x_cp_ratio = get_control_points_dist_dim(2, 5, 2, axis="x", middle="mouth_large")
+y_cp_ratio = get_control_points_dist_dim(2, 5, 5, axis="y", middle="mouth_large")
+z_cp_ratio = np.round(np.array([1.0/c * i for i in range(c+1)]), decimals=2)
 control_points_dist = np.array(
     [
-    [0, 0.14, 0.29, 0.4 , 0.52, 0.63, 0.75, 0.87, 1],
-    [0, 0.1, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.5, 0.65, 0.8, 0.9, 1],
-    [1.0/c * i for i in range(c+1)]
+    list(x_cp_ratio),
+    list(y_cp_ratio),
+    list(z_cp_ratio)
     ]
 )
+# [list([0.0, 0.12, 0.24, 0.37, 0.51, 0.64, 0.77, 0.88, 1.0])
+#  list([0.0, 0.08, 0.16, 0.22, 0.27, 0.32, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0])
+#  list([0.0, 0.17, 0.33, 0.5, 0.67, 0.83, 1.0])
+#  ]
+
+print(control_points_dist)
 
 # # 13, 21, 4 (considering lips, more points on x-axis)
 # control_points_dist = np.array(
@@ -199,11 +217,11 @@ print('control_points.shape=', control_points.shape)
 
 reconstructed_vertices = deform_matrix @ control_points
 
-BF = open("train.configs/nurbs_deform_matrix_16_23_4_0.01.pkl", "wb")
+BF = open("train.configs/nurbs_deform_matrix_8_11_6.pkl", "wb")
 np.save(BF, deform_matrix)
 BF.close()
 
-PF = open("train.configs/nurbs_control_points_16_23_4_0.01.pkl", "wb")
+PF = open("train.configs/nurbs_control_points_8_11_6.pkl", "wb")
 np.save(PF, control_points)
 PF.close()
 

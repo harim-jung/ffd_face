@@ -4,7 +4,6 @@ import sys
 # sys.path.append("F:/Dropbox/Anaconda/envs/ffd_face/bernstein_ffd/ffd")
 # sys.path.append('F:/Dropbox/Anaconda/envs/ffd_face/utils')
 
-sys.path
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
