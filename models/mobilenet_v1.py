@@ -11,8 +11,15 @@ Copyright (c) Yang Lu, 2017
 
 Modified By cleardusk
 """
+import sys
+sys.path.append("D:/ai/3d face reconstruction/ffd_face/")
+
 import math
 import torch.nn as nn
+import cv2
+
+import torchvision.transforms as transforms
+from utils.ddfa import ToTensorGjz, NormalizeGjz
 
 __all__ = ['mobilenet_2', 'mobilenet_1', 'mobilenet_075', 'mobilenet_05', 'mobilenet_025']
 
@@ -152,3 +159,11 @@ def mobilenet_05(num_classes=62, input_channel=3):
 def mobilenet_025(num_classes=62, input_channel=3):
     model = MobileNet(widen_factor=0.25, num_classes=num_classes, input_channel=input_channel)
     return model
+
+
+if __name__ == '__main__':
+    model = mobilenet_1()
+    transform = transforms.Compose([ToTensorGjz(), NormalizeGjz(mean=127.5, std=128)])
+    x = cv2.imread('samples/outputs/300w-lp/LFPWFlip_LFPW_image_train_0812_1_1_gt.jpg')
+    x = transform(x).unsqueeze(0)
+    y = model(x)

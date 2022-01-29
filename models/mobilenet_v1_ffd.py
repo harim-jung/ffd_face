@@ -15,6 +15,9 @@ import math
 import torch.nn as nn
 import torch, cv2
 import torchvision.transforms as transforms
+import sys
+sys.path.append("D:/ai/3d face reconstruction/ffd_face/")
+
 from utils.ddfa import ToTensorGjz, NormalizeGjz
 
 __all__ = ['mobilenet_2', 'mobilenet_1', 'mobilenet_075', 'mobilenet_05', 'mobilenet_025']
