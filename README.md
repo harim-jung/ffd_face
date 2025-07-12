@@ -1,6 +1,6 @@
 ### Official implementation of:
 
-**Harim Jung, Myeong-Seok Oh, Seong-Whan Lee, “Learning Free-Form Deformation for 3D Face Reconstruction from In-The-Wild Images,” SMC 2021.** [[Paper (arXiv)](https://arxiv.org/pdf/2206.08509)]
+**Harim Jung, Myeong-Seok Oh, Seong-Whan Lee, “Learning Free-Form Deformation for 3D Face Reconstruction from In-The-Wild Images,” SMC 2021.** [[Paper](https://arxiv.org/abs/2105.14857)]
 
 This project proposes a learning-based method to reconstruct 3D face meshes from 2D images using **Free-Form Deformation** (FFD), overcoming the representational limitations of traditional PCA-based 3D Morphable Models (3DMM). This method estimates **deviations of control points** within a grid, offering both high reconstruction quality and practical editability.
 
